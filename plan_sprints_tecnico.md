@@ -1,146 +1,133 @@
-# Plan Técnico de Sprints Semanales (Meticuloso y Completo) - Centralización de Procesos
+# Plan Técnico de Sprints Semanales (Optimizado y Mitigado) - Centralización de Procesos
 ## Cliente: Fundación Infantil Santiago Corazón
-## Equipo de Desarrollo: Backlog Técnico Operativo
-*   **Duración del Proyecto:** 5 Meses (20 Semanas)
-*   **Estructura de Sprints:** 20 Sprints de 1 semana cada uno.
-*   **Stack:** Angular (v16+) | Node.js (NestJS / TypeScript) o Python (FastAPI) | PostgreSQL Dedicado (v15+).
-
-Este documento contiene la planificación detallada y exhaustiva, diseñada para garantizar el cumplimiento al 100% del alcance funcional y técnico de la **Propuesta 2** y las plataformas identificadas en el **Inventario de Plataformas y Accesos.xlsx**.
+## Rol: Staff Cloud Architect & Senior Technical Project Manager
+*   **Plazo Total:** 5 Meses (20 semanas de 1 semana por sprint).
+*   **Enfoque de Desarrollo:** Solo Developer (Full-stack + DevOps) ➔ Requiere automatización máxima de infraestructura (PaaS/DBaaS) para eliminar sobrecargas operativas de administración de servidores.
+*   **Stack Definido:** Angular (v18+) | Node.js (NestJS / TypeScript) | PostgreSQL con PostGIS | PaaS (Render/Railway/GCP Cloud Run) | DBaaS (AWS RDS/GCP Cloud SQL/Neon).
 
 ---
 
-## 1. Mapeo de Requerimientos del Contrato vs. Backlog de Sprints
+## 1. Mapeo de Arquitectura Cloud de Alta Disponibilidad
 
-| Requerimiento del Contrato / Propuesta 2 | Ubicación en el Backlog Técnico |
-| :--- | :--- |
-| **Módulo CRM (Clientes y Donantes)** | Sprint 5 (Tareas 5.1 - 5.5) y Sprint 6 (Tarea 6.4) |
-| **Migración de Historial Access** | Sprint 6 (Tareas 6.1 - 6.3) |
-| **Módulo de Pedidos Personalizados (Manuales)** | Sprint 7 (Tareas 7.1, 7.2) y Sprint 8 (Tareas 8.1 - 8.4) |
-| **Integración con Shopify Webhooks** | Sprint 9 (Tareas 9.1 - 9.3) y Sprint 10 (Tareas 10.1 - 10.3) |
-| **Integración de Pasarelas (Wompi, PayU, PayPal, Frecuenti)** | Sprint 11 (Tareas 11.1 - 11.4) |
-| **Generación de Certificados Automáticos en PDF** | Sprint 12 (Tareas 12.1 - 12.3) |
-| **Servicio de Envío Automático SMTP (Email)** | Sprint 13 (Tareas 13.1 - 13.3) |
-| **Módulo de Inventarios (Productos, Insumos, Acompañantes)** | Sprint 14 (Tareas 14.1 - 14.3) y Sprint 15 (Tareas 15.1 - 15.3) |
-| **Lógica de Descuento Automático de Stock (Recetas/Insumos)** | Sprint 16 (Tareas 16.1 - 16.3) |
-| **Integración con WhatsApp Business API** | Sprint 17 (Tareas 17.1 - 17.3) |
-| **Dashboard Privado (Métricas Financieras y de Gestión)** | Sprint 18 (Tareas 18.1 - 18.6) |
-| **Dashboard Público y Mapa Geográfico** | Sprint 19 (Tareas 19.1 - 19.4) |
-| **Exportación Contable (World Office)** | Sprint 20 (Tarea 20.1) |
-| **Roles, Permisos y Autenticación JWT (Admin, Director, Tienda, Factura)** | Sprint 3 (Tareas 3.1 - 3.5) y Sprint 4 (Tareas 4.1 - 4.5) |
-| **DevOps, Docker, SSL y Backups** | Sprints 1, 2 y Sprint 20 (Tareas 20.2, 20.3) |
+```mermaid
+graph TD
+    subgraph Canales de Ingreso
+        Shopify[Shopify Storefront] -->|Webhooks HTTPS + HMAC| API
+        Wompi[Wompi / PayU / Paypal] -->|Webhooks de Pago| API
+    end
 
----
+    subgraph Plataforma Cloud (PaaS/DBaaS)
+        subgraph PaaS - Capa de Aplicación
+            AngularAdmin[Admin Angular - Vercel / Cloudflare Pages] <-->|Rest API con JWT| API[NestJS API - Render / Cloud Run]
+            API -->|Jobs en Cola| Queue[Redis / BullMQ]
+            Queue -->|Worker Asíncrono| PDFWorker[PDF Generator Engine]
+        end
 
-## 2. Plan Técnico Semana a Semana (20 Sprints)
+        subgraph DBaaS - Capa de Datos
+            API <-->|Conexión Pooling PgBouncer| DB[(PostgreSQL + PostGIS)]
+            PDFWorker -->|Guardado de Adjuntos| Storage[Cloud Object Storage - AWS S3 / R2]
+        end
+    end
 
-### 📅 SPRINT 1 (Semana 1): Infraestructura de Servidor y PostgreSQL Dedicado
-*   **Tarea 1.1 [DevOps] - Aprovisionamiento y Hardening de PostgreSQL**
-    *   *Descripción:* Instalar y configurar PostgreSQL 15+ en el servidor dedicado/VPS. Configurar el puerto `5432` con encriptación SSL en tránsito (`force_ssl=on`) y restringir accesos mediante archivo `pg_hba.conf` para aceptar conexiones únicamente desde las IPs del backend y del desarrollador.
-    *   *DoD:* Conexión exitosa desde PGAdmin utilizando túnel SSL verificado.
-*   **Tarea 1.2 [Backend] - Configuración de Migraciones ORM**
-    *   *Descripción:* Inicializar Prisma (Node.js) o Alembic (Python) en el backend. Configurar variables de entorno `.env` con la cadena de conexión cifrada.
-    *   *DoD:* Migración de prueba (`init`) ejecutada y guardada en base de datos.
-*   **Tarea 1.3 [Backend] - Definición del Esquema de Roles y Permisos**
-    *   *Descripción:* Crear migraciones para las tablas relacionales `roles`, `permissions` y `role_permissions` en PostgreSQL. Escribir un script de seed conteniendo los roles: `Administrador`, `Director`, `Operador Tienda`, y `Facturador`.
-    *   *DoD:* Tablas existentes en BD y script de seed ejecutado cargando los roles estándar.
-*   **Tarea 1.4 [Frontend] - Inicialización de Angular Corporativo**
-    *   *Descripción:* Generar el proyecto Angular (`ng new`) configurando SCSS y enrutamiento modular. Integrar el framework visual (Tailwind CSS o Angular Material).
-    *   *DoD:* Ejecución de `ng build` exitosa sin errores de compilación.
-*   **Tarea 1.5 [Frontend] - Setup de Ambientes y Variables Globals**
-    *   *Descripción:* Configurar variables del backend (`API_URL`, `TIMEOUT`) en los archivos `environment.ts` y `environment.prod.ts`.
-    *   *DoD:* Variables cargadas dinámicamente según la compilación elegida.
+    subgraph Canales de Salida
+        API -->|Notificación Transaccional| WhatsApp[WhatsApp Cloud API]
+        API -->|Envío de Certificados| SMTP[Nodemailer / SendGrid]
+        DB -->|Conexión Directa SQL| Looker[Looker Studio / Reportes]
+    end
+```
 
 ---
 
-### 📅 SPRINT 2 (Semana 2): Boilerplate API, Dockerización y Capa HTTP Angular
-*   **Tarea 2.1 [Backend] - Estructuración del Boilerplate Backend**
-    *   *Descripción:* Diseñar e implementar la estructura del API backend basada en controladores (Controllers), servicios (Services) y repositorios (Repositories).
-    *   *DoD:* El endpoint `/api/health` retorna estado `UP` en formato JSON.
-*   **Tarea 2.2 [Backend] - Middleware Global de Excepciones y Logs de Auditoría**
-    *   *Descripción:* Crear un manejador global de excepciones para interceptar errores de servidor y base de datos, mapeándolos en la tabla `audit_logs` (id, user_id, action, ip_address, timestamp).
-    *   *DoD:* Respuestas fallidas retornan código HTTP controlado en vez de stack traces expuestos.
-*   **Tarea 2.3 [DevOps] - Dockerización de Desarrollo Local**
-    *   *Descripción:* Configurar `Dockerfile` para la API backend y un archivo `docker-compose.yml` que levante el contenedor de PostgreSQL y el backend sincronizados en una red Docker interna.
-    *   *DoD:* Ejecutar `docker-compose up` levanta el ambiente completo local de forma autónoma.
-*   **Tarea 2.4 [Frontend] - Arquitectura Angular Core y Shared**
-    *   *Descripción:* Crear los directorios `core/` (servicios globales, interceptores), `shared/` (componentes comunes), y `modules/` (módulos funcionales lazy-loaded).
-    *   *DoD:* Estructura de carpetas libre de importaciones circulares en el código.
-*   **Tarea 2.5 [Frontend] - Interceptor HTTP de Notificaciones**
-    *   *Descripción:* Programar un interceptor HTTP en Angular que intercepte errores de backend (400, 500, etc.) y muestre automáticamente un mensaje Toast (alerta visual) en la pantalla del usuario.
-    *   *DoD:* Respuestas fallidas de la API disparan la alerta en el navegador.
+## 2. Plan de Sprints Semana a Semana (Sprints 1 a 20)
+
+### 📅 SPRINT 1 (Semana 1): Cimientos Cloud, DBaaS y Estructura Angular Base
+> [!IMPORTANT]
+> **Mitigación DevOps:** Se descarta la configuración manual de un VPS (SSH, Nginx, cortafuegos manuales). En su lugar, se automatiza la infraestructura mediante un PostgreSQL gestionado (DBaaS) y despliegue continuo en PaaS.
+> **Mitigación Migración:** Se adelanta el análisis y la ingeniería inversa del archivo de Access en el Sprint 1 para evitar cuellos de botella en el Sprint 6.
+
+*   **Tarea 1.1 [DevOps/BD] - Aprovisionamiento del DBaaS PostgreSQL**
+    *   *Descripción:* Crear e instanciar la base de datos en un servicio gestionado (AWS RDS, GCP Cloud SQL o Neon). Habilitar la extensión **PostGIS** (`CREATE EXTENSION postgis;`) para la geolocalización avanzada del Sprint 19. Configurar límites de pool de conexiones mediante PgBouncer.
+    *   *DoD (Definición de Done):* Conexión exitosa al DBaaS utilizando SSL forzado y autenticación segura.
+*   **Tarea 1.2 [Backend] - Configuración de Migraciones ORM (Prisma)**
+    *   *Descripción:* Inicializar Prisma en el backend de NestJS. Diseñar e implementar el esquema SQL para las tablas base: `roles`, `permissions` y `role_permissions`.
+    *   *DoD:* Migración inicial ejecutada y verificada en la base de datos cloud mediante `npx prisma migrate status`.
+*   **Tarea 1.3 [Data] - Ingeniería Inversa y Perfilado de Access**
+    *   *Descripción:* Extraer el esquema relacional y un volcado de prueba de la base de datos Microsoft Access. Mapear inconsistencias de datos, columnas nulas y definir la matriz de homologación hacia el nuevo esquema.
+    *   *DoD:* Documento de mapeo de datos Access-Postgres aprobado y tipos de datos de origen definidos.
+*   **Tarea 1.4 [Frontend] - Inicialización de Angular 18**
+    *   *Descripción:* Crear el frontend Angular con enrutamiento y Tailwind CSS. Configurar ambientes (`environment.ts`) dinámicos.
+    *   *DoD:* Aplicación Angular desplegada en Vercel o Cloudflare Pages con CI/CD automático desde la rama `main` de GitHub.
+
+---
+
+### 📅 SPRINT 2 (Semana 2): Boilerplate API, CI/CD Automático y Capa de Comunicaciones Angular
+*   **Tarea 2.1 [DevOps] - Pipeline CI/CD del Backend**
+    *   *Descripción:* Configurar despliegue continuo (CD) en la plataforma PaaS (ej. Render/Railway) enlazado al repositorio GitHub. Al hacer push a `develop`, la plataforma compila el Dockerfile de NestJS de forma automática.
+    *   *DoD:* Push a la rama de git desencadena un deploy automático exitoso visible por URL pública HTTPS.
+*   **Tarea 2.2 [Backend] - Estructura de NestJS y Manejador Global de Excepciones**
+    *   *Descripción:* Configurar la arquitectura interna de NestJS (Modules, Controllers, Services, Repositories). Crear un filtro global de excepciones para registrar errores inesperados del sistema en la tabla `audit_logs`.
+    *   *DoD:* Peticiones fallidas devuelven un error controlado estándar, previniendo la fuga de información interna de base de datos.
+*   **Tarea 2.3 [Frontend] - Esqueleto Administrativo y Captura de Errores**
+    *   *Descripción:* Diseñar la estructura de módulos Angular y el interceptor HTTP global. Si la API backend retorna errores 400/500, el cliente los intercepta y los muestra mediante notificaciones Toast.
+    *   *DoD:* Un request fallido simulado dispara la alerta toast en pantalla.
+*   **Tarea 2.4 [Data] - Limpieza Previa del Dataset Histórico**
+    *   *Descripción:* Crear scripts de limpieza en Node/Python para normalizar los números telefónicos y estructurar las direcciones inválidas de Access basándose en la geografía local.
+    *   *DoD:* Dataset histórico exportado a CSV limpio listo para el cargador.
 
 ---
 
 ### 📅 SPRINT 3 (Semana 3): Base de Datos de Usuarios y Autenticación JWT
-*   **Tarea 3.1 [Backend] - Esquema SQL de Usuarios**
-    *   *Descripción:* Crear e implementar la tabla `users` (id, email, password_hash, first_name, last_name, role_id, is_active, created_at, updated_at).
-    *   *DoD:* Llave foránea de `role_id` apuntando correctamente a la tabla `roles`.
-*   **Tarea 3.2 [Backend] - Endpoint de Registro Seguro (Bcrypt)**
-    *   *Descripción:* Implementar el endpoint `POST /api/auth/register` (privado para Administradores). Cifrar las contraseñas usando la librería `bcrypt` con un salt de 10 iteraciones.
-    *   *DoD:* Guardar un usuario almacena la contraseña de forma irreversible en PostgreSQL.
-*   **Tarea 3.3 [Backend] - Endpoint de Login y Firma JWT**
-    *   *Descripción:* Programar el endpoint `POST /api/auth/login`. Al autenticar con éxito, firma y retorna un token JWT que contenga el `userId` y el `role` del usuario (expiración: 8 horas).
-    *   *DoD:* Inicio de sesión correcto retorna token JWT y datos de perfil en formato JSON.
-*   **Tarea 3.4 [Frontend] - Servicio Angular de Autenticación**
-    *   *Descripción:* Implementar `AuthService` en Angular para consumir la API de login, almacenar el JWT en `localStorage`, y manejar el estado de sesión activa mediante un `BehaviorSubject`.
-    *   *DoD:* Almacenamiento correcto del token JWT verificado en el navegador del usuario.
-*   **Tarea 3.5 [Frontend] - Formulario de Login Reactivo**
-    *   *Descripción:* Desarrollar la vista de Login en Angular con validaciones en tiempo real para correos y caracteres de contraseña.
+*   **Tarea 3.1 [Backend] - Esquema de Usuarios e Inserción de Roles**
+    *   *Descripción:* Modelar en Prisma la tabla `users` (id, email, password_hash, role_id, is_active). Ejecutar script de seed para roles (`Administrador`, `Director`, `Operador Tienda`, `Facturador`).
+    *   *DoD:* Llave foránea verificada y tabla poblada.
+*   **Tarea 3.2 [Backend] - Endpoint de Registro y Encriptación Bcrypt**
+    *   *Descripción:* Implementar `POST /api/auth/register`. Cifrar las contraseñas usando `bcrypt` con un factor de trabajo salt de 10.
+    *   *DoD:* Las contraseñas en la base de datos son de solo lectura mediante hash irreversible.
+*   **Tarea 3.3 [Backend] - Autenticación y Generación de Tokens JWT**
+    *   *Descripción:* Implementar `POST /api/auth/login`. Al ingresar credenciales correctas, firmar un token JWT (expiración: 8 horas) que incluya el ID del usuario y su rol.
+    *   *DoD:* Endpoint retorna token JWT y datos públicos de perfil en formato JSON estándar.
+*   **Tarea 3.4 [Frontend] - Servicio Angular de Sesión y Reactive Login**
+    *   *Descripción:* Desarrollar la pantalla de Login reactiva y el servicio `AuthService` para guardar el JWT en `localStorage`.
     *   *DoD:* Formulario bloquea el botón de envío si los campos son inválidos.
 
 ---
 
-### 📅 SPRINT 4 (Semana 4): Roles, Permisos y Layout Administrativo
-*   **Tarea 4.1 [Frontend] - Guardias de Rutas (AuthGuard y RoleGuard)**
-    *   *Descripción:* Crear guardias en Angular para proteger el acceso a rutas. Si no hay token JWT, redirige a `/login`. Si el rol del token no cuenta con los permisos de la ruta, bloquea el acceso.
-    *   *DoD:* Navegar a `/admin/config` con un rol no autorizado retorna pantalla de acceso denegado.
-*   **Tarea 4.2 [Frontend] - Layout Administrativo Responsive**
-    *   *Descripción:* Programar el cascarón visual del panel administrativo (menú lateral colapsable, barra superior de perfil, y contenedor dinámico para rutas hijas).
-    *   *DoD:* Diseño adaptable a smartphones y laptops sin deformaciones.
-*   **Tarea 4.3 [Frontend] - Navegación Adaptativa según Permisos**
-    *   *Descripción:* Decodificar los permisos del token JWT y ocultar/mostrar elementos del menú lateral del Layout basándose en ellos (RBAC).
-    *   *DoD:* El menú de un usuario con rol de "Facturador" no muestra opciones administrativas.
-*   **Tarea 4.4 [Backend] - API para Administración de Usuarios**
-    *   *Descripción:* Desarrollar los endpoints de administración: `GET /api/users` (paginado) y `PUT /api/users/:id` (para activar, desactivar o cambiar de rol a usuarios).
-    *   *DoD:* APIs bloquean peticiones que no vengan de un token JWT con rol "Administrador".
-*   **Tarea 4.5 [Frontend] - Interceptor para Inyección de Token**
-    *   *Descripción:* Configurar un interceptor HTTP en Angular que agregue de forma automática la cabecera `Authorization: Bearer <token>` en todas las peticiones a la API.
+### 📅 SPRINT 4 (Semana 4): Control de Accesos por Roles y Layout Base
+*   **Tarea 4.1 [Frontend] - Guardias de Rutas y Menú Lateral Adaptativo**
+    *   *Descripción:* Crear `AuthGuard` y `RoleGuard` en Angular para restringir accesos según roles decodificados del JWT. Construir el layout administrativo modular (sidebar, navbar, breadcrumbs).
+    *   *DoD:* Intentar acceder a `/admin` sin sesión redirige a `/login`.
+*   **Tarea 4.2 [Frontend] - Interceptor para Adjuntar Token JWT**
+    *   *Descripción:* Programar un interceptor HTTP en Angular que agregue de forma automática la cabecera `Authorization: Bearer <token>` en todas las llamadas API salientes.
     *   *DoD:* El backend recibe e identifica el token JWT en las cabeceras HTTP de Angular.
+*   **Tarea 4.3 [Backend] - Gestión de Cuentas Administrativas**
+    *   *Descripción:* Endpoint `GET /api/users` (con filtros de rol) y `PUT /api/users/:id` protegidos por rol de Administrador.
+    *   *DoD:* Peticiones desde un token no administrador reciben código 403 Forbidden.
 
 ---
 
 ### 📅 SPRINT 5 (Semana 5): Módulo CRM (Clientes y Donantes)
-*   **Tarea 5.1 [Backend] - Esquema SQL del CRM**
-    *   *Descripción:* Crear la tabla `clients_donors` (id, name, doc_type, doc_number, phone, email, address, city, commune, neighborhood, status [Activo, Inactivo], metadata).
-    *   *DoD:* Índices creados para búsquedas eficientes en las columnas `doc_number` y `email`.
+*   **Tarea 5.1 [Backend] - Estructura SQL del CRM**
+    *   *Descripción:* Modelar la tabla `clients_donors` (id, name, doc_type, doc_number, phone, email, address, city, commune, neighborhood, status, historical_id, created_at). Crear índices en `doc_number` e `email`.
+    *   *DoD:* Tabla creada e indexada en PostgreSQL.
 *   **Tarea 5.2 [Backend] - Endpoints CRUD del CRM**
-    *   *Descripción:* Desarrollar endpoints `GET /api/crm/clients` (filtrado por documento, nombre o tipo de contacto), `POST /api/crm/clients`, y `PUT /api/crm/clients/:id`.
-    *   *DoD:* Endpoints responden exitosamente con datos del cliente y manejan de forma segura colisiones de registros duplicados por identificación.
-*   **Tarea 5.3 [Frontend] - Estructura Angular del CRM**
-    *   *Descripción:* Generar el módulo Lazy-loaded `crm` y configurar rutas correspondientes para el listado e ingreso de clientes.
-    *   *DoD:* Módulo registrado y accesible desde la barra de navegación lateral.
-*   **Tarea 5.4 [Frontend] - Tabla CRM con Paginación Servidor**
-    *   *Descripción:* Programar vista en Angular para listar clientes con buscador interactivo y control de paginación integrada con los parámetros de la API backend.
-    *   *DoD:* Filtrado de clientes por texto busca en el servidor y actualiza la lista.
-*   **Tarea 5.5 [Frontend] - Formulario de Creación de Clientes**
-    *   *Descripción:* Diseñar el formulario reactivo de registro de cliente con validaciones de campos telefónicos, cédula y correo.
-    *   *DoD:* Guardar datos crea exitosamente el registro en PostgreSQL y refresca la tabla del CRM.
+    *   *Descripción:* Desarrollar endpoints `GET /api/crm/clients` (con paginación y búsqueda por identificación), `POST /api/crm/clients`, y `PUT /api/crm/clients/:id`.
+    *   *DoD:* Búsqueda responde en menos de 200ms en base de datos.
+*   **Tarea 5.3 [Frontend] - Interfaz Angular de Gestión de Clientes**
+    *   *Descripción:* Diseñar la grilla de CRM con paginación integrada al backend, filtros en tiempo real y formulario reactivo para creación de nuevos contactos.
+    *   *DoD:* Clic en guardar crea el cliente y refresca la tabla.
 
 ---
 
-### 📅 SPRINT 6 (Semana 6): Migración e Integridad de Access a PostgreSQL
-*   **Tarea 6.1 [Data/Backend] - Script de Extracción y Limpieza ETL**
-    *   *Descripción:* Escribir script en Node/Python que lea la base de datos Access (`.mdb`/`.accdb`), analice y corrija registros inválidos (emails mal formateados, teléfonos inconsistentes).
-    *   *DoD:* Limpieza automática de datos nulos y formato unificado de números telefónicos.
-*   **Tarea 6.2 [Data/Backend] - Carga y Mapeo en Base de Datos Postgres**
-    *   *Descripción:* Ejecutar script ETL para insertar masivamente los registros históricos en la tabla `clients_donors`, mapeando el ID de Access en la columna `historical_id`.
-    *   *DoD:* Registros históricos cargados e indexados correctamente en PostgreSQL.
-*   **Tarea 6.3 [Backend] - Log de Auditoría de la Migración**
-    *   *Descripción:* Guardar logs detallados del proceso de migración conteniendo el total de registros exitosos e inválidos descartados.
-    *   *DoD:* Reporte de auditoría de migración generado y archivado.
-*   **Tarea 6.4 [Frontend] - Vista de Perfil y Detalle del Cliente**
-    *   *Descripción:* Diseñar la pantalla de ficha de cliente en Angular que muestre su historial de compras y donaciones, así como sus datos históricos de la migración.
-    *   *DoD:* Ficha del cliente carga correctamente los datos de los usuarios migrados.
+### 📅 SPRINT 6 (Semana 6): Ejecución de la Migración Access (ETL)
+*   **Tarea 6.1 [Data] - Script ETL de Carga Masiva**
+    *   *Descripción:* Desarrollar el cargador final en Node/Python que lea el dataset pre-limpiado y realice inserciones masivas (Bulk Insert) a la tabla `clients_donors` en PostgreSQL, utilizando transacciones de base de datos.
+    *   *DoD:* Script inserta miles de registros en menos de 5 minutos de forma íntegra.
+*   **Tarea 6.2 [Data/QA] - Validación de Integridad de Datos**
+    *   *Descripción:* Desarrollar consultas de validación de recuentos e integridad para comprobar que la cantidad de registros en Access corresponde exactamente a los importados en PostgreSQL.
+    *   *DoD:* Reporte de validación de migración firmado sin discrepancias de registros.
+*   **Tarea 6.3 [Frontend] - Ficha de Cliente y Perfil Histórico**
+    *   *Descripción:* Diseñar la pantalla de detalles del cliente para visualizar su información de contacto detallada.
+    *   *DoD:* Ficha del cliente carga e integra el historial del usuario migrado.
 
 ---
 
@@ -175,58 +162,59 @@ Este documento contiene la planificación detallada y exhaustiva, diseñada para
 
 ---
 
-### 📅 SPRINT 9 (Semana 9): Receptor de Webhooks de Shopify y Seguridad
-*   **Tarea 9.1 [Backend] - Endpoint del Webhook de Shopify**
-    *   *Descripción:* Desarrollar el endpoint público `POST /api/webhooks/shopify/orders` listo para recibir notificaciones HTTP POST de Shopify.
-    *   *Criterio de Aceptación:* El endpoint responde con estado 200 al recibir peticiones HTTP básicas.
-*   **Tarea 9.2 [Backend] - Validación de Firma Criptográfica HMAC**
-    *   *Descripción:* Implementar la verificación de firma digital de Shopify. Comparar el header `X-Shopify-Hmac-SHA256` con el hash calculado del cuerpo crudo del request utilizando la clave secreta compartida en Shopify.
-    *   *Criterio de Aceptación:* Peticiones sin firma válida o con firma alterada reciben respuesta 401 Unauthorized y son bloqueadas.
-*   **Tarea 9.3 [Backend] - Tabla de Auditoría de Webhooks**
-    *   *Descripción:* Crear la tabla `shopify_sync_logs` (id, payload, status [Success, Error], error_message, timestamp).
-    *   *Criterio de Aceptación:* Cada llamada al Webhook registra una fila en la base de datos con su estado de procesamiento.
+### 📅 SPRINT 9 (Semana 9): Shopify Webhook & Pasarela Wompi (Fase 1 - Core de Ingresos)
+> [!IMPORTANT]
+> **Mitigación Cuello de Botella:** Para evitar sobrecargar el desarrollo en una única entrega, el Sprint 9 prioriza el Core de ingresos (Shopify + Wompi). Las demás pasarelas se desplazan a sprints posteriores.
+> **Mitigación Tolerancia a Fallos:** Se implementan mecanismos de **Idempotencia** (evitar duplicar pedidos si Shopify reintenta el webhook) y validación criptográfica de firmas.
+
+*   **Tarea 9.1 [Backend] - Endpoint de Shopify Webhooks y Firma HMAC**
+    *   *Descripción:* Desarrollar `POST /api/webhooks/shopify/orders`. Validar firma criptográfica usando header `X-Shopify-Hmac-SHA256` y llave secreta de Shopify.
+    *   *DoD:* El backend bloquea peticiones externas que no cuenten con firma de Shopify válida (retorna 401).
+*   **Tarea 9.2 [Backend] - Mecanismo de Idempotencia para Compras**
+    *   *Descripción:* Al recibir la orden, verificar si la identificación única de Shopify ya existe en la base de datos. Si existe, descartar procesamiento para evitar duplicados en base de datos.
+    *   *DoD:* Enviar el mismo payload dos veces consecutivas registra una sola orden en base de datos.
+*   **Tarea 9.3 [Backend] - Webhook de Pasarela Wompi (Donaciones Core)**
+    *   *Descripción:* Implementar `POST /api/webhooks/wompi`. Escuchar transacciones aprobadas, crear/asociar el donante en `clients_donors` e insertar el registro en `donations` de forma transaccional.
+    *   *DoD:* Recibir pago aprobado de Wompi actualiza de forma segura la base de datos local.
 
 ---
 
-### 📅 SPRINT 10 (Semana 10): Procesamiento e Integración de Pedidos Shopify
-*   **Tarea 10.1 [Backend] - Mapeo de Payload de Shopify a Base de Datos**
-    *   *Descripción:* Desarrollar servicio para procesar el JSON de Shopify. Si el cliente no existe por correo, crearlo en `clients_donors`. Luego, mapear la orden y sus productos correspondientes.
-    *   *Criterio de Aceptación:* El pedido de Shopify se inserta en las tablas locales `orders` y `order_items` con origen `Shopify`.
-*   **Tarea 10.2 [Backend] - Homologación de Productos de Shopify**
-    *   *Descripción:* Programar la conversión entre el SKU/ID de Shopify de los productos comprados y los IDs internos del catálogo local de la base de datos.
-    *   *Criterio de Aceptación:* Los productos de Shopify se mapean a los productos de base de datos local de forma exacta.
-*   **Tarea 10.3 [Frontend] - Consola de Logs de Sincronización en Angular**
-    *   *Descripción:* Diseñar una pantalla en Angular para visualizar la tabla `shopify_sync_logs` para auditar errores de sincronización y disparar reintentos de Webhook si falla la red.
-    *   *Criterio de Aceptación:* Vista visualiza logs de Shopify correctamente con códigos de colores (verde para éxito, rojo para error).
+### 📅 SPRINT 10 (Semana 10): Procesamiento de Pedidos Shopify y Logs de Integración
+*   **Tarea 10.1 [Backend] - Mapeo de Payload Completo Shopify**
+    *   *Descripción:* Lógica de procesamiento de pedidos Shopify: mapear variantes de producto, SKU, dirección de entrega y asociar al cliente por email.
+    *   *DoD:* Pedidos de Shopify se listan en el panel administrativo de Angular con origen `Shopify` de forma correcta.
+*   **Tarea 10.2 [Frontend] - Dashboard de Logs y Errores de Sincronización**
+    *   *Descripción:* Diseñar pantalla en Angular para ver logs de Webhooks fallidos de Shopify/Wompi, detallando el payload y el error del servidor, con opción de reintento manual.
+    *   *DoD:* Los errores de webhooks son visibles y depurables desde la interfaz administrativa de Angular.
 
 ---
 
-### 📅 SPRINT 11 (Semana 11): Captura de Donaciones de Pasarelas de Pago (Wompi, PayU, PayPal, Frecuenti)
-*   **Tarea 11.1 [Backend] - Estructura SQL de Donaciones**
-    *   *Descripción:* Crear e implementar la tabla `donations` (id, client_id, amount, date, payment_gateway, transaction_id, status, campaign, concept, created_at).
-    *   *Criterio de Aceptación:* Migración PostgreSQL aplicada correctamente.
-*   **Tarea 11.2 [Backend] - Endpoint de Captura de Webhook de Wompi**
-    *   *Descripción:* Desarrollar `POST /api/webhooks/wompi` para capturar el cambio de estado de transacciones de donación en línea.
-    *   *Criterio de Aceptación:* Transacciones con estado `APPROVED` se registran automáticamente en la tabla `donations`. Peticiones duplicadas por reintentos de red se descartan de forma segura.
-*   **Tarea 11.3 [Backend] - Webhooks de PayU y PayPal**
-    *   *Descripción:* Desarrollar receptores y parseadores para las notificaciones de PayU y PayPal de forma análoga a Wompi.
-    *   *Criterio de Aceptación:* Registros de pagos exitosos de donaciones ingresan a base de datos de forma segura.
-*   **Tarea 11.4 [Frontend] - Módulo Angular de Donaciones**
-    *   *Descripción:* Crear pantalla en Angular para listar las donaciones aprobadas en formato de tabla, con filtros por pasarela, campaña y rango de fechas.
-    *   *Criterio de Aceptación:* Listado interactivo en Angular muestra las donaciones reales en la base de datos PostgreSQL.
+### 📅 SPRINT 11 (Semana 11): Pasarelas de Pago Secundarias (Fase 2 - PayU, PayPal, Frecuenti)
+*   **Tarea 11.1 [Backend] - Integración de Webhooks de PayU**
+    *   *Descripción:* Desarrollar `POST /api/webhooks/payu`. Validar la firma criptográfica combinando el API Key, merchantId, referenceCode y value de la transacción.
+    *   *DoD:* Transacciones de PayU aprobadas ingresan exitosamente a la base de datos de la fundación.
+*   **Tarea 11.2 [Backend] - Integración de API de PayPal**
+    *   *Descripción:* Implementar la captura de pagos de PayPal mediante la verificación asíncrona de Instant Payment Notification (IPN).
+    *   *DoD:* Pagos aprobados de PayPal registrados en la tabla `donations`.
+*   **Tarea 11.3 [Frontend] - Listado Unificado de Donaciones por Pasarela**
+    *   *Descripción:* Panel en Angular para ver donaciones en línea, con filtros por pasarela (Wompi, PayU, PayPal) y estados.
+    *   *DoD:* La tabla muestra y filtra las transacciones unificadas en tiempo real de forma correcta.
 
 ---
 
-### 📅 SPRINT 12 (Semana 12): Motor de Certificados de Donación PDF
-*   **Tarea 12.1 [Backend] - Tabla y Consecutivos de Certificados**
-    *   *Descripción:* Diseñar la tabla `certificates` (id, donation_id, certificate_number, issue_date, pdf_path, status). Configurar el número consecutivo para que sea único e incremental de forma segura.
-    *   *Criterio de Aceptación:* Llave única de consecutivo contable integrada en PostgreSQL.
-*   **Tarea 12.2 [Backend] - Motor de Generación de PDF en el Backend**
-    *   *Descripción:* Programar un servicio en el backend usando una librería como PDFKit para compilar una plantilla PDF con el logo oficial de la Fundación, firma autorizada, datos del donante, valor monetario (letras y números), y consecutivo contable único.
-    *   *Criterio de Aceptación:* Generación de PDF exitosa guardándose localmente en el servidor.
-*   **Tarea 12.3 [Frontend] - Botón de Descarga Directa en Angular**
-    *   *Descripción:* Diseñar una interfaz interactiva dentro de la grilla de certificados en Angular para permitir la descarga directa del archivo PDF generado.
-    *   *Criterio de Aceptación:* Clic en el botón descarga el PDF con el nombre formateado (`certificado_consecutivo.pdf`) al computador del usuario.
+### 📅 SPRINT 12 (Semana 12): Motor de Certificados PDF (Asíncrono y Desacoplado)
+> [!IMPORTANT]
+> **Mitigación Arquitectura:** Generar PDFs en la misma petición HTTP de la API genera timeout y sobrecarga de CPU. Se implementa un **diseño asíncrono basado en cola de tareas (BullMQ + Redis)**. Los archivos se guardan en un **Cloud Object Storage (AWS S3 / Cloudflare R2)** en vez del almacenamiento local.
+
+*   **Tarea 12.1 [Backend/DevOps] - Setup de Cola de Tareas (BullMQ + Redis)**
+    *   *Descripción:* Instalar y configurar un contenedor Redis ligero y configurar la librería `BullMQ` en NestJS para procesar tareas en segundo plano.
+    *   *DoD:* Conexión y encolamiento de tareas de prueba verificado en logs del servidor.
+*   **Tarea 12.2 [Backend] - Worker Asíncrono de Generación de PDF**
+    *   *Descripción:* Desarrollar el worker encargado de procesar la cola. Lee la plantilla del certificado, genera el PDF y lo sube de forma automática a AWS S3 o Cloudflare R2.
+    *   *DoD:* Al crearse una donación, el worker genera el PDF en segundo plano y almacena la URL de S3 en la tabla `certificates` de Postgres.
+*   **Tarea 12.3 [Frontend] - Visualizador de Certificados y Descargas**
+    *   *Descripción:* Diseñar el listado de certificados en Angular conectando el botón de descarga directamente a la URL segura y temporal (Pre-signed URL) de S3.
+    *   *DoD:* Clic en descargar abre o descarga el PDF guardado en el Cloud Storage.
 
 ---
 
@@ -269,20 +257,25 @@ Este documento contiene la planificación detallada y exhaustiva, diseñada para
 
 ---
 
-### 📅 SPRINT 16 (Semana 16): Descuento Automático de Stock (Lógica Transaccional)
-*   **Tarea 16.1 [Backend] - Servicio Transaccional de Descuento de Stock**
-    *   *Descripción:* Programar a nivel de backend: cuando el estado de un pedido (manual o de Shopify) cambie a "En preparación", el sistema debe ejecutar una transacción SQL para restar de forma automática el stock del producto de la tabla `products` y sus correspondientes insumos de las tablas `inputs` y `companions` basado en sus recetas.
-    *   *Criterio de Aceptación:* Una compra de una pulsera descuenta una unidad del stock de la pulsera, más los insumos definidos en su receta (hilo, dije, bolsa de empaque).
-*   **Tarea 16.2 [Backend] - Prevención de Condiciones de Carrera (Race Conditions)**
-    *   *Descripción:* Implementar sentencias de bloqueo de filas (`SELECT ... FOR UPDATE` en base de datos) durante las transacciones de actualización de stock para evitar lecturas sucias en compras simultáneas.
-    *   *Criterio de Aceptación:* Peticiones simultáneas concurrentes descuentan de forma consecutiva y exacta sin generar stock negativo.
-*   **Tarea 16.3 [Frontend] - Validaciones Visuales de Falta de Stock**
-    *   *Descripción:* Configurar la vista de despacho en Angular para mostrar advertencias si no hay existencias físicas suficientes para procesar un pedido entrante.
-    *   *Criterio de Aceptación:* Botón de despacho muestra advertencia y pide confirmación manual de ajuste de stock si no hay mercancía suficiente.
+### 📅 SPRINT 16 (Semana 16): Descuento Automático Transaccional de Stock (Concurrente y Seguro)
+> [!IMPORTANT]
+> **Mitigación Concurrencia:** Compras simultáneas en Shopify de un producto con stock limitado pueden causar stock negativo (Condiciones de carrera). Se implementa bloqueo pesimista mediante consultas nativas `SELECT ... FOR UPDATE` a nivel de base de datos PostgreSQL en la transacción.
+
+*   **Tarea 16.1 [Backend] - Servicio Transaccional de Descuento de Existencias**
+    *   *Descripción:* Desarrollar una transacción SQL que busque y bloquee la fila del producto (`SELECT * FROM products WHERE id = ? FOR UPDATE`). Si hay disponibilidad, descuenta el stock de productos, insumos y acompañantes.
+    *   *DoD:* Si no hay stock suficiente de insumos en la receta, la transacción falla, hace rollback completo y cancela el cambio de estado del pedido.
+*   **Tarea 16.2 [Backend/QA] - Pruebas de Carga de Concurrencia**
+    *   *Descripción:* Escribir pruebas unitarias / de integración simulando 10 peticiones simultáneas de descuento de stock de un producto con existencias en valor 1.
+    *   *DoD:* Solo 1 petición debe tener éxito; las 9 restantes deben rebotar con error controlado de stock insuficiente.
+*   **Tarea 16.3 [Frontend] - Indicador Visual de Stock y Advertencia**
+    *   *Descripción:* Alertas visuales y bloqueos de botones de envío en Angular si el sistema detecta que el inventario local no puede cumplir con el pedido manual.
+    *   *DoD:* El operador de tienda física visualiza advertencia clara y no puede forzar despachos sin inventario disponible.
 
 ---
 
 ### 📅 SPRINT 17 (Semana 17): Notificaciones por WhatsApp Business API
+
+### Lista de Tareas del Sprint 17:
 *   **Tarea 17.1 [Backend] - Integración del SDK/Client de WhatsApp API**
     *   *Descripción:* Programar en backend la integración para realizar llamadas HTTP POST seguras a la API de WhatsApp Cloud (o proveedor Twilio) con tokens de portador permanentes.
     *   *Criterio de Aceptación:* Envío exitoso de mensaje básico de prueba a número del desarrollador.
@@ -295,7 +288,9 @@ Este documento contiene la planificación detallada y exhaustiva, diseñada para
 
 ---
 
-### 📅 SPRINT 18 (Semana 18): Dashboard Privado y Métricas de Gestión
+## 📅 SPRINT 18 (Semana 18): Dashboard Privado y Métricas de Gestión
+
+### Lista de Tareas del Sprint 18:
 *   **Tarea 18.1 [Backend] - Queries SQL Agregadas para Ventas y Donaciones**
     *   *Descripción:* Desarrollar las consultas SQL que calculen las ventas agrupadas por rangos temporales (día, mes, trimestre, semestre, año) e ingresos de donaciones segmentados por campaña activa y pasarela de pago.
     *   *DoD:* Endpoint retorna datos consolidados históricos en menos de 200 ms.
@@ -317,16 +312,19 @@ Este documento contiene la planificación detallada y exhaustiva, diseñada para
 
 ---
 
-### 📅 SPRINT 19 (Semana 19): Dashboard Público y Visualización Geográfica de Impacto
-*   **Tarea 19.1 [Backend] - Endpoint Público de Impacto Social**
-    *   *Descripción:* Desarrollar `GET /api/reports/dashboard-public` que entregue métricas acumuladas (Total donado global, número de donantes por ciudad) sin exponer nombres, documentos, correos o montos individuales de las personas.
-    *   *DoD:* El endpoint es público (no requiere token JWT) y no expone datos protegidos bajo la ley de Habeas Data.
-*   **Tarea 19.2 [Backend] - Servicio de Geolocalización de Donaciones**
-    *   *Descripción:* Escribir una consulta geoespacial que agrupe las direcciones de la tabla `clients_donors` por comunas, barrios o zonas municipales, retornando coordenadas de coordenadas para pintar en mapas.
-    *   *DoD:* Datos agregados geográficamente listos en formato GeoJSON.
+### 📅 SPRINT 19 (Semana 19): Dashboard Público y Visualización con Base de Datos Espacial (PostGIS)
+> [!IMPORTANT]
+> **Mitigación Arquitectura:** Agrupar y buscar donantes por zonas geográficas de forma tradicional (por texto o rangos) en base de datos es ineficiente y propenso a errores. Se utiliza **PostGIS** para calcular áreas espaciales reales (polígonos de comunas/barrios) optimizado con **Índices Espaciales GIST**.
+
+*   **Tarea 19.1 [Backend] - Conversión de Direcciones a Coordenadas (Geocoding)**
+    *   *Descripción:* Implementar en la API backend un script que consuma la API de geocodificación de OpenStreetMap (Nominatim) o Google Maps para transformar las direcciones de los donantes migrados y nuevos en coordenadas `GEOMETRY(Point, 4326)`.
+    *   *DoD:* Las direcciones de los donantes se almacenan con coordenadas geográficas correctas en la base de datos PostgreSQL.
+*   **Tarea 19.2 [Backend] - Consultas Espaciales por Polígonos de Comunas**
+    *   *Descripción:* Crear endpoints de consulta que usen funciones PostGIS como `ST_Contains` o `ST_DWithin` para cruzar la ubicación de los donantes frente a los polígonos geográficos de las comunas o barrios de la ciudad.
+    *   *DoD:* Retorna el conteo y densidad de donantes por comuna de forma anonimizada en formato GeoJSON.
 *   **Tarea 19.3 [Frontend] - Integración de Mapa Interactivo (Leaflet)**
-    *   *Descripción:* Configurar la librería Leaflet en Angular. Consumir los datos geográficos de donantes agrupados y dibujarlos como burbujas de densidad de impacto en un mapa de la ciudad/región.
-    *   *Criterio de Aceptación:* El mapa renderiza los puntos geográficos de donaciones acumuladas de forma correcta y visualmente interactiva.
+    *   *Descripción:* Configurar la librería Leaflet en Angular. Consumir el GeoJSON del backend y pintar el mapa de calor de donaciones acumuladas agrupadas en clusters.
+    *   *DoD:* El mapa renderiza los puntos geográficos de donaciones acumuladas de forma correcta y visualmente interactiva.
 *   **Tarea 19.4 [Frontend] - Landing Page Pública Embebible**
     *   *Descripción:* Diseñar el Layout responsivo de la landing de impacto, integrando el mapa Leaflet, tarjetas de indicadores principales e históricos.
     *   *DoD:* Vista funciona embebida en un Iframe dentro del sitio web principal de la fundación.
@@ -334,15 +332,17 @@ Este documento contiene la planificación detallada y exhaustiva, diseñada para
 ---
 
 ### 📅 SPRINT 20 (Semana 20): Exportación Contable, QA y Despliegue Final
+
+### Lista de Tareas del Sprint 20:
 *   **Tarea 20.1 [Backend] - Generador de Plantilla CSV para World Office**
-    *   *Descripción:* Programar un generador de archivos CSV en la API. Al consultar un periodo de fechas, recolecta pedidos y transacciones, mapeándolos exactamente con las columnas, tipos de datos y códigos de cuenta del importador contable de World Office.
-    *   *DoD:* Descarga de archivo CSV que se importa exitosamente sin errores de estructura en World Office.
-*   **Tarea 20.2 [DevOps] - Despliegue en Producción y Configuración SSL**
-    *   *Descripción:* Realizar el build de producción del panel en Angular y desplegar la aplicación y la API Backend en el servidor VPS definitivo. Configurar el dominio HTTPS utilizando Let's Encrypt / Certbot.
-    *   *DoD:* Portal de administración responde de forma segura en `https://admin.santiagocorazon.org`.
+    *   *Descripción:* Programar la lógica en backend para mapear los pedidos y donaciones de un periodo de fechas a un archivo CSV estructurado según el manual técnico contable de World Office.
+    *   *Criterio de Aceptación:* Exportación exitosa descargando el archivo CSV con las cabeceras e importación correcta de prueba en World Office.
+*   **Tarea 20.2 [DevOps] - Despliegue de Producción y Configuración SSL**
+    *   *Descripción:* Realizar el build de producción del panel en Angular y desplegar la aplicación y la API Backend en el servidor VPS definitivo. Configurar Let's Encrypt para HTTPS.
+    *   *Criterio de Aceptación:* El sistema completo opera bajo el dominio final seguro `https://admin.santiagocorazon.org` con SSL válido.
 *   **Tarea 20.3 [DevOps] - Tareas Programadas de Backup (Cron Jobs)**
     *   *Descripción:* Crear e implementar un Cron Job a nivel de sistema operativo para realizar un backup diario automatizado (volcado sql) de la base de datos PostgreSQL y cargarlo en un almacenamiento seguro en la nube.
-    *   *DoD:* Script de backup configurado y primer archivo de respaldo verificado en el almacenamiento externo.
-*   **Tarea 20.4 [QA / Gestión] - Pruebas E2E de Aceptación y Cierre**
-    *   *Descripción:* Ejecutar pruebas completas de aceptación de todos los flujos integrados (Shopify webhook -> Postgres -> Inventario -> PDF -> Correo/WhatsApp). Realizar capacitación grabada al equipo de la fundación.
-    *   *DoD:* Firma del acta de entrega definitiva y transferencia exitosa de credenciales de producción.
+    *   *Criterio de Aceptación:* Verificación de que el backup diario se crea y guarda en la nube correctamente.
+*   **Tarea 20.4 [QA / Gestión] - Pruebas de Sistema, Capacitación y Firma de Acta**
+    *   *Descripción:* Realizar pruebas funcionales cruzadas de todo el flujo del software. Capacitar al personal administrativo de la fundación y realizar la firma del acta de entrega.
+    *   *Criterio de Aceptación:* Todos los flujos funcionan sin fallos, el personal sabe registrar inventarios y pedidos, y el proyecto se marca como completado y entregado.
