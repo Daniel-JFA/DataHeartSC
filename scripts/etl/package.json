@@ -1,0 +1,17 @@
+{
+  "name": "dataheart-etl",
+  "version": "1.0.0",
+  "description": "ETL script: migración de datos históricos de Supabase a PostgreSQL local",
+  "type": "module",
+  "main": "migrate.js",
+  "scripts": {
+    "migrate": "node migrate.js",
+    "migrate:dry": "node migrate.js --dry-run"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "pg": "^8.13.1"
+  }
+}
