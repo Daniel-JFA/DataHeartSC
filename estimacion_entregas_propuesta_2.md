@@ -80,49 +80,55 @@ graph TD
 
 ## 4. Plan de Entregas y Hitos Técnicos (Roadmap de 20 Semanas)
 
-El proyecto se estructura en **5 entregas funcionales**, vinculadas al cumplimiento de hitos de desarrollo técnicos:
+El proyecto se estructura en **5 entregas funcionales**, organizadas cronológicamente para evitar cuellos de botella de dependencias y optimizar la dedicación de un solo desarrollador:
 
-### Entrega 1: Servidor, PostgreSQL Propio, Custom Auth y Estructura Angular (Semanas 1 a 4)
+### Entrega 1: Consolidación de Bases de Datos, Migración de Access y Ventas Manuales (Semanas 1 a 4)
 *   **Alcance:**
-    *   Setup de la base de datos **PostgreSQL** en el servidor de producción/desarrollo.
-    *   Desarrollo de las migraciones y esquema inicial de la base de datos (Tablas de usuarios, roles, clientes, pedidos, logs de auditoría).
-    *   Desarrollo del **sistema de autenticación JWT** y encriptación de contraseñas en el Backend API.
-    *   Estructura base del frontend en **Angular** con interceptores de tokens JWT, control de rutas y roles base.
-*   **Entregable:** API con endpoints de login/registro funcionales y aplicación Angular inicial desplegada con inicio de sesión y restricciones de permisos por rol.
-*   **Criterio de Aceptación:** No es posible consultar la base de datos ni las pantallas operativas sin un Token JWT válido. El backend encripta correctamente las contraseñas al crearse nuevos usuarios.
+    *   Setup de PostgreSQL y modelado del esquema de datos consolidado (tablas para Clientes, Beneficiarios, Voluntarios, Proveedores, Productos, Insumos, Pedidos, Usuarios y Seguridad).
+    *   Módulo de seguridad con autenticación JWT y roles de usuario (RBAC).
+    *   Ejecución del script ETL para migrar la base de datos histórica de Access a las tablas consolidada de PostgreSQL.
+    *   Formulario de gestión de clientes (CRM) y registro manual de pedidos de tienda física (reemplazo de la antigua **APP Diana - Fase 1**).
+    *   Exportador de transacciones contables formateadas a CSV para World Office.
+*   **Entregable:** Base de datos corporativa completa e instanciada. Panel administrativo inicial en Angular con login seguro, buscador de clientes migrados, ingreso manual de órdenes y descarga de plantilla de exportación contable.
+*   **Criterio de Aceptación:** Toda la base de datos unificada del sistema está modelada y creada. El histórico de Access está completamente migrado. Se ingresan pedidos manuales de la tienda física y se exporta el archivo contable CSV para World Office con éxito.
 
-### Entrega 2: CRM, Registro de Pedidos y Script de Migración (Semanas 5 a 8)
+### Entrega 2: Automatización de Ingresos, Motor de Certificados y Dashboard de Monitoreo (Semanas 5 a 8)
 *   **Alcance:**
-    *   **CRM (Clientes y Donantes) en Angular:** Tablas interactivas, historial de transacciones y búsquedas.
-    *   **Gestión de Pedidos Manuales:** Formularios interactivos para la tienda física y telemercadeo en Angular.
-    *   Script ETL (Extract, Transform, Load) para migrar la base de datos histórica de Access al servidor PostgreSQL.
-*   **Entregable:** Módulos de Clientes y Pedidos en la app web de Angular y base de datos con el histórico cargado y normalizado.
-*   **Criterio de Aceptación:** Ejecución del script de migración exitoso con verificación de integridad de datos de Access a PostgreSQL. Creación exitosa de clientes y pedidos vinculados.
+    *   Endpoints de captura de Webhooks de Shopify para pedidos web en tiempo real.
+    *   Webhooks de pasarelas de pago principales (Wompi y PayU) para donaciones y compras.
+    *   Setup de cola de tareas asíncronas en segundo plano (BullMQ + Redis) para generación de PDF.
+    *   Motor de generación automatizada de certificados firmados en PDF y almacenamiento en la nube (S3/R2).
+    *   Envío automatizado de correos de agradecimiento por SMTP con el certificado adjunto.
+    *   Desarrollo de un **Tablero de Monitoreo Inicial** en Angular para ver en tiempo real ingresos de Shopify/Wompi/PayU.
+*   **Entregable:** Sistema automático de procesamiento de pagos. Panel de descargas de certificados y pantalla de estadísticas e ingresos en tiempo real.
+*   **Criterio de Aceptación:** Una transacción de pago simulada crea el cliente y la orden en segundos, genera el certificado PDF en segundo plano y envía el correo. El operador cuenta con una vista inicial en Angular para monitorear las transacciones y estadísticas básicas acumuladas.
 
-### Entrega 3: Integraciones de Ingresos (Shopify/Pasarelas) y Certificados (Semanas 9 a 12)
+### Entrega 3: Fichas de Beneficiarios, WhatsApp API y Dashboard Diana (Semanas 9 a 12)
 *   **Alcance:**
-    *   Desarrollo de endpoints de captura de Webhooks de Shopify para pedidos y de Wompi / PayU / Paypal para donaciones.
-    *   Servicio de generación de PDF en backend para certificados de donación con firma y consecutivos.
-    *   Servicio de correo saliente SMTP para envíos automáticos.
-*   **Entregable:** Panel de logs de sincronización de pasarelas en Angular y automatización de envío de certificados funcionando en segundo plano.
-*   **Criterio de Aceptación:** Una transacción simulada en Wompi o pedido en Shopify crea el registro en PostgreSQL en menos de 5 segundos, genera el certificado PDF y lo envía al correo del usuario automáticamente.
+    *   Pantallas CRUD completas en Angular para la gestión de Niños Patrocinados (Beneficiarios).
+    *   Tablero de control de órdenes en tiempo real (reemplazo de la antigua **APP Diana - Fase 2**) con control interactivo de estados de despacho.
+    *   Integración con la API Cloud de WhatsApp Business para notificaciones transaccionales automáticas (estados de pedido y enlaces de certificados).
+    *   Pasarela de pago PayPal y reportes financieros integrados con gráficos interactivos (reemplazo de Looker Studio).
+*   **Entregable:** Dashboard de control de beneficiarios, control de envíos operativo de Diana, notificaciones activas de WhatsApp, pasarela PayPal y gráficos financieros en tiempo real.
+*   **Criterio de Aceptación:** El personal puede gestionar fichas de niños patrocinados, cambiar el estado de un pedido notifica automáticamente por WhatsApp con su guía de transporte, y las métricas financieras se actualizan instantáneamente.
 
-### Entrega 4: Control de Inventarios Pro y Notificaciones de WhatsApp (Semanas 13 a 16)
+### Entrega 4: Fichas de Voluntarios, Segmentación Avanzada y Geolocalización (Semanas 13 a 16)
 *   **Alcance:**
-    *   **Módulo de Inventario en Angular:** Control de insumos, stock de productos terminados, acompañantes y alertas de reabastecimiento.
-    *   Integración de stock con los pedidos entrantes (descuento dinámico).
-    *   Integración con WhatsApp Business para notificar despachos y links de descarga de certificados.
-*   **Entregable:** Pantallas de control de existencias en Angular y servicio API para el canal de WhatsApp.
-*   **Criterio de Aceptación:** Un cambio a "En preparación" descuenta stock y sus respectivos insumos. Al enviarse, el cliente recibe un WhatsApp automático con la información.
+    *   Pantallas CRUD en Angular para el control y asignación de Voluntarios.
+    *   Query Builder interno en Postgres para segmentar donantes/clientes (reemplazo de Databricks).
+    *   Geocodificación espacial de direcciones a coordenadas puntuales (latitud/longitud).
+    *   Mapa interactivo Leaflet de calor y clusters mostrando impacto de donaciones por comunas/barrios.
+*   **Entregable:** Módulo de voluntarios, constructor de segmentos CRM exportables y mapa de calor espacial integrado.
+*   **Criterio de Aceptación:** Se gestionan las hojas de vida de voluntarios, el director puede segmentar donantes activos y visualizarlos agrupados por comunas en el mapa interactivo de Angular de manera ágil.
 
-### Entrega 5: Dashboards, Reporte Contable, Capacitación y Despliegue (Semanas 17 a 20)
+### Entrega 5: Fichas de Proveedores, Inventario Inteligente y Ajustes Transaccionales (Semanas 17 a 20)
 *   **Alcance:**
-    *   **Módulo de Reportes:** Gráficos financieros, de donaciones e inventarios en Angular.
-    *   Visualización de mapa geográfico interactivo de impacto basado en direcciones de la base de datos PostgreSQL.
-    *   Exportador de transacciones formateadas para importación contable en World Office.
-    *   Capacitación grabada, documentación técnica y despliegue final en producción.
-*   **Entregable:** Sistema desplegado y funcionando al 100% en los servidores definitivos del cliente, manual técnico y del usuario.
-*   **Criterio de Aceptación:** Acta de entrega firmada tras validación final de todos los flujos de desarrollo integrados en producción.
+    *   Pantallas CRUD para Proveedores e Inventario avanzado de existencias (insumos, acompañantes y recetas).
+    *   Control de stock mínimo, alertas visuales en la app y registro de movimientos/ajustes.
+    *   Lógica de descuento transaccional concurrente (ACID) en Postgres para restar stock de insumos automáticamente en pedidos Shopify/físicos evitando stock negativo.
+    *   Cron jobs de copias de seguridad de la base de datos subidas a la nube, paso definitivo a producción con SSL y capacitaciones finales.
+*   **Entregable:** Módulo de proveedores e inventarios interactivo, aplicación completa al 100% en producción, manuales técnicos y capacitación al personal.
+*   **Criterio de Aceptación:** Una venta efectuada descuenta proporcionalmente las materias primas del inventario según su receta de forma segura e integral. Firma del acta de entrega.
 
 ---
 
@@ -130,11 +136,11 @@ El proyecto se estructura en **5 entregas funcionales**, vinculadas al cumplimie
 
 | Entrega | Semana Límite | Hito Técnico de Aceptación |
 | :---: | :---: | :--- |
-| **1** | Semana 4 | Servidor Postgres activo + Auth JWT segura + Skeleton Angular. |
-| **2** | Semana 8 | CRM operando + Carga exitosa de base de datos histórica de Access. |
-| **3** | Semana 12 | Webhooks activos (Shopify/Wompi) + Generador automático de certificados PDF + SMTP. |
-| **4** | Semana 16 | Descuento automático de stock (Productos/Insumos) + Envío de WhatsApp automático. |
-| **5** | Semana 20 | Gráficos e indicadores web + Mapa de geolocalización + Exportador contable a World Office. |
+| **1** | Semana 4 | Consolidación de base de datos unificada + Migración completa de Access + Formulario APP Diana + CSV World Office. |
+| **2** | Semana 8 | Automatización de Shopify y pasarelas (Wompi/PayU) + Cola de certificados PDF en la nube + SMTP automático. |
+| **3** | Semana 12 | Fichas de Beneficiarios + Dashboard APP Diana (pedidos) + WhatsApp API + PayPal + Gráficos financieros en tiempo real. |
+| **4** | Semana 16 | Fichas de Voluntarios + Segmentador avanzado Postgres + Geolocalización y mapa Leaflet por comunas. |
+| **5** | Semana 20 | Fichas de Proveedores e Inventario (insumos/recetas) + Descuento transaccional + Deploy producción + Backups cron. |
 
 ---
 

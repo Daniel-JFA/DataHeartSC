@@ -2,12 +2,12 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model Role {
@@ -219,4 +219,67 @@ model InventoryMovement {
 
   @@index([userId])
   @@map("inventory_movements")
+}
+
+model Beneficiary {
+  id             String    @id @default(uuid())
+  firstName      String    @map("first_name")
+  lastName       String    @map("last_name")
+  docType        String    @map("doc_type")
+  docNumber      String    @unique @map("doc_number")
+  birthDate      DateTime  @map("birth_date")
+  gender         String?
+  phone          String?
+  guardianName   String?   @map("guardian_name")
+  guardianPhone  String?   @map("guardian_phone")
+  address        String?
+  city           String?
+  commune        String?
+  neighborhood   String?
+  status         String    @default("Activo")
+  historicalId   String?   @map("historical_id")
+  enrollDate     DateTime  @default(now()) @map("enroll_date")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  @@index([docNumber])
+  @@map("beneficiaries")
+}
+
+model Volunteer {
+  id           String    @id @default(uuid())
+  firstName    String    @map("first_name")
+  lastName     String    @map("last_name")
+  docType      String    @map("doc_type")
+  docNumber    String    @unique @map("doc_number")
+  email        String?   @unique
+  phone        String?
+  role         String?   // Rol dentro de la fundación
+  skills       String?   // Habilidades relevantes
+  status       String    @default("Activo")
+  joinDate     DateTime  @default(now()) @map("join_date")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  @@index([docNumber])
+  @@map("volunteers")
+}
+
+model Provider {
+  id           String    @id @default(uuid())
+  name         String
+  docType      String    @map("doc_type")  // NIT, Cédula
+  docNumber    String    @unique @map("doc_number")
+  contactName  String?   @map("contact_name")
+  email        String?
+  phone        String?
+  address      String?
+  city         String?
+  category     String?   // Materia prima, Servicios, Logística
+  status       String    @default("Activo")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  @@index([docNumber])
+  @@map("providers")
 }

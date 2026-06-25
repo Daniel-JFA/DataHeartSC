@@ -1,0 +1,30 @@
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    container_name: dataheart_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: dataheart
+      POSTGRES_PASSWORD: dataheart_dev_2026
+      POSTGRES_DB: dataheart_sc
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - dataheart_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dataheart -d dataheart_sc"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  postgres_data:
+    name: dataheart_postgres_data
+
+networks:
+  dataheart_net:
+    name: dataheart_net
+    driver: bridge
