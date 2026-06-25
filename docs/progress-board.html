@@ -3,771 +3,867 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DataHeartSC — Tablero de Avance</title>
+<title>DataHeartSC — Roadmap de Entregables</title>
 <style>
-  :root {
-    --cream:   #fdf6e3;
-    --done:    #22c55e;
-    --current: #f59e0b;
-    --pending: #e2e8f0;
-    --hito:    #7c3aed;
-    --danger:  #ef4444;
-    --border:  #94a3b8;
-    --text:    #1e293b;
-  }
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --done-bg:    #f0fdf4; --done-border: #16a34a; --done-text: #15803d;
+  --active-bg:  #fffbeb; --active-border: #d97706; --active-text: #92400e;
+  --pending-bg: #f8fafc; --pending-border: #cbd5e1; --pending-text: #64748b;
+  --hito-bg:    #f5f3ff; --hito-border: #7c3aed; --hito-text: #5b21b6;
+  --risk-bg:    #fff1f2; --risk-text: #be123c;
+  --accel-bg:   #f0fdf4; --accel-text: #15803d;
+  --sidebar-w:  260px;
+}
 
-  body {
-    font-family: 'Segoe UI', system-ui, sans-serif;
-    background: #1a1a2e;
-    color: var(--text);
-    min-height: 100vh;
-    padding: 20px;
-  }
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: #f1f5f9;
+  color: #1e293b;
+  min-height: 100vh;
+  display: flex;
+}
 
-  header {
-    text-align: center;
-    margin-bottom: 24px;
-  }
-  header h1 {
-    font-size: 2rem;
-    font-weight: 900;
-    color: #f1f5f9;
-    letter-spacing: -1px;
-  }
-  header p {
-    color: #94a3b8;
-    font-size: 0.9rem;
-    margin-top: 4px;
-  }
+/* ── SIDEBAR ── */
+.sidebar {
+  width: var(--sidebar-w);
+  min-height: 100vh;
+  background: #0f172a;
+  color: #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
 
-  .layout {
-    display: flex;
-    gap: 24px;
-    max-width: 1100px;
-    margin: 0 auto;
-    align-items: flex-start;
-  }
+.sidebar-brand {
+  padding: 28px 24px 20px;
+  border-bottom: 1px solid #1e293b;
+}
+.sidebar-brand h1 {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #f8fafc;
+  letter-spacing: -0.3px;
+}
+.sidebar-brand p {
+  font-size: 0.72rem;
+  color: #64748b;
+  margin-top: 3px;
+  line-height: 1.5;
+}
 
-  /* ── BOARD ── */
-  .board-wrap {
-    position: relative;
-    flex-shrink: 0;
-  }
+.sidebar-section { padding: 20px 24px; border-bottom: 1px solid #1e293b; }
+.sidebar-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #475569;
+  margin-bottom: 12px;
+}
 
-  .board {
-    display: grid;
-    grid-template-columns: repeat(5, 120px);
-    grid-template-rows: repeat(4, 110px);
-    gap: 6px;
-    background: #7c5c28;
-    padding: 10px;
-    border-radius: 16px;
-    border: 6px solid #5a3e1b;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
-    position: relative;
-  }
+/* Overall progress */
+.progress-ring-wrap {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+.progress-ring {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+}
+.progress-ring svg { transform: rotate(-90deg); }
+.progress-ring .track  { fill: none; stroke: #1e293b; stroke-width: 5; }
+.progress-ring .fill   { fill: none; stroke: #22c55e; stroke-width: 5; stroke-linecap: round;
+                          transition: stroke-dashoffset 1s ease; }
+.progress-ring .label  {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.75rem; font-weight: 800; color: #f8fafc;
+}
+.progress-meta { flex: 1; }
+.progress-meta strong { font-size: 0.9rem; font-weight: 700; color: #f8fafc; display: block; }
+.progress-meta span   { font-size: 0.72rem; color: #64748b; }
 
-  .cell {
-    border-radius: 10px;
-    padding: 7px 8px 6px;
-    cursor: pointer;
-    position: relative;
-    transition: transform 0.15s, box-shadow 0.15s;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    border: 2px solid transparent;
-    user-select: none;
-  }
-  .cell:hover {
-    transform: scale(1.05);
-    z-index: 10;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-  }
-  .cell.done     { background: #dcfce7; border-color: #16a34a; }
-  .cell.current  { background: #fef9c3; border-color: #ca8a04; animation: pulse 1.8s ease-in-out infinite; }
-  .cell.pending  { background: #f8fafc; border-color: #cbd5e1; }
-  .cell.milestone { outline: 3px solid var(--hito); outline-offset: 2px; }
+/* Stat pills */
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.stat-pill {
+  background: #1e293b;
+  border-radius: 10px;
+  padding: 10px 12px;
+  text-align: center;
+}
+.stat-pill .val { font-size: 1.2rem; font-weight: 800; color: #f8fafc; display: block; }
+.stat-pill .lbl { font-size: 0.62rem; color: #64748b; margin-top: 2px; display: block; }
 
-  @keyframes pulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(234,179,8,0.5); }
-    50%       { box-shadow: 0 0 0 8px rgba(234,179,8,0); }
-  }
+/* Hito nav */
+.hito-nav { display: flex; flex-direction: column; gap: 4px; }
+.hito-nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+  text-decoration: none;
+  color: inherit;
+}
+.hito-nav-item:hover { background: #1e293b; }
+.hito-nav-item.active { background: #1e293b; }
+.hito-dot {
+  width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+}
+.hito-nav-item span { font-size: 0.78rem; color: #94a3b8; flex: 1; }
+.hito-nav-item .hito-pct { font-size: 0.68rem; font-weight: 600; color: #475569; }
 
-  .cell-number {
-    font-size: 0.65rem;
-    font-weight: 800;
-    color: #64748b;
-    line-height: 1;
-  }
-  .cell.done .cell-number    { color: #15803d; }
-  .cell.current .cell-number { color: #92400e; }
+/* Legend */
+.legend { display: flex; flex-direction: column; gap: 7px; }
+.legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.72rem; color: #64748b; }
+.legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
 
-  .cell-name {
-    font-size: 0.62rem;
-    font-weight: 600;
-    line-height: 1.3;
-    color: #374151;
-    flex: 1;
-    margin-top: 3px;
-  }
+.sidebar-footer {
+  margin-top: auto;
+  padding: 16px 24px;
+  border-top: 1px solid #1e293b;
+  font-size: 0.68rem;
+  color: #334155;
+  line-height: 1.7;
+}
 
-  .cell-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 4px;
-  }
+/* ── MAIN CONTENT ── */
+.main {
+  flex: 1;
+  padding: 32px 36px;
+  min-width: 0;
+}
 
-  .hito-badge {
-    font-size: 0.5rem;
-    font-weight: 700;
-    background: var(--hito);
-    color: white;
-    padding: 1px 5px;
-    border-radius: 999px;
-    white-space: nowrap;
-  }
-  .cell.done .status-icon::after    { content: '✅'; font-size: 0.75rem; }
-  .cell.current .status-icon::after { content: '🎯'; font-size: 0.75rem; }
-  .cell.pending .status-icon::after { content: ''; }
+/* Page header */
+.page-header {
+  margin-bottom: 36px;
+}
+.page-header h2 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.5px;
+}
+.page-header p {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-top: 4px;
+}
 
-  /* player token */
-  .token {
-    position: absolute;
-    width: 28px;
-    height: 28px;
-    background: radial-gradient(circle at 35% 35%, #fbbf24, #d97706);
-    border-radius: 50%;
-    border: 3px solid #92400e;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.5), inset 0 -2px 4px rgba(0,0,0,0.2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    pointer-events: none;
-    transition: top 0.6s cubic-bezier(0.34,1.56,0.64,1), left 0.6s cubic-bezier(0.34,1.56,0.64,1);
-    z-index: 20;
-  }
+/* Filter bar */
+.filter-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+.filter-btn {
+  padding: 6px 16px;
+  border-radius: 999px;
+  border: 1px solid #e2e8f0;
+  background: white;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.filter-btn:hover { border-color: #94a3b8; color: #1e293b; }
+.filter-btn.active { background: #0f172a; color: white; border-color: #0f172a; }
 
-  /* SVG overlay */
-  .svg-overlay {
-    position: absolute;
-    top: 10px; left: 10px;
-    width: calc(5 * 120px + 4 * 6px);
-    height: calc(4 * 110px + 3 * 6px);
-    pointer-events: none;
-    z-index: 5;
-  }
+/* ── HITO SECTION ── */
+.hito-section { margin-bottom: 40px; }
 
-  /* ── SIDE PANEL ── */
-  .panel {
-    flex: 1;
-    background: #0f172a;
-    border-radius: 16px;
-    border: 1px solid #1e293b;
-    padding: 24px;
-    min-height: 480px;
-    color: #f1f5f9;
-  }
+.hito-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+  padding: 14px 20px;
+  border-radius: 12px;
+  border-left: 4px solid;
+}
+.hito-header.h-done    { background: #f0fdf4; border-color: #16a34a; }
+.hito-header.h-partial { background: #fffbeb; border-color: #d97706; }
+.hito-header.h-pending { background: #f5f3ff; border-color: #7c3aed; }
 
-  .panel-hint {
-    color: #475569;
-    font-size: 0.85rem;
-    text-align: center;
-    margin-top: 80px;
-    line-height: 1.8;
-  }
-  .panel-hint span { font-size: 2rem; display: block; margin-bottom: 8px; }
+.hito-number {
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #7c3aed;
+  background: #ede9fe;
+  padding: 3px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.hito-title { font-size: 1rem; font-weight: 700; color: #0f172a; flex: 1; }
+.hito-weeks { font-size: 0.75rem; color: #64748b; white-space: nowrap; }
+.hito-status-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
 
-  .panel-sprint { display: none; }
-  .panel-sprint.active { display: block; }
+/* ── SPRINT CARD ── */
+.sprint-card {
+  display: flex;
+  gap: 0;
+  margin-bottom: 12px;
+  position: relative;
+}
 
-  .panel-sprint h2 {
-    font-size: 1.1rem;
-    font-weight: 800;
-    color: #f1f5f9;
-    margin-bottom: 4px;
-  }
-  .panel-sprint .sprint-meta {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    margin-bottom: 16px;
-    flex-wrap: wrap;
-  }
-  .sprint-num {
-    font-size: 0.72rem;
-    font-weight: 700;
-    background: #1e293b;
-    color: #94a3b8;
-    padding: 3px 10px;
-    border-radius: 999px;
-  }
-  .sprint-hito {
-    font-size: 0.72rem;
-    font-weight: 700;
-    background: var(--hito);
-    color: white;
-    padding: 3px 10px;
-    border-radius: 999px;
-  }
-  .sprint-status {
-    font-size: 0.72rem;
-    font-weight: 700;
-    padding: 3px 10px;
-    border-radius: 999px;
-  }
-  .sprint-status.done    { background: #166534; color: #bbf7d0; }
-  .sprint-status.current { background: #78350f; color: #fde68a; }
-  .sprint-status.pending { background: #1e293b; color: #64748b; }
+/* Vertical connector line */
+.sprint-card::before {
+  content: '';
+  position: absolute;
+  left: 31px;
+  top: 52px;
+  bottom: -12px;
+  width: 2px;
+  background: #e2e8f0;
+  z-index: 0;
+}
+.sprint-card:last-child::before { display: none; }
 
-  .tasks-title {
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: #64748b;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 10px;
-  }
-  .task-item {
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-    margin-bottom: 10px;
-    background: #1e293b;
-    border-radius: 8px;
-    padding: 10px 12px;
-  }
-  .task-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
-  .task-text { font-size: 0.82rem; color: #cbd5e1; line-height: 1.5; }
-  .task-text strong { color: #f1f5f9; display: block; font-weight: 600; font-size: 0.78rem; }
+.sprint-timeline {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 64px;
+  padding-top: 16px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+.sprint-node {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.6rem; font-weight: 800;
+  border: 2px solid;
+  background: white;
+  flex-shrink: 0;
+}
+.sprint-node.done    { border-color: #16a34a; background: #16a34a; color: white; }
+.sprint-node.pending { border-color: #cbd5e1; color: #94a3b8; }
+.sprint-week {
+  font-size: 0.6rem;
+  color: #94a3b8;
+  margin-top: 5px;
+  white-space: nowrap;
+}
 
-  .panel-note {
-    margin-top: 16px;
-    background: #1e293b;
-    border-left: 3px solid #7c3aed;
-    border-radius: 0 8px 8px 0;
-    padding: 10px 14px;
-    font-size: 0.78rem;
-    color: #94a3b8;
-    line-height: 1.6;
-  }
+.sprint-body {
+  flex: 1;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+  min-width: 0;
+}
+.sprint-body:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.07); }
+.sprint-body.done    { border-color: #bbf7d0; }
+.sprint-body.pending { border-color: #e2e8f0; }
+.sprint-body.milestone { border-color: #c4b5fd; }
 
-  /* ── LEGEND ── */
-  .legend {
-    max-width: 1100px;
-    margin: 20px auto 0;
-    display: flex;
-    gap: 20px;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-  }
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.78rem;
-    color: #94a3b8;
-  }
-  .legend-dot {
-    width: 14px; height: 14px;
-    border-radius: 4px;
-    flex-shrink: 0;
-  }
-  .legend-line {
-    width: 28px; height: 5px;
-    border-radius: 3px;
-    flex-shrink: 0;
-  }
+.sprint-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  cursor: pointer;
+  user-select: none;
+}
+.sprint-num-badge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #64748b;
+  background: #f1f5f9;
+  padding: 3px 9px;
+  border-radius: 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.sprint-title {
+  flex: 1;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #0f172a;
+  min-width: 0;
+}
+.sprint-status {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.sprint-status.done    { background: #dcfce7; color: #15803d; }
+.sprint-status.pending { background: #f1f5f9; color: #64748b; }
+.sprint-toggle {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+.sprint-toggle.open { transform: rotate(180deg); }
 
-  /* ── PROGRESS BAR ── */
-  .progress-wrap {
-    max-width: 1100px;
-    margin: 16px auto 0;
-    background: #0f172a;
-    border-radius: 12px;
-    padding: 14px 20px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-  .progress-label { font-size: 0.8rem; color: #64748b; white-space: nowrap; }
-  .progress-bar {
-    flex: 1;
-    height: 12px;
-    background: #1e293b;
-    border-radius: 999px;
-    overflow: hidden;
-  }
-  .progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #22c55e, #16a34a);
-    border-radius: 999px;
-    transition: width 1s ease;
-  }
-  .progress-pct { font-size: 0.85rem; font-weight: 700; color: #22c55e; white-space: nowrap; }
+.sprint-detail {
+  padding: 0 18px 16px;
+  border-top: 1px solid #f1f5f9;
+  display: none;
+}
+.sprint-detail.open { display: block; }
+
+/* Task list */
+.task-list { margin-top: 14px; display: flex; flex-direction: column; gap: 8px; }
+.task-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+.task-row.done-task { background: #f0fdf4; }
+.task-icon { font-size: 0.85rem; flex-shrink: 0; margin-top: 1px; }
+.task-content { flex: 1; min-width: 0; }
+.task-tag {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #7c3aed;
+  background: #ede9fe;
+  padding: 1px 7px;
+  border-radius: 4px;
+  display: inline-block;
+  margin-bottom: 3px;
+}
+.task-text {
+  font-size: 0.8rem;
+  color: #374151;
+  line-height: 1.5;
+}
+
+/* Metrics row (for done sprints) */
+.metrics-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+.metric-chip {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 8px;
+  background: #f0fdf4;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+/* Risk / accelerator badges */
+.badge-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.risk-badge {
+  display: flex; align-items: center; gap-5px;
+  font-size: 0.7rem; font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: #fff1f2; color: #be123c; border: 1px solid #fecdd3;
+  gap: 4px;
+}
+.accel-badge {
+  display: flex; align-items: center;
+  font-size: 0.7rem; font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0;
+  gap: 4px;
+}
+
+/* Milestone ribbon */
+.milestone-ribbon {
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: #f5f3ff;
+  border-radius: 8px;
+  border: 1px solid #ddd6fe;
+}
+.milestone-ribbon span { font-size: 0.78rem; font-weight: 600; color: #5b21b6; }
+
+/* Hidden when filtered */
+.sprint-card.filtered-out { display: none; }
+.hito-section.filtered-out { display: none; }
+
+/* Print */
+@media print {
+  .sidebar { display: none; }
+  .filter-bar { display: none; }
+  .sprint-detail { display: block !important; }
+  body { background: white; }
+  .main { padding: 20px; }
+}
 </style>
 </head>
 <body>
 
-<header>
-  <h1>🎲 DataHeartSC — Tablero de Avance</h1>
-  <p>Fundación Infantil Santiago Corazón · Plan de 20 Sprints · 5 Hitos</p>
-</header>
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <h1>DataHeartSC</h1>
+    <p>Fundación Infantil<br>Santiago Corazón</p>
+  </div>
 
-<div class="layout">
-  <div class="board-wrap">
-    <div class="board" id="board">
-      <!-- cells injected by JS -->
+  <div class="sidebar-section">
+    <div class="sidebar-label">Progreso Global</div>
+    <div class="progress-ring-wrap">
+      <div class="progress-ring">
+        <svg width="56" height="56" viewBox="0 0 56 56">
+          <circle class="track"  cx="28" cy="28" r="23"/>
+          <circle class="fill"   cx="28" cy="28" r="23" id="ring-fill"
+            stroke-dasharray="144.51" stroke-dashoffset="144.51"/>
+        </svg>
+        <div class="label" id="ring-label">0%</div>
+      </div>
+      <div class="progress-meta">
+        <strong id="meta-done">0 / 20 sprints</strong>
+        <span>completados</span>
+      </div>
     </div>
-    <svg class="svg-overlay" id="svg-overlay"></svg>
-    <div class="token" id="token">♟</div>
+    <div class="stat-grid" id="stat-grid"></div>
   </div>
 
-  <div class="panel" id="panel">
-    <div class="panel-hint" id="panel-hint">
-      <span>🎲</span>
-      Haz clic en cualquier<br>casilla para ver el detalle<br>del sprint
+  <div class="sidebar-section">
+    <div class="sidebar-label">Hitos</div>
+    <div class="hito-nav" id="hito-nav"></div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-label">Referencias</div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#16a34a"></div> Sprint completado</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#d97706"></div> En progreso</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#7c3aed"></div> Entrega de Hito</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#be123c"></div> Riesgo / dependencia externa</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#15803d"></div> Acelerador / habilita siguiente</div>
     </div>
-    <!-- Sprint panels injected by JS -->
   </div>
-</div>
 
-<div class="progress-wrap">
-  <span class="progress-label">Progreso global</span>
-  <div class="progress-bar">
-    <div class="progress-fill" id="progress-fill"></div>
+  <div class="sidebar-footer">
+    Plan técnico · 5 meses · 20 semanas<br>
+    Stack: Angular · NestJS · PostgreSQL<br>
+    Actualizado: Semana 3
   </div>
-  <span class="progress-pct" id="progress-pct"></span>
-</div>
+</aside>
 
-<div class="legend">
-  <div class="legend-item"><div class="legend-dot" style="background:#dcfce7;border:2px solid #16a34a"></div> Sprint completado</div>
-  <div class="legend-item"><div class="legend-dot" style="background:#fef9c3;border:2px solid #ca8a04"></div> Sprint en curso</div>
-  <div class="legend-item"><div class="legend-dot" style="background:#f8fafc;border:2px solid #cbd5e1"></div> Pendiente</div>
-  <div class="legend-item"><div class="legend-dot" style="background:white;outline:3px solid #7c3aed;outline-offset:2px"></div> Entrega de Hito</div>
-  <div class="legend-item"><div class="legend-line" style="background:linear-gradient(90deg,#22c55e,#86efac)"></div> Escalera (avance acelerado)</div>
-  <div class="legend-item"><div class="legend-line" style="background:linear-gradient(90deg,#ef4444,#fca5a5)"></div> Serpiente (riesgo / dependencia externa)</div>
-</div>
+<!-- MAIN -->
+<main class="main">
+  <div class="page-header">
+    <h2>Roadmap de Entregables</h2>
+    <p>Seguimiento semanal de sprints y hitos de entrega</p>
+  </div>
+
+  <div class="filter-bar">
+    <button class="filter-btn active" data-filter="all">Todos los sprints</button>
+    <button class="filter-btn" data-filter="done">Completados</button>
+    <button class="filter-btn" data-filter="pending">Pendientes</button>
+    <button class="filter-btn" data-filter="milestone">Hitos de entrega</button>
+  </div>
+
+  <div id="roadmap"></div>
+</main>
 
 <script>
+const HITOS = [
+  {
+    n: 1, weeks: 'Semanas 1–4',
+    title: 'Consolidación de Datos, Migración y Ventas Manuales',
+    desc: 'Base de datos unificada, datos históricos migrados, primer formulario de pedidos operativo.',
+    sprints: [1,2,3,4],
+  },
+  {
+    n: 2, weeks: 'Semanas 5–8',
+    title: 'Automatización de Ingresos y Motor de Certificados',
+    desc: 'Pedidos Shopify y donaciones online automáticos. Certificados tributarios en PDF por correo.',
+    sprints: [5,6,7,8],
+  },
+  {
+    n: 3, weeks: 'Semanas 9–12',
+    title: 'Personas, Comunicaciones y Dashboard Operativo',
+    desc: 'Gestión de beneficiarios, voluntarios, WhatsApp y panel de control centralizado.',
+    sprints: [9,10,11,12],
+  },
+  {
+    n: 4, weeks: 'Semanas 13–16',
+    title: 'Análisis, Geolocalización y Mapa de Impacto',
+    desc: 'Segmentación de donantes, geocodificación PostGIS y mapa interactivo de impacto social.',
+    sprints: [13,14,15,16],
+  },
+  {
+    n: 5, weeks: 'Semanas 17–20',
+    title: 'Inventario Avanzado, Concurrencia y Despliegue',
+    desc: 'Módulo de insumos y recetas, transacciones ACID, despliegue en producción y capacitación.',
+    sprints: [17,18,19,20],
+  },
+];
+
 const SPRINTS = [
   {
-    n: 1, hito: 1, status: 'done',
-    name: 'Cimientos Cloud + Schema DB',
-    tasks: [
-      { tag: 'DevOps', text: 'Aprovisionamiento PostgreSQL 16 + PostGIS en Docker' },
-      { tag: 'Backend', text: 'Prisma: 18 modelos (incluye Beneficiary, Volunteer, Provider). Migración inicial ejecutada.' },
-      { tag: 'Frontend', text: 'Angular 18 base: Tailwind CSS, routing lazy, interceptor JWT, authGuard, shell layout, login con Signals.' },
+    n:1, hito:1, status:'done',
+    name:'Cimientos Cloud + Schema DB',
+    tasks:[
+      { tag:'DevOps',   done:true,  text:'PostgreSQL 16 + PostGIS en Docker con healthcheck' },
+      { tag:'Backend',  done:true,  text:'Prisma: 18 modelos (Auth, CRM, Donaciones, Inventario, Personas). Migración inicial ejecutada.' },
+      { tag:'Frontend', done:true,  text:'Angular 18: Tailwind CSS v3, routing lazy, interceptor JWT, authGuard, shell layout, login con Signals.' },
     ],
-    note: '✅ Base de datos live. 18 tablas creadas. Angular compila y despliega correctamente.'
+    metrics:['18 tablas en PostgreSQL','Docker up en <5s','Build Angular limpio'],
+    accelerates: 'Habilita Sprint 3: schema completo evita migraciones futuras',
   },
   {
-    n: 2, hito: 1, status: 'done',
-    name: 'Seguridad JWT + ETL Histórico',
-    tasks: [
-      { tag: 'Backend', text: 'Auth JWT HS256 (8h). Endpoint POST /api/auth/login con bcrypt. JwtAuthGuard + @GetUser(). Seed: roles Admin / Operador / Contador.' },
-      { tag: 'Data', text: 'ETL Supabase → PostgreSQL: 14.839 clientes, 114 productos, 109 pedidos, 189 ítems migrados. Script idempotente.' },
+    n:2, hito:1, status:'done',
+    name:'Seguridad JWT + ETL Histórico',
+    tasks:[
+      { tag:'Backend', done:true, text:'Auth JWT HS256 (8h). POST /api/auth/login con bcrypt. JwtAuthGuard + decorador @GetUser().' },
+      { tag:'Backend', done:true, text:'Seed: roles Admin / Operador / Contador. Usuario inicial admin@santiagocorazon.org.' },
+      { tag:'Data',    done:true, text:'ETL Supabase → PostgreSQL: 14.839 clientes, 114 productos, 109 pedidos, 189 ítems. Script idempotente.' },
     ],
-    note: '✅ Sistema protegido. Datos históricos disponibles en la nueva BD. Credenciales admin: admin@santiagocorazon.org / admin2026'
+    metrics:['14.887 registros migrados','JWT 8h operativo','3 roles de acceso'],
+    accelerates: 'Habilita Sprints 5–8: auth lista para todos los webhooks',
   },
   {
-    n: 3, hito: 1, status: 'done',
-    name: 'CRM + Catálogo de Productos',
-    tasks: [
-      { tag: 'Backend', text: 'CRUD ClientDonor y Product: GET /api/clients, POST, PUT, DELETE. Paginación + búsqueda por nombre/documento (<200ms).' },
-      { tag: 'Frontend', text: 'Tablas Angular del CRM con paginación, filtros en tiempo real y formulario reactivo de creación de clientes.' },
+    n:3, hito:1, status:'done',
+    name:'CRM + Catálogo de Productos',
+    tasks:[
+      { tag:'Backend',  done:true, text:'CRUD ClientDonor: paginación + búsqueda multi-campo (<200ms sobre 14.887 registros). Soft delete.' },
+      { tag:'Backend',  done:true, text:'CRUD Product: filtro onlyActive, unicidad SKU, soft delete.' },
+      { tag:'Frontend', done:true, text:'Tabla CRM con paginación reactiva (Signals + effect), modal de creación, búsqueda en tiempo real.' },
+      { tag:'Frontend', done:true, text:'Catálogo de productos con alerta visual de stock bajo. PaginationComponent reutilizable.' },
     ],
-    note: 'Requiere Sprint 2 completado. El JwtAuthGuard ya está listo para proteger los nuevos endpoints.'
+    metrics:['2.016 resultados "maria" en <200ms','113 productos activos','Paginación reutilizable'],
   },
   {
-    n: 4, hito: 1, status: 'pending',
-    name: 'Pedidos Manuales + World Office',
-    tasks: [
-      { tag: 'Frontend', text: 'Formulario APP Diana Fase 1: autocompletado CRM, selector de productos, recálculo automático de totales.' },
-      { tag: 'Backend', text: 'Exportador contable CSV/Excel compatible con plantilla de importación de World Office.' },
+    n:4, hito:1, status:'pending', milestone:true,
+    name:'Pedidos Manuales + Exportador World Office',
+    tasks:[
+      { tag:'Frontend', done:false, text:'Formulario APP Diana Fase 1: autocompletado del CRM, selector de productos, recálculo automático de totales.' },
+      { tag:'Backend',  done:false, text:'OrdersModule: CRUD de pedidos con ítems, cálculo de total en el servidor.' },
+      { tag:'Backend',  done:false, text:'Exportador CSV/Excel compatible con la plantilla de importación de World Office.' },
     ],
-    note: '🏁 HITO 1 — Entrega al cliente: sistema operativo para ventas manuales y contabilidad.'
+    milestoneNote:'🏁 HITO 1 — El personal puede registrar pedidos manuales y exportar transacciones contables.',
   },
   {
-    n: 5, hito: 2, status: 'pending',
-    name: 'Shopify Webhooks',
-    tasks: [
-      { tag: 'Backend', text: 'Endpoint POST /api/webhooks/shopify/orders. Validación HMAC SHA256 del header X-Shopify-Hmac-SHA256.' },
-      { tag: 'Backend', text: 'Idempotencia: clave única por Shopify order ID para evitar duplicados en reintentos.' },
+    n:5, hito:2, status:'pending',
+    name:'Shopify Webhooks',
+    tasks:[
+      { tag:'Backend', done:false, text:'Endpoint POST /api/webhooks/shopify/orders. Validación HMAC SHA256 del header X-Shopify-Hmac-SHA256.' },
+      { tag:'Backend', done:false, text:'Idempotencia: clave única por Shopify order ID para evitar duplicados en reintentos del webhook.' },
     ],
-    note: '⚠️ Requiere cuenta Shopify Partners configurada y ngrok/dominio público para recibir webhooks en desarrollo.'
+    risk:'Requiere cuenta Shopify Partners y dominio público o ngrok para recibir webhooks.',
   },
   {
-    n: 6, hito: 2, status: 'pending',
-    name: 'Pasarelas de Pago',
-    tasks: [
-      { tag: 'Backend', text: 'Webhooks Wompi y PayU: identificar donante por correo/cédula, crear si no existe, registrar en tabla donations.' },
+    n:6, hito:2, status:'pending',
+    name:'Pasarelas de Pago (Wompi + PayU)',
+    tasks:[
+      { tag:'Backend', done:false, text:'Webhooks Wompi y PayU: identificar donante por correo/cédula, crear si no existe, registrar en tabla donations.' },
     ],
-    note: 'Requiere credenciales sandbox de Wompi y PayU. La lógica de idempotencia del Sprint 5 aplica acá también.'
+    risk:'Requiere credenciales sandbox de Wompi y PayU. Coordinar con equipo de tesorería.',
   },
   {
-    n: 7, hito: 2, status: 'pending',
-    name: 'Motor de Certificados PDF',
-    tasks: [
-      { tag: 'DevOps', text: 'BullMQ + Redis: cola de tareas asíncronas para evitar bloqueo de la API durante generación de PDFs.' },
-      { tag: 'Backend', text: 'Worker: genera PDF del certificado tributario y lo sube a S3 / Cloudflare R2. Guarda URL en tabla certificates.' },
+    n:7, hito:2, status:'pending',
+    name:'Motor de Certificados PDF',
+    tasks:[
+      { tag:'DevOps',  done:false, text:'BullMQ + Redis: cola de tareas asíncronas para no bloquear la API durante generación de archivos.' },
+      { tag:'Backend', done:false, text:'Worker: genera PDF del certificado tributario y lo sube a S3 / Cloudflare R2. Guarda URL en tabla certificates.' },
     ],
-    note: 'El procesamiento asíncrono garantiza que el webhook de pago responda en <200ms aunque el PDF tarde 3-5s.'
   },
   {
-    n: 8, hito: 2, status: 'pending',
-    name: 'SMTP + Dashboard Inicial',
-    tasks: [
-      { tag: 'Backend', text: 'Nodemailer: envío automático de certificado PDF por correo al confirmar donación.' },
-      { tag: 'Frontend', text: 'Historial de certificados con descarga directa desde S3 y botón "Reenviar".' },
-      { tag: 'Frontend', text: 'Dashboard KPIs: total pedidos Shopify, donaciones del mes, últimas 10 transacciones en tiempo real.' },
+    n:8, hito:2, status:'pending', milestone:true,
+    name:'SMTP Automático + Dashboard Inicial',
+    tasks:[
+      { tag:'Backend',  done:false, text:'Nodemailer: envío automático del PDF al confirmar la donación.' },
+      { tag:'Frontend', done:false, text:'Historial de certificados con descarga directa desde S3 y botón "Reenviar".' },
+      { tag:'Frontend', done:false, text:'Dashboard KPIs: total pedidos Shopify, donaciones del mes, últimas 10 transacciones.' },
     ],
-    note: '🏁 HITO 2 — Flujo de donación 100% automatizado: pago → PDF → correo.'
+    milestoneNote:'🏁 HITO 2 — Flujo de donación 100% automatizado: pago → PDF → correo al donante.',
   },
   {
-    n: 9, hito: 3, status: 'pending',
-    name: 'Beneficiarios (Niños)',
-    tasks: [
-      { tag: 'Full-stack', text: 'CRUD visual de beneficiarios: tabla con paginación, formulario de inscripción, historial de actividades.' },
+    n:9, hito:3, status:'pending',
+    name:'Beneficiarios (Niños)',
+    tasks:[
+      { tag:'Full-stack', done:false, text:'CRUD visual de beneficiarios: inscripción, datos familiares, historial de actividades en la fundación.' },
     ],
-    note: 'El modelo Beneficiary ya existe en el schema desde Sprint 1. Solo requiere módulo NestJS + componente Angular.'
+    accelerates:'Modelo Beneficiary listo desde Sprint 1 — solo se construye la UI.',
   },
   {
-    n: 10, hito: 3, status: 'pending',
-    name: 'WhatsApp Business API',
-    tasks: [
-      { tag: 'Backend', text: 'Integración WhatsApp Cloud API de Meta: notificaciones transaccionales por pedido confirmado, donación recibida, certificado enviado.' },
+    n:10, hito:3, status:'pending',
+    name:'WhatsApp Business API',
+    tasks:[
+      { tag:'Backend', done:false, text:'WhatsApp Cloud API de Meta: notificaciones por pedido confirmado, donación recibida, certificado enviado.' },
     ],
-    note: '⚠️ Requiere aprobación del negocio en Meta Business Suite (puede tomar 1-2 semanas). Iniciar el trámite en paralelo.'
+    risk:'Requiere aprobación del negocio en Meta Business Suite (1–2 semanas). Iniciar trámite en paralelo.',
   },
   {
-    n: 11, hito: 3, status: 'pending',
-    name: 'PayPal + Email Marketing',
-    tasks: [
-      { tag: 'Backend', text: 'Webhook / IPN PayPal para donaciones internacionales.' },
-      { tag: 'Backend', text: 'Sincronización de donantes con Mailchimp / Mailerlite para campañas.' },
+    n:11, hito:3, status:'pending',
+    name:'PayPal + Email Marketing',
+    tasks:[
+      { tag:'Backend', done:false, text:'Webhook / IPN PayPal para donaciones internacionales.' },
+      { tag:'Backend', done:false, text:'Sincronización de donantes con Mailchimp / Mailerlite para campañas masivas.' },
     ],
-    note: 'PayPal requiere cuenta de negocios verificada. Mailchimp/Mailerlite necesita API key del equipo de comunicaciones.'
+    risk:'PayPal requiere cuenta de negocios verificada. Mailchimp necesita API key del equipo de comunicaciones.',
   },
   {
-    n: 12, hito: 3, status: 'pending',
-    name: 'Dashboard Operativo + KPIs',
-    tasks: [
-      { tag: 'Frontend', text: 'Panel de control de pedidos (reemplazo definitivo de APP Diana): kanban o lista con filtros por estado.' },
-      { tag: 'Frontend', text: 'Panel de gráficos de gestión (ventas, donaciones, beneficiarios) con opción de embed de Looker Studio.' },
+    n:12, hito:3, status:'pending', milestone:true,
+    name:'Dashboard Operativo + KPIs de Gestión',
+    tasks:[
+      { tag:'Frontend', done:false, text:'Panel de control de pedidos: kanban/lista con filtros por estado, reemplazo definitivo de APP Diana.' },
+      { tag:'Frontend', done:false, text:'Panel de gráficos: ventas, donaciones y beneficiarios. Embed opcional de Looker Studio.' },
     ],
-    note: '🏁 HITO 3 — Todas las comunicaciones automatizadas. Gestión operativa en un solo panel.'
+    milestoneNote:'🏁 HITO 3 — Comunicaciones automatizadas. Operación centralizada en un solo panel.',
   },
   {
-    n: 13, hito: 4, status: 'pending',
-    name: 'Voluntarios',
-    tasks: [
-      { tag: 'Full-stack', text: 'CRUD visual de voluntarios: registro, roles dentro de la fundación, historial de participación.' },
+    n:13, hito:4, status:'pending',
+    name:'Voluntarios',
+    tasks:[
+      { tag:'Full-stack', done:false, text:'CRUD de voluntarios: roles dentro de la fundación, historial de participación en actividades.' },
     ],
-    note: 'El modelo Volunteer ya existe desde Sprint 1. Patrón idéntico al módulo de Beneficiarios (Sprint 9).'
+    accelerates:'Modelo Volunteer listo desde Sprint 1. Patrón idéntico al módulo de Beneficiarios.',
   },
   {
-    n: 14, hito: 4, status: 'pending',
-    name: 'Segmentador de Donantes',
-    tasks: [
-      { tag: 'Backend / Frontend', text: 'Query builder de segmentación en PostgreSQL: filtros por monto, frecuencia, ciudad, canal. Reemplaza Databricks para reportería básica.' },
+    n:14, hito:4, status:'pending',
+    name:'Segmentador de Donantes',
+    tasks:[
+      { tag:'Backend / Frontend', done:false, text:'Query builder de segmentación en PostgreSQL: filtros por monto, frecuencia, ciudad, canal. Reemplaza Databricks.' },
     ],
-    note: 'PostGIS ya está activo. Con los datos migrados en Sprint 2, este módulo puede operar sobre 14.800+ registros reales.'
   },
   {
-    n: 15, hito: 4, status: 'pending',
-    name: 'Geolocalización PostGIS',
-    tasks: [
-      { tag: 'Backend / Data', text: 'Geocodificación de direcciones de clientes y beneficiarios usando la API de Google Maps o Nominatim (OpenStreetMap).' },
+    n:15, hito:4, status:'pending',
+    name:'Geolocalización PostGIS',
+    tasks:[
+      { tag:'Backend / Data', done:false, text:'Geocodificación de direcciones de clientes y beneficiarios con Google Maps API o Nominatim.' },
     ],
-    note: 'PostGIS ya está instalado desde Sprint 1. Este sprint puebla los campos de geometría con coordenadas reales.'
+    accelerates:'PostGIS ya activo desde Sprint 1. Este sprint puebla los campos de geometría.',
   },
   {
-    n: 16, hito: 4, status: 'pending',
-    name: 'Mapa Interactivo de Impacto',
-    tasks: [
-      { tag: 'Frontend', text: 'Visualizador Leaflet.js en Angular: mapa de beneficiarios, cobertura de envíos, calor de donaciones por zona.' },
+    n:16, hito:4, status:'pending', milestone:true,
+    name:'Mapa Interactivo de Impacto',
+    tasks:[
+      { tag:'Frontend', done:false, text:'Leaflet.js en Angular: mapa de beneficiarios, cobertura de envíos, calor de donaciones por zona geográfica.' },
     ],
-    note: '🏁 HITO 4 — Visualización geográfica del impacto social de la fundación. Apto para reportes a donantes y aliados.'
+    milestoneNote:'🏁 HITO 4 — Visualización del impacto social. Apto para reportes a donantes y aliados estratégicos.',
   },
   {
-    n: 17, hito: 5, status: 'pending',
-    name: 'Inventario Avanzado',
-    tasks: [
-      { tag: 'Full-stack', text: 'Módulo de Insumos, Acompañantes y Recetas (BOM): formulario de producción que descuenta insumos automáticamente al armar un producto.' },
+    n:17, hito:5, status:'pending',
+    name:'Inventario Avanzado (Insumos + Recetas)',
+    tasks:[
+      { tag:'Full-stack', done:false, text:'Módulo de Insumos, Acompañantes y Recetas (BOM): formulario de producción que descuenta insumos al armar un producto.' },
     ],
-    note: 'Los modelos Input, Companion y ProductInput ya existen. Este sprint construye la UI y la lógica de transacciones ACID.'
+    accelerates:'Modelos Input, Companion y ProductInput listos en schema desde Sprint 1.',
   },
   {
-    n: 18, hito: 5, status: 'pending',
-    name: 'Ajustes de Stock + Alertas',
-    tasks: [
-      { tag: 'Full-stack', text: 'Movimientos manuales de inventario (entrada, salida, ajuste). Cron job de alertas de stock mínimo con notificación por WhatsApp.' },
+    n:18, hito:5, status:'pending',
+    name:'Ajustes de Stock + Alertas Automáticas',
+    tasks:[
+      { tag:'Full-stack', done:false, text:'Movimientos manuales (entrada, salida, ajuste). Cron job de alertas de stock mínimo vía WhatsApp.' },
     ],
-    note: 'Depende de Sprint 10 (WhatsApp) para las notificaciones. Las alertas pueden funcionar por correo como fallback.'
   },
   {
-    n: 19, hito: 5, status: 'pending',
-    name: 'Concurrencia ACID + Descuentos',
-    tasks: [
-      { tag: 'Backend', text: 'Lógica de descuento de stock en transacciones SQL con SELECT ... FOR UPDATE para prevenir condiciones de carrera en ventas simultáneas.' },
+    n:19, hito:5, status:'pending',
+    name:'Concurrencia ACID + Descuentos de Stock',
+    tasks:[
+      { tag:'Backend', done:false, text:'Transacciones SQL con SELECT … FOR UPDATE para prevenir condiciones de carrera en ventas simultáneas.' },
     ],
-    note: 'Este sprint garantiza que el inventario sea confiable bajo carga real. Incluye tests de concurrencia con Jest.'
   },
   {
-    n: 20, hito: 5, status: 'pending',
-    name: 'Despliegue Final + Capacitación',
-    tasks: [
-      { tag: 'DevOps', text: 'Compilación producción Angular + NestJS. Dominio oficial, SSL Let\'s Encrypt, cron de backups diarios a S3.' },
-      { tag: 'Gestión', text: 'Capacitación al equipo de la fundación. Entrega de manual de usuario y acta de cierre del proyecto.' },
+    n:20, hito:5, status:'pending', milestone:true,
+    name:'Despliegue Final + Capacitación',
+    tasks:[
+      { tag:'DevOps',  done:false, text:'Build de producción. Dominio oficial, SSL con Let\'s Encrypt, cron de backups diarios a S3.' },
+      { tag:'Gestión', done:false, text:'Capacitación al equipo de la fundación. Manual de usuario y acta de entrega y cierre del proyecto.' },
     ],
-    note: '🏁 HITO 5 — Proyecto completado. Sistema en producción, equipo capacitado, respaldo automático activo.'
+    milestoneNote:'🏁 HITO 5 — Proyecto completado. Sistema en producción, equipo capacitado, respaldo automático activo.',
   },
 ];
 
-// Ladders: [from, to] (from lower number, goes UP — good things)
-const LADDERS = [
-  [1, 3],  // Schema completo desde S1 acelera el CRM en S3
-  [2, 5],  // Auth listo en S2 desbloquea todos los webhooks seguros
-];
+// ── STATS ──────────────────────────────────────────────────
+const done    = SPRINTS.filter(s => s.status === 'done').length;
+const pending = SPRINTS.length - done;
+const pct     = Math.round(done / SPRINTS.length * 100);
+const weeks   = done; // 1 sprint = 1 semana
 
-// Snakes: [from, to] (from higher number, falls DOWN — risks)
-const SNAKES = [
-  [10, 8], // WhatsApp requiere aprobación Meta (bloquea S10, puede volver a S8)
-  [5, 3],  // Shopify webhooks: dependencia externa puede atrasar S5
-];
+// Ring
+const circ = 2 * Math.PI * 23;
+const offset = circ * (1 - pct / 100);
+document.getElementById('ring-fill').style.strokeDashoffset = offset;
+document.getElementById('ring-label').textContent = pct + '%';
+document.getElementById('meta-done').textContent = `${done} / ${SPRINTS.length} sprints`;
 
-// Board layout (snake pattern, displayed top-to-bottom)
-// Each sub-array is a visual row, top row first
-const BOARD_LAYOUT = [
-  [20, 19, 18, 17, 16],   // row 0 (top)    — right to left in game
-  [11, 12, 13, 14, 15],   // row 1
-  [10,  9,  8,  7,  6],   // row 2
-  [ 1,  2,  3,  4,  5],   // row 3 (bottom)
-];
+document.getElementById('stat-grid').innerHTML = `
+  <div class="stat-pill"><span class="val" style="color:#22c55e">${done}</span><span class="lbl">Completados</span></div>
+  <div class="stat-pill"><span class="val" style="color:#94a3b8">${pending}</span><span class="lbl">Pendientes</span></div>
+  <div class="stat-pill"><span class="val" style="color:#f8fafc">${weeks}</span><span class="lbl">Semanas</span></div>
+  <div class="stat-pill"><span class="val" style="color:#a78bfa">${20 - weeks}</span><span class="lbl">Restantes</span></div>
+`;
 
-const HITO_NAMES = { 1:'Hito 1', 2:'Hito 2', 3:'Hito 3', 4:'Hito 4', 5:'Hito 5' };
-const HITO_MILESTONES = [4, 8, 12, 16, 20]; // sprint numbers that close a hito
+// ── HITO NAV ───────────────────────────────────────────────
+const hitoColors = ['#22c55e','#f59e0b','#3b82f6','#8b5cf6','#ec4899'];
+const hitoNav = document.getElementById('hito-nav');
+HITOS.forEach((h, i) => {
+  const spDone = h.sprints.filter(n => SPRINTS[n-1].status === 'done').length;
+  const spTotal = h.sprints.length;
+  const p = Math.round(spDone/spTotal*100);
+  hitoNav.innerHTML += `
+    <a href="#hito-${h.n}" class="hito-nav-item">
+      <div class="hito-dot" style="background:${hitoColors[i]}"></div>
+      <span>Hito ${h.n} — ${h.weeks}</span>
+      <span class="hito-pct">${p}%</span>
+    </a>`;
+});
 
-// Inject cells
-const board = document.getElementById('board');
-const panelEl = document.getElementById('panel');
+// ── RENDER ROADMAP ─────────────────────────────────────────
+const roadmap = document.getElementById('roadmap');
 
-BOARD_LAYOUT.forEach((row, ri) => {
-  row.forEach((sprintNum, ci) => {
-    const sp = SPRINTS[sprintNum - 1];
-    const isMilestone = HITO_MILESTONES.includes(sp.n);
-    const cell = document.createElement('div');
-    cell.className = `cell ${sp.status}${isMilestone ? ' milestone' : ''}`;
-    cell.id = `cell-${sp.n}`;
-    cell.dataset.sprint = sp.n;
-    cell.innerHTML = `
-      <div class="cell-number">S${sp.n}</div>
-      <div class="cell-name">${sp.name}</div>
-      <div class="cell-footer">
-        <span class="hito-badge">${HITO_NAMES[sp.hito]}</span>
-        <span class="status-icon"></span>
+HITOS.forEach((h, hi) => {
+  const spDone  = h.sprints.filter(n => SPRINTS[n-1].status === 'done').length;
+  const spTotal = h.sprints.length;
+  const allDone = spDone === spTotal;
+  const none    = spDone === 0;
+  const headCls = allDone ? 'h-done' : (!none ? 'h-partial' : 'h-pending');
+  const statusBadge = allDone
+    ? '<span class="hito-status-badge" style="background:#dcfce7;color:#15803d">✅ Completado</span>'
+    : (!none ? `<span class="hito-status-badge" style="background:#fef9c3;color:#92400e">⏳ En progreso (${spDone}/${spTotal})</span>`
+             : `<span class="hito-status-badge" style="background:#f1f5f9;color:#64748b">Pendiente (0/${spTotal})</span>`);
+
+  const section = document.createElement('div');
+  section.className = 'hito-section';
+  section.id = `hito-${h.n}`;
+  section.innerHTML = `
+    <div class="hito-header ${headCls}">
+      <span class="hito-number">Hito ${h.n}</span>
+      <div style="flex:1;min-width:0">
+        <div class="hito-title">${h.title}</div>
+        <div style="font-size:0.75rem;color:#64748b;margin-top:2px">${h.desc}</div>
+      </div>
+      <span class="hito-weeks">${h.weeks}</span>
+      ${statusBadge}
+    </div>
+  `;
+
+  // Sprint cards
+  h.sprints.forEach((spNum, idx) => {
+    const sp = SPRINTS[spNum - 1];
+    const isMilestone = !!sp.milestone;
+    const isLast = idx === h.sprints.length - 1;
+
+    const card = document.createElement('div');
+    card.className = `sprint-card`;
+    card.dataset.status = sp.status;
+    card.dataset.milestone = isMilestone ? 'true' : 'false';
+
+    const nodeIcon = sp.status === 'done' ? '✓' : sp.n;
+    const statusLabel = sp.status === 'done' ? 'Completado' : 'Pendiente';
+
+    const tasksHtml = sp.tasks.map(t => `
+      <div class="task-row ${t.done ? 'done-task' : ''}">
+        <span class="task-icon">${t.done ? '✅' : '◻️'}</span>
+        <div class="task-content">
+          <span class="task-tag">${t.tag}</span>
+          <div class="task-text">${t.text}</div>
+        </div>
+      </div>
+    `).join('');
+
+    const metricsHtml = sp.metrics ? `
+      <div class="metrics-row">
+        ${sp.metrics.map(m => `<span class="metric-chip">📊 ${m}</span>`).join('')}
+      </div>` : '';
+
+    const badgesHtml = (sp.risk || sp.accelerates) ? `
+      <div class="badge-row">
+        ${sp.risk       ? `<span class="risk-badge">⚠️ ${sp.risk}</span>` : ''}
+        ${sp.accelerates ? `<span class="accel-badge">🪜 ${sp.accelerates}</span>` : ''}
+      </div>` : '';
+
+    const milestoneHtml = sp.milestoneNote ? `
+      <div class="milestone-ribbon">
+        <span>${sp.milestoneNote}</span>
+      </div>` : '';
+
+    card.innerHTML = `
+      <div class="sprint-timeline">
+        <div class="sprint-node ${sp.status}">${nodeIcon}</div>
+        <div class="sprint-week">S${sp.n}</div>
+      </div>
+      <div class="sprint-body ${sp.status} ${isMilestone ? 'milestone' : ''}">
+        <div class="sprint-head" onclick="toggleCard(this)">
+          <span class="sprint-num-badge">Sprint ${sp.n} · Semana ${sp.n}</span>
+          <span class="sprint-title">${sp.name}</span>
+          ${isMilestone ? '<span style="font-size:0.7rem;background:#ede9fe;color:#5b21b6;padding:3px 8px;border-radius:6px;font-weight:700;white-space:nowrap">📦 Entrega</span>' : ''}
+          <span class="sprint-status ${sp.status}">${statusLabel}</span>
+          <span class="sprint-toggle">▼</span>
+        </div>
+        <div class="sprint-detail ${sp.status === 'done' ? 'open' : ''}">
+          <div class="task-list">${tasksHtml}</div>
+          ${metricsHtml}
+          ${badgesHtml}
+          ${milestoneHtml}
+        </div>
       </div>
     `;
-    cell.addEventListener('click', () => showPanel(sp.n));
-    board.appendChild(cell);
-  });
-});
 
-// Inject sprint panels
-SPRINTS.forEach(sp => {
-  const statusLabel = { done: '✅ Completado', current: '🎯 En curso', pending: '⏳ Pendiente' }[sp.status];
-  const taskIcons   = { done: '✅', current: '🔨', pending: '◻️' };
-  const icon = taskIcons[sp.status];
-  const div = document.createElement('div');
-  div.className = 'panel-sprint';
-  div.id = `panel-sprint-${sp.n}`;
-  div.innerHTML = `
-    <h2>Sprint ${sp.n} — ${sp.name}</h2>
-    <div class="sprint-meta">
-      <span class="sprint-num">Semana ${sp.n}</span>
-      <span class="sprint-hito">${HITO_NAMES[sp.hito]}</span>
-      <span class="sprint-status ${sp.status}">${statusLabel}</span>
-    </div>
-    <div class="tasks-title">Tareas del sprint</div>
-    ${sp.tasks.map(t => `
-      <div class="task-item">
-        <span class="task-icon">${icon}</span>
-        <div class="task-text"><strong>${t.tag}</strong>${t.text}</div>
-      </div>
-    `).join('')}
-    <div class="panel-note">${sp.note}</div>
-  `;
-  panelEl.appendChild(div);
-});
-
-function showPanel(n) {
-  document.getElementById('panel-hint').style.display = 'none';
-  document.querySelectorAll('.panel-sprint').forEach(el => el.classList.remove('active'));
-  document.querySelectorAll('.cell').forEach(el => el.style.outline = '');
-  const pEl = document.getElementById(`panel-sprint-${n}`);
-  if (pEl) pEl.classList.add('active');
-  const cEl = document.getElementById(`cell-${n}`);
-  if (cEl) cEl.style.outline = '3px solid #f59e0b';
-}
-
-// Place token on last completed sprint
-function getCellCenter(sprintNum) {
-  const cell = document.getElementById(`cell-${sprintNum}`);
-  if (!cell) return null;
-  const boardRect = board.getBoundingClientRect();
-  const cellRect  = cell.getBoundingClientRect();
-  return {
-    x: cellRect.left - boardRect.left + cellRect.width  / 2,
-    y: cellRect.top  - boardRect.top  + cellRect.height / 2,
-  };
-}
-
-function placeToken() {
-  const lastDone = [...SPRINTS].reverse().find(s => s.status === 'done');
-  if (!lastDone) return;
-  const pos = getCellCenter(lastDone.n);
-  if (!pos) return;
-  const token = document.getElementById('token');
-  token.style.left = (pos.x - 14 + board.offsetLeft + 10) + 'px';  // +10 for board padding
-  token.style.top  = (pos.y - 14 + board.offsetTop) + 'px';
-}
-
-// Draw snakes and ladders
-function drawConnectors() {
-  const svg = document.getElementById('svg-overlay');
-  svg.innerHTML = '';
-
-  function cellCenter(n) {
-    const cell = document.getElementById(`cell-${n}`);
-    if (!cell) return null;
-    const boardEl = board;
-    const bRect = boardEl.getBoundingClientRect();
-    const cRect = cell.getBoundingClientRect();
-    return {
-      x: cRect.left - bRect.left + cRect.width  / 2,
-      y: cRect.top  - bRect.top  + cRect.height / 2,
-    };
-  }
-
-  // Ladders (green)
-  LADDERS.forEach(([from, to]) => {
-    const a = cellCenter(from);
-    const b = cellCenter(to);
-    if (!a || !b) return;
-    // Draw a thick line with a gradient
-    const id = `lg-${from}-${to}`;
-    const grad = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
-    grad.setAttribute('id', id);
-    grad.setAttribute('x1', '0%'); grad.setAttribute('y1', '0%');
-    grad.setAttribute('x2', '100%'); grad.setAttribute('y2', '100%');
-    grad.innerHTML = `<stop offset="0%" stop-color="#22c55e" stop-opacity="0.9"/>
-                      <stop offset="100%" stop-color="#86efac" stop-opacity="0.7"/>`;
-    const defs = svg.querySelector('defs') || (() => {
-      const d = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-      svg.appendChild(d); return d;
-    })();
-    defs.appendChild(grad);
-
-    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    line.setAttribute('x1', a.x); line.setAttribute('y1', a.y);
-    line.setAttribute('x2', b.x); line.setAttribute('y2', b.y);
-    line.setAttribute('stroke', `url(#${id})`);
-    line.setAttribute('stroke-width', '5');
-    line.setAttribute('stroke-linecap', 'round');
-    svg.appendChild(line);
-
-    // Arrow at end
-    const angle = Math.atan2(b.y - a.y, b.x - a.x);
-    const arr = arrowHead(b.x, b.y, angle, '#22c55e');
-    svg.appendChild(arr);
-
-    // Label
-    const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
-    const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    txt.setAttribute('x', mx); txt.setAttribute('y', my - 6);
-    txt.setAttribute('text-anchor', 'middle');
-    txt.setAttribute('font-size', '11');
-    txt.setAttribute('font-weight', 'bold');
-    txt.setAttribute('fill', '#22c55e');
-    txt.setAttribute('filter', 'drop-shadow(0 1px 2px #000)');
-    txt.textContent = '🪜';
-    svg.appendChild(txt);
+    section.appendChild(card);
   });
 
-  // Snakes (red)
-  SNAKES.forEach(([from, to]) => {
-    const a = cellCenter(from);
-    const b = cellCenter(to);
-    if (!a || !b) return;
-
-    // Wavy path
-    const cx1 = a.x + (b.x - a.x) * 0.3 + 30;
-    const cy1 = a.y + (b.y - a.y) * 0.3;
-    const cx2 = a.x + (b.x - a.x) * 0.7 - 30;
-    const cy2 = a.y + (b.y - a.y) * 0.7;
-
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('d', `M${a.x},${a.y} C${cx1},${cy1} ${cx2},${cy2} ${b.x},${b.y}`);
-    path.setAttribute('stroke', '#ef4444');
-    path.setAttribute('stroke-width', '4.5');
-    path.setAttribute('stroke-linecap', 'round');
-    path.setAttribute('fill', 'none');
-    path.setAttribute('stroke-dasharray', '8 4');
-    path.setAttribute('opacity', '0.85');
-    svg.appendChild(path);
-
-    // Arrow at end
-    const angle = Math.atan2(b.y - a.y, b.x - a.x);
-    const arr = arrowHead(b.x, b.y, angle, '#ef4444');
-    svg.appendChild(arr);
-
-    // Label
-    const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
-    const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    txt.setAttribute('x', mx + 20); txt.setAttribute('y', my);
-    txt.setAttribute('text-anchor', 'middle');
-    txt.setAttribute('font-size', '13');
-    txt.setAttribute('fill', '#ef4444');
-    txt.setAttribute('filter', 'drop-shadow(0 1px 2px #000)');
-    txt.textContent = '🐍';
-    svg.appendChild(txt);
-  });
-}
-
-function arrowHead(x, y, angle, color) {
-  const size = 8;
-  const x1 = x - size * Math.cos(angle - Math.PI / 6);
-  const y1 = y - size * Math.sin(angle - Math.PI / 6);
-  const x2 = x - size * Math.cos(angle + Math.PI / 6);
-  const y2 = y - size * Math.sin(angle + Math.PI / 6);
-  const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-  poly.setAttribute('points', `${x},${y} ${x1},${y1} ${x2},${y2}`);
-  poly.setAttribute('fill', color);
-  return poly;
-}
-
-// Progress bar
-const doneSprints = SPRINTS.filter(s => s.status === 'done').length;
-const pct = Math.round((doneSprints / SPRINTS.length) * 100);
-document.getElementById('progress-fill').style.width = pct + '%';
-document.getElementById('progress-pct').textContent = `${doneSprints} / ${SPRINTS.length} sprints (${pct}%)`;
-
-// Init after layout
-requestAnimationFrame(() => {
-  setTimeout(() => {
-    drawConnectors();
-    placeToken();
-  }, 50);
+  roadmap.appendChild(section);
 });
 
-// Resize
-window.addEventListener('resize', () => { drawConnectors(); placeToken(); });
+// ── TOGGLE ─────────────────────────────────────────────────
+function toggleCard(head) {
+  const detail = head.nextElementSibling;
+  const toggle = head.querySelector('.sprint-toggle');
+  const isOpen = detail.classList.contains('open');
+  detail.classList.toggle('open', !isOpen);
+  toggle.classList.toggle('open', !isOpen);
+}
+
+// ── FILTER ─────────────────────────────────────────────────
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const f = btn.dataset.filter;
+
+    document.querySelectorAll('.sprint-card').forEach(card => {
+      let show = true;
+      if (f === 'done')      show = card.dataset.status === 'done';
+      if (f === 'pending')   show = card.dataset.status === 'pending';
+      if (f === 'milestone') show = card.dataset.milestone === 'true';
+      card.classList.toggle('filtered-out', !show);
+    });
+
+    document.querySelectorAll('.hito-section').forEach(sec => {
+      const visible = [...sec.querySelectorAll('.sprint-card')].some(c => !c.classList.contains('filtered-out'));
+      sec.classList.toggle('filtered-out', !visible);
+    });
+  });
+});
 </script>
 </body>
 </html>
