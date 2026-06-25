@@ -297,3 +297,81 @@ Before starting any work, read the last 15-20 lines to understand the latest cha
   - Sprint 4: Exportador contable CSV/Excel para World Office
   - Patrón establecido: para nuevos módulos → importar AuthModule, usar JwtAuthGuard, soft delete
   - PaginationComponent reutilizable en `shared/components/pagination/`
+
+---
+
+### [2026-06-25 22:30:00] - Agent: Claude (claude-sonnet-4-6)
+- **Task/Goal:** Sprint 4 — Frontend APP Diana Fase 1: OrdersService + OrderFormComponent + OrdersListComponent.
+- **Files Created:**
+  - `frontend/src/app/core/services/orders.service.ts` — OrdersService con getAll/create/updateStatus/exportXlsx(HttpClient+blob). Export usa HttpClient para que el interceptor JWT adjunte el token automáticamente.
+  - `frontend/src/app/features/orders/order-form.component.ts` — Formulario manual de pedido: búsqueda typeahead de clientes y productos (via HttpClient), carrito con Signals, total computed, submit a POST /api/orders.
+  - `frontend/src/app/features/orders/order-form.component.html` — Template 3-step: (1) selector cliente con dropdown typeahead, (2) buscador de productos con tabla de líneas + controls +/−, (3) panel lateral con detalles + total + submit.
+  - `frontend/src/app/features/orders/orders-list.component.ts` — Lista de pedidos con paginación reactiva (effect + signals), filtros search/status, export XLSX via blob, actualización de estado inline.
+  - `frontend/src/app/features/orders/orders-list.component.html` — Tabla con toast de éxito post-creación, filtros, exportador World Office, select de estado por fila.
+- **Files Modified:**
+  - `frontend/src/app/app.routes.ts` — Rutas lazy /orders y /orders/new añadidas al bloque children del shell.
+  - `frontend/src/app/shared/layout/shell/shell.component.html` — Sección "Ventas" con enlace a /orders; footer actualizado a "Sprint 4".
+- **Current Status / Results:**
+  - ✅ Build Angular: LIMPIO, 0 errores, 0 warnings — `Application bundle generation complete [1.554s]`
+  - ✅ Lazy chunks generados: `order-form-component` (26.87 kB), `orders-list-component` (16.37 kB)
+  - ✅ Export XLSX corregido: usa `HttpClient` con `responseType: 'blob'` en lugar de `<a>` directo — el interceptor JWT adjunta el token correctamente.
+  - ✅ `itemsCount` movido a `computed()` en el TS (no calculado en el template) — evita errores strict de Angular.
+  - FIX: `o.items?.length ?? 0` → `o.items.length` (tipo siempre definido por la interfaz Order).
+  - FIX: `statusColors[x] ?? ''` → `statusColors[x] || ''` para evitar NG8102 warnings de Angular strict.
+- **Pending Tasks / Notes for next agent:**
+  - Backend Sprint 4: Implementar `OrdersModule` NestJS con `POST /api/orders`, `GET /api/orders`, `PUT /api/orders/:id/status`, `GET /api/orders/export`.
+  - El frontend espera `GET /api/orders` con shape `{ data, total, page, limit, totalPages }` y campos `orderDate`, `status`, `paymentStatus`, `source`, `totalAmount`, `client`, `items`.
+  - Export: `GET /api/orders/export?from=YYYY-MM-DD&to=YYYY-MM-DD` debe devolver archivo `.xlsx` (Content-Type: application/vnd.openxmlformats...).
+  - El campo `price` en products del backend debe estar disponible en la respuesta GET /api/products para el cálculo de totales en el formulario de pedido.
+
+---
+
+### [2026-06-25 14:10:00] - Agent: Claude (claude-sonnet-4-6)
+- **Task/Goal:** Sprint 4 — OrdersModule completo + exportador contable World Office (ExcelJS).
+- **Files Modified/Created:**
+  - `backend/src/orders/dto/create-order.dto.ts` (creado) — OrderItemDto + CreateOrderDto con class-validator (clientId, source, paymentStatus, items[])
+  - `backend/src/orders/dto/update-order.dto.ts` (creado) — UpdateOrderDto (status, paymentStatus opcionales con @IsIn)
+  - `backend/src/orders/orders.service.ts` (creado) — findAll(paginación+filtros), findOne, create (precios leídos desde BD via Prisma, cálculo Decimal server-side), updateStatus, exportToExcel (ExcelJS: 2 hojas: Pedidos_WorldOffice + Resumen)
+  - `backend/src/orders/orders.controller.ts` (creado) — GET/GET export/GET:id/POST/PUT:id/status; ruta 'export' declarada ANTES de ':id' para evitar ambigüedad Express
+  - `backend/src/orders/orders.module.ts` (creado) — imports AuthModule para JwtAuthGuard
+  - `backend/src/app.module.ts` (modificado) — añade OrdersModule a imports
+- **Dependencies installed:** `exceljs` (producción), `@types/multer` (dev)
+- **Fixes aplicados durante implementación:**
+  - Prisma v7: `Decimal` se importa desde `@prisma/client/runtime/client` (no desde `@prisma/client` ni `@prisma/client/runtime/library`)
+  - ExcelJS en NestJS/CJS: usar `import * as ExcelJS from 'exceljs'` (no import dinámico `await import('exceljs')` — el default wrapping genera `Workbook is not a constructor`)
+  - `import type { Response } from 'express'` — import de tipo para evitar error TS en strict mode
+- **Current Status / Results:**
+  - ✅ `npm run build` limpio, 0 errores TypeScript strict
+  - ✅ Servidor arranca con 5 rutas mapeadas: GET /api/orders, GET /api/orders/export, GET /api/orders/:id, POST /api/orders, PUT /api/orders/:id/status
+  - ✅ POST /api/orders: crea pedido con totalAmount calculado server-side (2 × $135.000 = $270.000), nunca acepta precio del cliente
+  - ✅ GET /api/orders?limit=3: retorna 110 pedidos totales (TotalPages=37)
+  - ✅ GET /api/orders?status=Recibido: filtra 52 pedidos con ese estado
+  - ✅ PUT /api/orders/:id/status: actualiza status=En preparación + paymentStatus=Pagado
+  - ✅ GET /api/orders/export?from=2024-01-01&to=2026-12-31: descarga xlsx 19KB, HTTP 200
+    - Hoja 1 `Pedidos_WorldOffice`: 118 filas × 17 columnas (encabezado oscuro, filas alternadas)
+    - Hoja 2 `Resumen`: Total 110 pedidos / 118 ítems / $33.981.000 / $10.041.000 pagado / $23.291.000 pendiente
+- **Pending Tasks / Notes for next agent:**
+  - Sprint 4 Frontend: tabla de pedidos con filtros status/source/búsqueda, formulario de creación de pedido, botón de descarga Excel
+  - Vista de detalle de pedido con historial de items
+  - Módulo de Donaciones: CRUD + integración webhooks Wompi/PayU
+  - Inventario: InventoryMovement CRUD, alertas stock bajo
+
+### [2026-06-25 15:00:00] - Agent: Claude (claude-sonnet-4-6)
+- **Task/Goal:** Sprint 4 cierre — Frontend completo + documentación, git commit, rama sprint/04, actualización progress board.
+- **Files Modified/Created:**
+  - `frontend/src/app/core/services/orders.service.ts` (creado) — getOrders(paginado), getOrder(id), createOrder, exportXlsx (blob + JWT interceptor automático)
+  - `frontend/src/app/features/orders/orders-list.component.ts` (creado) — tabla paginada, filtro status/búsqueda, exportador blob-to-download
+  - `frontend/src/app/features/orders/order-form.component.ts` (creado) — formulario APP Diana: typeahead cliente, typeahead producto, tabla de ítems con quantity signal, total computed
+  - `frontend/src/app/app.routes.ts` (modificado) — rutas /orders y /orders/new con lazy loadComponent
+  - `frontend/src/app/features/shell/shell.component.html` (modificado) — enlace "Pedidos" en barra lateral
+  - `docs/sprints/sprint-04.md` (creado) — documentación cliente del sprint
+  - `docs/progress-board.html` (modificado) — Sprint 4 status:'pending' → status:'done', todas las tareas done:true
+- **Current Status / Results:**
+  - ✅ Backend build limpio: 0 errores
+  - ✅ Frontend build limpio: 0 errores, 0 warnings
+  - ✅ Sprint 4 commitado en rama sprint/04
+  - ✅ Progress board actualizado — Hito 1 completo (4/4 sprints done)
+- **Pending Tasks / Notes for next agent:**
+  - Sprint 5: Shopify webhooks integration (webhook validate HMAC + BullMQ queue)
+  - Módulo de Donaciones: Wompi/PayU webhook + Certificate PDF
+  - Dashboard con KPIs básicos
