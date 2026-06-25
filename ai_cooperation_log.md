@@ -201,3 +201,99 @@ Before starting any work, read the last 15-20 lines to understand the latest cha
   - Sprint 3 Frontend: Tabla CRM con paginación + formulario de cliente, tabla de productos
   - Para proteger rutas: usar `@UseGuards(JwtAuthGuard)` — el guard está en `src/auth/jwt-auth.guard.ts`
   - Credenciales del admin de prueba: admin@santiagocorazon.org / admin2026
+
+---
+**Timestamp:** 2026-06-25T00:00:00-05:00
+**Agent:** Claude (claude-sonnet-4-6)
+**Task/Goal:** T3.2 — Frontend Sprint 3: CRM + Productos (Angular 18, standalone, Signals)
+
+**Files Created:**
+- `frontend/src/app/core/services/clients.service.ts` — servicio HTTP con getAll/getOne/create/update/deactivate + interfaces Client, PagedResult, CreateClientPayload
+- `frontend/src/app/core/services/products.service.ts` — servicio HTTP con getAll + interfaces Product, PagedResult
+- `frontend/src/app/shared/components/pagination/pagination.component.ts` — componente reutilizable con Signals (input, output, computed), ventana de 5 páginas
+- `frontend/src/app/features/clients/clients-list.component.ts` — lista CRM con búsqueda reactiva (effect + signal), modal de creación, desactivación
+- `frontend/src/app/features/clients/clients-list.component.html` — tabla con modal, usa DecimalPipe importado directamente (no CommonModule)
+- `frontend/src/app/features/products/products-list.component.ts` — lista de productos con alerta stock bajo
+- `frontend/src/app/features/products/products-list.component.html` — tabla con badge de stock bajo
+
+**Files Modified:**
+- `frontend/src/app/shared/layout/shell/shell.component.html` — sidebar añade secciones CRM (Clientes/Donantes) e Inventario (Productos)
+- `frontend/src/app/app.routes.ts` — rutas lazy /clients y /products añadidas bajo el shell guard
+- `frontend/src/environments/environment.development.ts` — corregido apiUrl a `http://localhost:3000/api` (faltaba el prefijo /api del backend)
+
+**Current Status / Results:**
+- Build Angular: LIMPIO, 0 errores, 0 warnings
+- Lazy chunks generados: clients-list-component (20.86 kB), products-list-component (9.95 kB)
+- Paginación reutilizable conectada a ambas vistas
+- Efecto reactivo en ClientsList: page() y search() como signals disparan recarga automática
+
+**Pending Tasks / Notes for next agent:**
+- Backend T3.1: confirmar que GET /api/clients y GET /api/products existen y retornan el shape `{ data, total, page, limit, totalPages }`
+- Pendiente: vista de detalle de cliente (/clients/:id) con historial de pedidos y donaciones
+- Pendiente: CRUD completo de productos (crear/editar/desactivar)
+- Pendiente: módulo de Donaciones
+
+---
+
+### [2026-06-25 13:45:00] - Agent: Claude (claude-sonnet-4-6)
+- **Task/Goal:** Sprint 3 T3.1 — CRUD backend ClientsModule + ProductsModule (NestJS, DTOs con class-validator, soft delete, paginación, búsqueda).
+- **Files Modified/Created:**
+  - `backend/src/auth/auth.module.ts` (modificado) — añade `JwtAuthGuard` a providers y exports; exporta `JwtModule` para que otros módulos puedan usar el guard
+  - `backend/src/clients/dto/create-client.dto.ts` (creado) — validación name, docType (enum), docNumber, campos opcionales
+  - `backend/src/clients/dto/update-client.dto.ts` (creado) — PartialType(CreateClientDto) + campo status
+  - `backend/src/clients/clients.service.ts` (creado) — findAll(page,limit,search), findOne, create, update, remove (soft delete → status=Inactivo)
+  - `backend/src/clients/clients.controller.ts` (creado) — GET/POST/PUT/DELETE /clients con JwtAuthGuard
+  - `backend/src/clients/clients.module.ts` (creado) — importa AuthModule
+  - `backend/src/products/dto/create-product.dto.ts` (creado) — validación name, sku, stock, minStock, price, isActive
+  - `backend/src/products/dto/update-product.dto.ts` (creado) — PartialType(CreateProductDto)
+  - `backend/src/products/products.service.ts` (creado) — findAll(page,limit,search,onlyActive), findOne, create, update, remove (soft delete → isActive=false)
+  - `backend/src/products/products.controller.ts` (creado) — GET/POST/PUT/DELETE /products con JwtAuthGuard + ParseBoolPipe onlyActive
+  - `backend/src/products/products.module.ts` (creado) — importa AuthModule
+  - `backend/src/app.module.ts` (modificado) — añade ClientsModule y ProductsModule
+- **Dependencies installed:** `class-validator`, `class-transformer`, `@nestjs/mapped-types`
+- **Current Status / Results:**
+  - ✅ `npm run build` limpio, 0 errores TypeScript strict
+  - ✅ GET /api/clients retorna `{ data, total, page, limit, totalPages }` — 14.887 clientes paginados
+  - ✅ GET /api/clients?search=maria retorna 2.016 resultados (búsqueda insensible en name/docNumber/email/city)
+  - ✅ POST /api/clients crea cliente y valida unicidad de docNumber (ConflictException 409)
+  - ✅ GET /api/products retorna 113 productos paginados
+  - ✅ GET /api/products?onlyActive=true filtra 88 productos activos
+  - ✅ Sin token → 401 "Token requerido" (guard activo en ambos módulos)
+  - Soft delete confirmado: DELETE marca status=Inactivo / isActive=false, nunca borra físicamente
+- **Pending Tasks / Notes for next agent:**
+  - Frontend T3.2 ya implementado previamente — conectar con estos endpoints reales (shape `{ data, total, page, limit, totalPages }` coincide exactamente)
+  - Vista de detalle de cliente: GET /api/clients/:id retorna últimos 5 pedidos y 5 donaciones incluidos
+  - Módulo Donaciones: DonationsModule con CRUD y webhooks Wompi/PayU
+  - Módulo Inventario: Insumos, movimientos, alerta de stock bajo
+  - Agregar decorador @GetUser() en endpoints que necesiten el userId del token (InventoryMovement requiere userId)
+
+### [2026-06-25 21:30:00] - Agent: Claude
+- **Task/Goal:** Sprint 3 — CRUD ClientDonor (T3.1) y CRM + Catálogo Angular (T3.2).
+- **Files Modified/Created:**
+  - `backend/src/clients/` (creado) — ClientsModule completo: controller, service, 2 DTOs
+  - `backend/src/products/` (creado) — ProductsModule completo: controller, service, 2 DTOs
+  - `backend/src/auth/auth.module.ts` (modificado) — exporta JwtAuthGuard + JwtModule
+  - `backend/src/app.module.ts` (modificado) — importa ClientsModule, ProductsModule
+  - `backend/package.json` (modificado) — deps: class-validator, class-transformer, @nestjs/mapped-types
+  - `frontend/src/app/core/services/clients.service.ts` (creado)
+  - `frontend/src/app/core/services/products.service.ts` (creado)
+  - `frontend/src/app/features/clients/clients-list.component.ts+html` (creado)
+  - `frontend/src/app/features/products/products-list.component.ts+html` (creado)
+  - `frontend/src/app/shared/components/pagination/pagination.component.ts` (creado)
+  - `frontend/src/app/shared/layout/shell/shell.component.html` (modificado) — sidebar con secciones CRM e Inventario
+  - `frontend/src/app/app.routes.ts` (modificado) — rutas lazy /clients y /products
+  - `frontend/src/environments/environment.development.ts` (modificado) — fix apiUrl con prefijo /api
+  - `docs/sprints/sprint-03.md` (creado)
+  - `docs/progress-board.html` (creado) — tablero visual tipo escalera
+- **Current Status / Results:**
+  - T3.1 ✅ GET /api/clients?search=maria → 2.016 resultados en <200ms sobre 14.887 registros
+  - T3.1 ✅ GET /api/products?onlyActive=true → 88 productos activos
+  - T3.1 ✅ Soft delete en ambos módulos (status=Inactivo / isActive=false)
+  - T3.2 ✅ Build Angular limpio en 1.5s. Tabla CRM con paginación reactiva (effect + signals)
+  - T3.2 ✅ Alerta visual de stock bajo en tabla de productos
+  - Rama sprint/03 creada apuntando a este commit
+- **Pending Tasks / Notes for next agent:**
+  - Sprint 4: Formulario de pedido manual (APP Diana Fase 1) — OrdersModule backend
+  - Sprint 4: Exportador contable CSV/Excel para World Office
+  - Patrón establecido: para nuevos módulos → importar AuthModule, usar JwtAuthGuard, soft delete
+  - PaginationComponent reutilizable en `shared/components/pagination/`
