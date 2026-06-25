@@ -1,0 +1,59 @@
+<div class="p-6">
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Catálogo de Productos</h1>
+      <p class="text-sm text-gray-500 mt-0.5">{{ total() }} productos registrados</p>
+    </div>
+  </div>
+
+  <div class="mb-4">
+    <input type="text" placeholder="Buscar por nombre o SKU…"
+      (input)="onSearch($event)"
+      class="w-full max-w-md border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500" />
+  </div>
+
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    @if (loading()) {
+      <div class="flex items-center justify-center py-16 text-gray-400 text-sm">Cargando…</div>
+    } @else if (products().length === 0) {
+      <div class="flex items-center justify-center py-16 text-gray-400 text-sm">Sin resultados</div>
+    } @else {
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 border-b border-gray-200">
+            <tr>
+              <th class="text-left px-4 py-3 font-semibold text-gray-600">Producto</th>
+              <th class="text-left px-4 py-3 font-semibold text-gray-600">SKU</th>
+              <th class="text-right px-4 py-3 font-semibold text-gray-600">Precio</th>
+              <th class="text-right px-4 py-3 font-semibold text-gray-600">Stock</th>
+              <th class="text-left px-4 py-3 font-semibold text-gray-600">Estado</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            @for (p of products(); track p.id) {
+              <tr class="hover:bg-gray-50 transition-colors" [class.bg-red-50]="lowStock(p)">
+                <td class="px-4 py-3 font-medium text-gray-900">{{ p.name }}</td>
+                <td class="px-4 py-3 text-gray-500 font-mono text-xs">{{ p.sku }}</td>
+                <td class="px-4 py-3 text-right font-semibold text-gray-900">{{ formatPrice(p.price) }}</td>
+                <td class="px-4 py-3 text-right">
+                  <span [class]="lowStock(p) ? 'text-red-600 font-bold' : 'text-gray-700'">{{ p.stock }}</span>
+                  <span class="text-gray-400 text-xs ml-1">(mín {{ p.minStock }})</span>
+                </td>
+                <td class="px-4 py-3">
+                  @if (lowStock(p)) {
+                    <span class="text-xs font-semibold bg-red-100 text-red-700 px-2 py-0.5 rounded-full">Stock bajo</span>
+                  } @else {
+                    <span class="text-xs font-semibold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">OK</span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <app-pagination
+        [page]="page()" [totalPages]="totalPages()" [total]="total()" [limit]="limit()"
+        (pageChange)="onPageChange($event)" />
+    }
+  </div>
+</div>

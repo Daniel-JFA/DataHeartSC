@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DataHeartSC — Tablero de Avance</title>
+<style>
+  :root {
+    --cream:   #fdf6e3;
+    --done:    #22c55e;
+    --current: #f59e0b;
+    --pending: #e2e8f0;
+    --hito:    #7c3aed;
+    --danger:  #ef4444;
+    --border:  #94a3b8;
+    --text:    #1e293b;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #1a1a2e;
+    color: var(--text);
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  header h1 {
+    font-size: 2rem;
+    font-weight: 900;
+    color: #f1f5f9;
+    letter-spacing: -1px;
+  }
+  header p {
+    color: #94a3b8;
+    font-size: 0.9rem;
+    margin-top: 4px;
+  }
+
+  .layout {
+    display: flex;
+    gap: 24px;
+    max-width: 1100px;
+    margin: 0 auto;
+    align-items: flex-start;
+  }
+
+  /* ── BOARD ── */
+  .board-wrap {
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .board {
+    display: grid;
+    grid-template-columns: repeat(5, 120px);
+    grid-template-rows: repeat(4, 110px);
+    gap: 6px;
+    background: #7c5c28;
+    padding: 10px;
+    border-radius: 16px;
+    border: 6px solid #5a3e1b;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    position: relative;
+  }
+
+  .cell {
+    border-radius: 10px;
+    padding: 7px 8px 6px;
+    cursor: pointer;
+    position: relative;
+    transition: transform 0.15s, box-shadow 0.15s;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border: 2px solid transparent;
+    user-select: none;
+  }
+  .cell:hover {
+    transform: scale(1.05);
+    z-index: 10;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+  .cell.done     { background: #dcfce7; border-color: #16a34a; }
+  .cell.current  { background: #fef9c3; border-color: #ca8a04; animation: pulse 1.8s ease-in-out infinite; }
+  .cell.pending  { background: #f8fafc; border-color: #cbd5e1; }
+  .cell.milestone { outline: 3px solid var(--hito); outline-offset: 2px; }
+
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(234,179,8,0.5); }
+    50%       { box-shadow: 0 0 0 8px rgba(234,179,8,0); }
+  }
+
+  .cell-number {
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: #64748b;
+    line-height: 1;
+  }
+  .cell.done .cell-number    { color: #15803d; }
+  .cell.current .cell-number { color: #92400e; }
+
+  .cell-name {
+    font-size: 0.62rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: #374151;
+    flex: 1;
+    margin-top: 3px;
+  }
+
+  .cell-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 4px;
+  }
+
+  .hito-badge {
+    font-size: 0.5rem;
+    font-weight: 700;
+    background: var(--hito);
+    color: white;
+    padding: 1px 5px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .cell.done .status-icon::after    { content: '✅'; font-size: 0.75rem; }
+  .cell.current .status-icon::after { content: '🎯'; font-size: 0.75rem; }
+  .cell.pending .status-icon::after { content: ''; }
+
+  /* player token */
+  .token {
+    position: absolute;
+    width: 28px;
+    height: 28px;
+    background: radial-gradient(circle at 35% 35%, #fbbf24, #d97706);
+    border-radius: 50%;
+    border: 3px solid #92400e;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5), inset 0 -2px 4px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    pointer-events: none;
+    transition: top 0.6s cubic-bezier(0.34,1.56,0.64,1), left 0.6s cubic-bezier(0.34,1.56,0.64,1);
+    z-index: 20;
+  }
+
+  /* SVG overlay */
+  .svg-overlay {
+    position: absolute;
+    top: 10px; left: 10px;
+    width: calc(5 * 120px + 4 * 6px);
+    height: calc(4 * 110px + 3 * 6px);
+    pointer-events: none;
+    z-index: 5;
+  }
+
+  /* ── SIDE PANEL ── */
+  .panel {
+    flex: 1;
+    background: #0f172a;
+    border-radius: 16px;
+    border: 1px solid #1e293b;
+    padding: 24px;
+    min-height: 480px;
+    color: #f1f5f9;
+  }
+
+  .panel-hint {
+    color: #475569;
+    font-size: 0.85rem;
+    text-align: center;
+    margin-top: 80px;
+    line-height: 1.8;
+  }
+  .panel-hint span { font-size: 2rem; display: block; margin-bottom: 8px; }
+
+  .panel-sprint { display: none; }
+  .panel-sprint.active { display: block; }
+
+  .panel-sprint h2 {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #f1f5f9;
+    margin-bottom: 4px;
+  }
+  .panel-sprint .sprint-meta {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .sprint-num {
+    font-size: 0.72rem;
+    font-weight: 700;
+    background: #1e293b;
+    color: #94a3b8;
+    padding: 3px 10px;
+    border-radius: 999px;
+  }
+  .sprint-hito {
+    font-size: 0.72rem;
+    font-weight: 700;
+    background: var(--hito);
+    color: white;
+    padding: 3px 10px;
+    border-radius: 999px;
+  }
+  .sprint-status {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 999px;
+  }
+  .sprint-status.done    { background: #166534; color: #bbf7d0; }
+  .sprint-status.current { background: #78350f; color: #fde68a; }
+  .sprint-status.pending { background: #1e293b; color: #64748b; }
+
+  .tasks-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 10px;
+  }
+  .task-item {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin-bottom: 10px;
+    background: #1e293b;
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+  .task-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+  .task-text { font-size: 0.82rem; color: #cbd5e1; line-height: 1.5; }
+  .task-text strong { color: #f1f5f9; display: block; font-weight: 600; font-size: 0.78rem; }
+
+  .panel-note {
+    margin-top: 16px;
+    background: #1e293b;
+    border-left: 3px solid #7c3aed;
+    border-radius: 0 8px 8px 0;
+    padding: 10px 14px;
+    font-size: 0.78rem;
+    color: #94a3b8;
+    line-height: 1.6;
+  }
+
+  /* ── LEGEND ── */
+  .legend {
+    max-width: 1100px;
+    margin: 20px auto 0;
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    color: #94a3b8;
+  }
+  .legend-dot {
+    width: 14px; height: 14px;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+  .legend-line {
+    width: 28px; height: 5px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+
+  /* ── PROGRESS BAR ── */
+  .progress-wrap {
+    max-width: 1100px;
+    margin: 16px auto 0;
+    background: #0f172a;
+    border-radius: 12px;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .progress-label { font-size: 0.8rem; color: #64748b; white-space: nowrap; }
+  .progress-bar {
+    flex: 1;
+    height: 12px;
+    background: #1e293b;
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #22c55e, #16a34a);
+    border-radius: 999px;
+    transition: width 1s ease;
+  }
+  .progress-pct { font-size: 0.85rem; font-weight: 700; color: #22c55e; white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🎲 DataHeartSC — Tablero de Avance</h1>
+  <p>Fundación Infantil Santiago Corazón · Plan de 20 Sprints · 5 Hitos</p>
+</header>
+
+<div class="layout">
+  <div class="board-wrap">
+    <div class="board" id="board">
+      <!-- cells injected by JS -->
+    </div>
+    <svg class="svg-overlay" id="svg-overlay"></svg>
+    <div class="token" id="token">♟</div>
+  </div>
+
+  <div class="panel" id="panel">
+    <div class="panel-hint" id="panel-hint">
+      <span>🎲</span>
+      Haz clic en cualquier<br>casilla para ver el detalle<br>del sprint
+    </div>
+    <!-- Sprint panels injected by JS -->
+  </div>
+</div>
+
+<div class="progress-wrap">
+  <span class="progress-label">Progreso global</span>
+  <div class="progress-bar">
+    <div class="progress-fill" id="progress-fill"></div>
+  </div>
+  <span class="progress-pct" id="progress-pct"></span>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#dcfce7;border:2px solid #16a34a"></div> Sprint completado</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#fef9c3;border:2px solid #ca8a04"></div> Sprint en curso</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#f8fafc;border:2px solid #cbd5e1"></div> Pendiente</div>
+  <div class="legend-item"><div class="legend-dot" style="background:white;outline:3px solid #7c3aed;outline-offset:2px"></div> Entrega de Hito</div>
+  <div class="legend-item"><div class="legend-line" style="background:linear-gradient(90deg,#22c55e,#86efac)"></div> Escalera (avance acelerado)</div>
+  <div class="legend-item"><div class="legend-line" style="background:linear-gradient(90deg,#ef4444,#fca5a5)"></div> Serpiente (riesgo / dependencia externa)</div>
+</div>
+
+<script>
+const SPRINTS = [
+  {
+    n: 1, hito: 1, status: 'done',
+    name: 'Cimientos Cloud + Schema DB',
+    tasks: [
+      { tag: 'DevOps', text: 'Aprovisionamiento PostgreSQL 16 + PostGIS en Docker' },
+      { tag: 'Backend', text: 'Prisma: 18 modelos (incluye Beneficiary, Volunteer, Provider). Migración inicial ejecutada.' },
+      { tag: 'Frontend', text: 'Angular 18 base: Tailwind CSS, routing lazy, interceptor JWT, authGuard, shell layout, login con Signals.' },
+    ],
+    note: '✅ Base de datos live. 18 tablas creadas. Angular compila y despliega correctamente.'
+  },
+  {
+    n: 2, hito: 1, status: 'done',
+    name: 'Seguridad JWT + ETL Histórico',
+    tasks: [
+      { tag: 'Backend', text: 'Auth JWT HS256 (8h). Endpoint POST /api/auth/login con bcrypt. JwtAuthGuard + @GetUser(). Seed: roles Admin / Operador / Contador.' },
+      { tag: 'Data', text: 'ETL Supabase → PostgreSQL: 14.839 clientes, 114 productos, 109 pedidos, 189 ítems migrados. Script idempotente.' },
+    ],
+    note: '✅ Sistema protegido. Datos históricos disponibles en la nueva BD. Credenciales admin: admin@santiagocorazon.org / admin2026'
+  },
+  {
+    n: 3, hito: 1, status: 'pending',
+    name: 'CRM + Catálogo de Productos',
+    tasks: [
+      { tag: 'Backend', text: 'CRUD ClientDonor y Product: GET /api/clients, POST, PUT, DELETE. Paginación + búsqueda por nombre/documento (<200ms).' },
+      { tag: 'Frontend', text: 'Tablas Angular del CRM con paginación, filtros en tiempo real y formulario reactivo de creación de clientes.' },
+    ],
+    note: 'Requiere Sprint 2 completado. El JwtAuthGuard ya está listo para proteger los nuevos endpoints.'
+  },
+  {
+    n: 4, hito: 1, status: 'pending',
+    name: 'Pedidos Manuales + World Office',
+    tasks: [
+      { tag: 'Frontend', text: 'Formulario APP Diana Fase 1: autocompletado CRM, selector de productos, recálculo automático de totales.' },
+      { tag: 'Backend', text: 'Exportador contable CSV/Excel compatible con plantilla de importación de World Office.' },
+    ],
+    note: '🏁 HITO 1 — Entrega al cliente: sistema operativo para ventas manuales y contabilidad.'
+  },
+  {
+    n: 5, hito: 2, status: 'pending',
+    name: 'Shopify Webhooks',
+    tasks: [
+      { tag: 'Backend', text: 'Endpoint POST /api/webhooks/shopify/orders. Validación HMAC SHA256 del header X-Shopify-Hmac-SHA256.' },
+      { tag: 'Backend', text: 'Idempotencia: clave única por Shopify order ID para evitar duplicados en reintentos.' },
+    ],
+    note: '⚠️ Requiere cuenta Shopify Partners configurada y ngrok/dominio público para recibir webhooks en desarrollo.'
+  },
+  {
+    n: 6, hito: 2, status: 'pending',
+    name: 'Pasarelas de Pago',
+    tasks: [
+      { tag: 'Backend', text: 'Webhooks Wompi y PayU: identificar donante por correo/cédula, crear si no existe, registrar en tabla donations.' },
+    ],
+    note: 'Requiere credenciales sandbox de Wompi y PayU. La lógica de idempotencia del Sprint 5 aplica acá también.'
+  },
+  {
+    n: 7, hito: 2, status: 'pending',
+    name: 'Motor de Certificados PDF',
+    tasks: [
+      { tag: 'DevOps', text: 'BullMQ + Redis: cola de tareas asíncronas para evitar bloqueo de la API durante generación de PDFs.' },
+      { tag: 'Backend', text: 'Worker: genera PDF del certificado tributario y lo sube a S3 / Cloudflare R2. Guarda URL en tabla certificates.' },
+    ],
+    note: 'El procesamiento asíncrono garantiza que el webhook de pago responda en <200ms aunque el PDF tarde 3-5s.'
+  },
+  {
+    n: 8, hito: 2, status: 'pending',
+    name: 'SMTP + Dashboard Inicial',
+    tasks: [
+      { tag: 'Backend', text: 'Nodemailer: envío automático de certificado PDF por correo al confirmar donación.' },
+      { tag: 'Frontend', text: 'Historial de certificados con descarga directa desde S3 y botón "Reenviar".' },
+      { tag: 'Frontend', text: 'Dashboard KPIs: total pedidos Shopify, donaciones del mes, últimas 10 transacciones en tiempo real.' },
+    ],
+    note: '🏁 HITO 2 — Flujo de donación 100% automatizado: pago → PDF → correo.'
+  },
+  {
+    n: 9, hito: 3, status: 'pending',
+    name: 'Beneficiarios (Niños)',
+    tasks: [
+      { tag: 'Full-stack', text: 'CRUD visual de beneficiarios: tabla con paginación, formulario de inscripción, historial de actividades.' },
+    ],
+    note: 'El modelo Beneficiary ya existe en el schema desde Sprint 1. Solo requiere módulo NestJS + componente Angular.'
+  },
+  {
+    n: 10, hito: 3, status: 'pending',
+    name: 'WhatsApp Business API',
+    tasks: [
+      { tag: 'Backend', text: 'Integración WhatsApp Cloud API de Meta: notificaciones transaccionales por pedido confirmado, donación recibida, certificado enviado.' },
+    ],
+    note: '⚠️ Requiere aprobación del negocio en Meta Business Suite (puede tomar 1-2 semanas). Iniciar el trámite en paralelo.'
+  },
+  {
+    n: 11, hito: 3, status: 'pending',
+    name: 'PayPal + Email Marketing',
+    tasks: [
+      { tag: 'Backend', text: 'Webhook / IPN PayPal para donaciones internacionales.' },
+      { tag: 'Backend', text: 'Sincronización de donantes con Mailchimp / Mailerlite para campañas.' },
+    ],
+    note: 'PayPal requiere cuenta de negocios verificada. Mailchimp/Mailerlite necesita API key del equipo de comunicaciones.'
+  },
+  {
+    n: 12, hito: 3, status: 'pending',
+    name: 'Dashboard Operativo + KPIs',
+    tasks: [
+      { tag: 'Frontend', text: 'Panel de control de pedidos (reemplazo definitivo de APP Diana): kanban o lista con filtros por estado.' },
+      { tag: 'Frontend', text: 'Panel de gráficos de gestión (ventas, donaciones, beneficiarios) con opción de embed de Looker Studio.' },
+    ],
+    note: '🏁 HITO 3 — Todas las comunicaciones automatizadas. Gestión operativa en un solo panel.'
+  },
+  {
+    n: 13, hito: 4, status: 'pending',
+    name: 'Voluntarios',
+    tasks: [
+      { tag: 'Full-stack', text: 'CRUD visual de voluntarios: registro, roles dentro de la fundación, historial de participación.' },
+    ],
+    note: 'El modelo Volunteer ya existe desde Sprint 1. Patrón idéntico al módulo de Beneficiarios (Sprint 9).'
+  },
+  {
+    n: 14, hito: 4, status: 'pending',
+    name: 'Segmentador de Donantes',
+    tasks: [
+      { tag: 'Backend / Frontend', text: 'Query builder de segmentación en PostgreSQL: filtros por monto, frecuencia, ciudad, canal. Reemplaza Databricks para reportería básica.' },
+    ],
+    note: 'PostGIS ya está activo. Con los datos migrados en Sprint 2, este módulo puede operar sobre 14.800+ registros reales.'
+  },
+  {
+    n: 15, hito: 4, status: 'pending',
+    name: 'Geolocalización PostGIS',
+    tasks: [
+      { tag: 'Backend / Data', text: 'Geocodificación de direcciones de clientes y beneficiarios usando la API de Google Maps o Nominatim (OpenStreetMap).' },
+    ],
+    note: 'PostGIS ya está instalado desde Sprint 1. Este sprint puebla los campos de geometría con coordenadas reales.'
+  },
+  {
+    n: 16, hito: 4, status: 'pending',
+    name: 'Mapa Interactivo de Impacto',
+    tasks: [
+      { tag: 'Frontend', text: 'Visualizador Leaflet.js en Angular: mapa de beneficiarios, cobertura de envíos, calor de donaciones por zona.' },
+    ],
+    note: '🏁 HITO 4 — Visualización geográfica del impacto social de la fundación. Apto para reportes a donantes y aliados.'
+  },
+  {
+    n: 17, hito: 5, status: 'pending',
+    name: 'Inventario Avanzado',
+    tasks: [
+      { tag: 'Full-stack', text: 'Módulo de Insumos, Acompañantes y Recetas (BOM): formulario de producción que descuenta insumos automáticamente al armar un producto.' },
+    ],
+    note: 'Los modelos Input, Companion y ProductInput ya existen. Este sprint construye la UI y la lógica de transacciones ACID.'
+  },
+  {
+    n: 18, hito: 5, status: 'pending',
+    name: 'Ajustes de Stock + Alertas',
+    tasks: [
+      { tag: 'Full-stack', text: 'Movimientos manuales de inventario (entrada, salida, ajuste). Cron job de alertas de stock mínimo con notificación por WhatsApp.' },
+    ],
+    note: 'Depende de Sprint 10 (WhatsApp) para las notificaciones. Las alertas pueden funcionar por correo como fallback.'
+  },
+  {
+    n: 19, hito: 5, status: 'pending',
+    name: 'Concurrencia ACID + Descuentos',
+    tasks: [
+      { tag: 'Backend', text: 'Lógica de descuento de stock en transacciones SQL con SELECT ... FOR UPDATE para prevenir condiciones de carrera en ventas simultáneas.' },
+    ],
+    note: 'Este sprint garantiza que el inventario sea confiable bajo carga real. Incluye tests de concurrencia con Jest.'
+  },
+  {
+    n: 20, hito: 5, status: 'pending',
+    name: 'Despliegue Final + Capacitación',
+    tasks: [
+      { tag: 'DevOps', text: 'Compilación producción Angular + NestJS. Dominio oficial, SSL Let\'s Encrypt, cron de backups diarios a S3.' },
+      { tag: 'Gestión', text: 'Capacitación al equipo de la fundación. Entrega de manual de usuario y acta de cierre del proyecto.' },
+    ],
+    note: '🏁 HITO 5 — Proyecto completado. Sistema en producción, equipo capacitado, respaldo automático activo.'
+  },
+];
+
+// Ladders: [from, to] (from lower number, goes UP — good things)
+const LADDERS = [
+  [1, 3],  // Schema completo desde S1 acelera el CRM en S3
+  [2, 5],  // Auth listo en S2 desbloquea todos los webhooks seguros
+];
+
+// Snakes: [from, to] (from higher number, falls DOWN — risks)
+const SNAKES = [
+  [10, 8], // WhatsApp requiere aprobación Meta (bloquea S10, puede volver a S8)
+  [5, 3],  // Shopify webhooks: dependencia externa puede atrasar S5
+];
+
+// Board layout (snake pattern, displayed top-to-bottom)
+// Each sub-array is a visual row, top row first
+const BOARD_LAYOUT = [
+  [20, 19, 18, 17, 16],   // row 0 (top)    — right to left in game
+  [11, 12, 13, 14, 15],   // row 1
+  [10,  9,  8,  7,  6],   // row 2
+  [ 1,  2,  3,  4,  5],   // row 3 (bottom)
+];
+
+const HITO_NAMES = { 1:'Hito 1', 2:'Hito 2', 3:'Hito 3', 4:'Hito 4', 5:'Hito 5' };
+const HITO_MILESTONES = [4, 8, 12, 16, 20]; // sprint numbers that close a hito
+
+// Inject cells
+const board = document.getElementById('board');
+const panelEl = document.getElementById('panel');
+
+BOARD_LAYOUT.forEach((row, ri) => {
+  row.forEach((sprintNum, ci) => {
+    const sp = SPRINTS[sprintNum - 1];
+    const isMilestone = HITO_MILESTONES.includes(sp.n);
+    const cell = document.createElement('div');
+    cell.className = `cell ${sp.status}${isMilestone ? ' milestone' : ''}`;
+    cell.id = `cell-${sp.n}`;
+    cell.dataset.sprint = sp.n;
+    cell.innerHTML = `
+      <div class="cell-number">S${sp.n}</div>
+      <div class="cell-name">${sp.name}</div>
+      <div class="cell-footer">
+        <span class="hito-badge">${HITO_NAMES[sp.hito]}</span>
+        <span class="status-icon"></span>
+      </div>
+    `;
+    cell.addEventListener('click', () => showPanel(sp.n));
+    board.appendChild(cell);
+  });
+});
+
+// Inject sprint panels
+SPRINTS.forEach(sp => {
+  const statusLabel = { done: '✅ Completado', current: '🎯 En curso', pending: '⏳ Pendiente' }[sp.status];
+  const taskIcons   = { done: '✅', current: '🔨', pending: '◻️' };
+  const icon = taskIcons[sp.status];
+  const div = document.createElement('div');
+  div.className = 'panel-sprint';
+  div.id = `panel-sprint-${sp.n}`;
+  div.innerHTML = `
+    <h2>Sprint ${sp.n} — ${sp.name}</h2>
+    <div class="sprint-meta">
+      <span class="sprint-num">Semana ${sp.n}</span>
+      <span class="sprint-hito">${HITO_NAMES[sp.hito]}</span>
+      <span class="sprint-status ${sp.status}">${statusLabel}</span>
+    </div>
+    <div class="tasks-title">Tareas del sprint</div>
+    ${sp.tasks.map(t => `
+      <div class="task-item">
+        <span class="task-icon">${icon}</span>
+        <div class="task-text"><strong>${t.tag}</strong>${t.text}</div>
+      </div>
+    `).join('')}
+    <div class="panel-note">${sp.note}</div>
+  `;
+  panelEl.appendChild(div);
+});
+
+function showPanel(n) {
+  document.getElementById('panel-hint').style.display = 'none';
+  document.querySelectorAll('.panel-sprint').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.cell').forEach(el => el.style.outline = '');
+  const pEl = document.getElementById(`panel-sprint-${n}`);
+  if (pEl) pEl.classList.add('active');
+  const cEl = document.getElementById(`cell-${n}`);
+  if (cEl) cEl.style.outline = '3px solid #f59e0b';
+}
+
+// Place token on last completed sprint
+function getCellCenter(sprintNum) {
+  const cell = document.getElementById(`cell-${sprintNum}`);
+  if (!cell) return null;
+  const boardRect = board.getBoundingClientRect();
+  const cellRect  = cell.getBoundingClientRect();
+  return {
+    x: cellRect.left - boardRect.left + cellRect.width  / 2,
+    y: cellRect.top  - boardRect.top  + cellRect.height / 2,
+  };
+}
+
+function placeToken() {
+  const lastDone = [...SPRINTS].reverse().find(s => s.status === 'done');
+  if (!lastDone) return;
+  const pos = getCellCenter(lastDone.n);
+  if (!pos) return;
+  const token = document.getElementById('token');
+  token.style.left = (pos.x - 14 + board.offsetLeft + 10) + 'px';  // +10 for board padding
+  token.style.top  = (pos.y - 14 + board.offsetTop) + 'px';
+}
+
+// Draw snakes and ladders
+function drawConnectors() {
+  const svg = document.getElementById('svg-overlay');
+  svg.innerHTML = '';
+
+  function cellCenter(n) {
+    const cell = document.getElementById(`cell-${n}`);
+    if (!cell) return null;
+    const boardEl = board;
+    const bRect = boardEl.getBoundingClientRect();
+    const cRect = cell.getBoundingClientRect();
+    return {
+      x: cRect.left - bRect.left + cRect.width  / 2,
+      y: cRect.top  - bRect.top  + cRect.height / 2,
+    };
+  }
+
+  // Ladders (green)
+  LADDERS.forEach(([from, to]) => {
+    const a = cellCenter(from);
+    const b = cellCenter(to);
+    if (!a || !b) return;
+    // Draw a thick line with a gradient
+    const id = `lg-${from}-${to}`;
+    const grad = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+    grad.setAttribute('id', id);
+    grad.setAttribute('x1', '0%'); grad.setAttribute('y1', '0%');
+    grad.setAttribute('x2', '100%'); grad.setAttribute('y2', '100%');
+    grad.innerHTML = `<stop offset="0%" stop-color="#22c55e" stop-opacity="0.9"/>
+                      <stop offset="100%" stop-color="#86efac" stop-opacity="0.7"/>`;
+    const defs = svg.querySelector('defs') || (() => {
+      const d = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+      svg.appendChild(d); return d;
+    })();
+    defs.appendChild(grad);
+
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', a.x); line.setAttribute('y1', a.y);
+    line.setAttribute('x2', b.x); line.setAttribute('y2', b.y);
+    line.setAttribute('stroke', `url(#${id})`);
+    line.setAttribute('stroke-width', '5');
+    line.setAttribute('stroke-linecap', 'round');
+    svg.appendChild(line);
+
+    // Arrow at end
+    const angle = Math.atan2(b.y - a.y, b.x - a.x);
+    const arr = arrowHead(b.x, b.y, angle, '#22c55e');
+    svg.appendChild(arr);
+
+    // Label
+    const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+    const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    txt.setAttribute('x', mx); txt.setAttribute('y', my - 6);
+    txt.setAttribute('text-anchor', 'middle');
+    txt.setAttribute('font-size', '11');
+    txt.setAttribute('font-weight', 'bold');
+    txt.setAttribute('fill', '#22c55e');
+    txt.setAttribute('filter', 'drop-shadow(0 1px 2px #000)');
+    txt.textContent = '🪜';
+    svg.appendChild(txt);
+  });
+
+  // Snakes (red)
+  SNAKES.forEach(([from, to]) => {
+    const a = cellCenter(from);
+    const b = cellCenter(to);
+    if (!a || !b) return;
+
+    // Wavy path
+    const cx1 = a.x + (b.x - a.x) * 0.3 + 30;
+    const cy1 = a.y + (b.y - a.y) * 0.3;
+    const cx2 = a.x + (b.x - a.x) * 0.7 - 30;
+    const cy2 = a.y + (b.y - a.y) * 0.7;
+
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', `M${a.x},${a.y} C${cx1},${cy1} ${cx2},${cy2} ${b.x},${b.y}`);
+    path.setAttribute('stroke', '#ef4444');
+    path.setAttribute('stroke-width', '4.5');
+    path.setAttribute('stroke-linecap', 'round');
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke-dasharray', '8 4');
+    path.setAttribute('opacity', '0.85');
+    svg.appendChild(path);
+
+    // Arrow at end
+    const angle = Math.atan2(b.y - a.y, b.x - a.x);
+    const arr = arrowHead(b.x, b.y, angle, '#ef4444');
+    svg.appendChild(arr);
+
+    // Label
+    const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+    const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    txt.setAttribute('x', mx + 20); txt.setAttribute('y', my);
+    txt.setAttribute('text-anchor', 'middle');
+    txt.setAttribute('font-size', '13');
+    txt.setAttribute('fill', '#ef4444');
+    txt.setAttribute('filter', 'drop-shadow(0 1px 2px #000)');
+    txt.textContent = '🐍';
+    svg.appendChild(txt);
+  });
+}
+
+function arrowHead(x, y, angle, color) {
+  const size = 8;
+  const x1 = x - size * Math.cos(angle - Math.PI / 6);
+  const y1 = y - size * Math.sin(angle - Math.PI / 6);
+  const x2 = x - size * Math.cos(angle + Math.PI / 6);
+  const y2 = y - size * Math.sin(angle + Math.PI / 6);
+  const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+  poly.setAttribute('points', `${x},${y} ${x1},${y1} ${x2},${y2}`);
+  poly.setAttribute('fill', color);
+  return poly;
+}
+
+// Progress bar
+const doneSprints = SPRINTS.filter(s => s.status === 'done').length;
+const pct = Math.round((doneSprints / SPRINTS.length) * 100);
+document.getElementById('progress-fill').style.width = pct + '%';
+document.getElementById('progress-pct').textContent = `${doneSprints} / ${SPRINTS.length} sprints (${pct}%)`;
+
+// Init after layout
+requestAnimationFrame(() => {
+  setTimeout(() => {
+    drawConnectors();
+    placeToken();
+  }, 50);
+});
+
+// Resize
+window.addEventListener('resize', () => { drawConnectors(); placeToken(); });
+</script>
+</body>
+</html>
