@@ -1,4 +1,659 @@
+/* ============================================================
+   DataHeartSC — Global Stylesheet
+   Design system: Inter font · brand crimson · Stripe-style UI
+   ============================================================ */
+
+/* ─── Google Fonts ─────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ─── Tailwind layers ──────────────────────────────────────── */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Design tokens (CSS custom properties) ────────────────── */
+/* These mirror the Tailwind config values and are available
+   for any native CSS / SCSS that needs them outside templates. */
+:root {
+  /* Brand — deep crimson rose */
+  --color-brand-50:  #fff1f3;
+  --color-brand-100: #ffe4e8;
+  --color-brand-200: #fecdd5;
+  --color-brand-300: #fda4b3;
+  --color-brand-400: #fb6e88;
+  --color-brand-500: #f43f65;
+  --color-brand-600: #e11d48;
+  --color-brand-700: #be123c;   /* PRIMARY */
+  --color-brand-800: #9f1239;
+  --color-brand-900: #881337;
+  --color-brand-950: #4c0519;
+
+  /* Neutrals (slate palette) */
+  --color-surface:       #ffffff;
+  --color-surface-muted: #f8fafc;   /* slate-50 */
+  --color-border:        #e2e8f0;   /* slate-200 */
+  --color-border-strong: #cbd5e1;   /* slate-300 */
+  --color-text-primary:  #0f172a;   /* slate-900 */
+  --color-text-secondary:#475569;   /* slate-600 */
+  --color-text-muted:    #94a3b8;   /* slate-400 */
+
+  /* Sidebar */
+  --color-sidebar-bg:    #0f172a;   /* slate-900 */
+  --color-sidebar-hover: #1e293b;   /* slate-800 */
+  --color-sidebar-active:#1e293b;   /* slate-800 */
+  --color-sidebar-text:  #cbd5e1;   /* slate-300 */
+  --color-sidebar-muted: #64748b;   /* slate-500 */
+
+  /* Semantic */
+  --color-success:       #16a34a;   /* green-600 */
+  --color-warning:       #d97706;   /* amber-600 */
+  --color-danger:        #dc2626;   /* red-600 */
+  --color-info:          #2563eb;   /* blue-600 */
+
+  /* Shadows */
+  --shadow-xs:  0 1px 2px 0 rgb(0 0 0 / 0.04);
+  --shadow-sm:  0 1px 3px 0 rgb(0 0 0 / 0.07), 0 1px 2px -1px rgb(0 0 0 / 0.07);
+  --shadow:     0 2px 6px -1px rgb(0 0 0 / 0.08), 0 1px 4px -2px rgb(0 0 0 / 0.08);
+  --shadow-md:  0 4px 12px -2px rgb(0 0 0 / 0.10), 0 2px 6px -2px rgb(0 0 0 / 0.06);
+  --shadow-lg:  0 8px 24px -4px rgb(0 0 0 / 0.12), 0 4px 10px -3px rgb(0 0 0 / 0.08);
+
+  /* Radii */
+  --radius-xs:  0.1875rem;
+  --radius-sm:  0.25rem;
+  --radius:     0.375rem;
+  --radius-md:  0.5rem;
+  --radius-lg:  0.75rem;
+  --radius-xl:  1rem;
+  --radius-2xl: 1.5rem;
+
+  /* Timing */
+  --duration-fast:   100ms;
+  --duration:        150ms;
+  --duration-normal: 200ms;
+  --duration-slow:   300ms;
+  --ease-default:    cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ─── Base resets & typography ─────────────────────────────── */
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    font-size: 14px;              /* 1rem = 14px — compact ERP baseline */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: 'Inter', 'Inter var', ui-sans-serif, system-ui, sans-serif;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';  /* Inter optical features */
+    background-color: var(--color-surface-muted);
+    color: var(--color-text-primary);
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  /* Headings — tight weights for dashboard UI */
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    color: var(--color-text-primary);
+    line-height: 1.25;
+  }
+
+  /* Focus visible — only keyboard, not click */
+  :focus {
+    outline: none;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-brand-700);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+
+  /* Links */
+  a {
+    color: var(--color-brand-700);
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+  }
+
+  /* Inputs — global sensible default */
+  input, textarea, select {
+    font-family: inherit;
+    font-size: inherit;
+  }
+
+  /* HR */
+  hr {
+    border: none;
+    border-top: 1px solid var(--color-border);
+    margin: 1.5rem 0;
+  }
+}
+
+/* ─── Custom scrollbar ──────────────────────────────────────── */
+/* Webkit — thin, low-contrast scrollbar matching sidebar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;       /* slate-300 */
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8;       /* slate-400 */
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+/* ─── Component layer — reusable utility classes ────────────── */
+@layer components {
+
+  /* ── Buttons ─────────────────────────────────────── */
+
+  /* Base button — never use alone, always extend with a variant */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2
+           font-medium rounded-md
+           text-sm leading-none
+           px-3.5 py-2
+           transition-all duration-150 ease-in-out
+           cursor-pointer select-none
+           whitespace-nowrap;
+
+    &:disabled,
+    &[disabled] {
+      @apply opacity-50 cursor-not-allowed pointer-events-none;
+    }
+  }
+
+  /* Primary — brand crimson fill */
+  .btn-primary {
+    @apply btn
+           bg-brand-700 text-white
+           hover:bg-brand-600
+           active:bg-brand-800
+           focus-visible:shadow-[0_0_0_3px_rgb(190_18_60_/_0.25)];
+  }
+
+  /* Secondary — outlined */
+  .btn-secondary {
+    @apply btn
+           bg-white text-slate-700
+           border border-slate-300
+           hover:bg-slate-50 hover:border-slate-400
+           active:bg-slate-100
+           focus-visible:shadow-[0_0_0_3px_rgb(148_163_184_/_0.35)];
+  }
+
+  /* Ghost — no border, subtle hover */
+  .btn-ghost {
+    @apply btn
+           bg-transparent text-slate-600
+           hover:bg-slate-100 hover:text-slate-900
+           active:bg-slate-200;
+  }
+
+  /* Danger */
+  .btn-danger {
+    @apply btn
+           bg-red-600 text-white
+           hover:bg-red-700
+           active:bg-red-800
+           focus-visible:shadow-[0_0_0_3px_rgb(220_38_38_/_0.25)];
+  }
+
+  /* Size modifiers */
+  .btn-sm {
+    @apply px-2.5 py-1.5 text-xs rounded;
+  }
+
+  .btn-lg {
+    @apply px-5 py-2.5 text-base rounded-lg;
+  }
+
+  /* Icon-only square button */
+  .btn-icon {
+    @apply p-2 rounded-md;
+
+    &.btn-ghost {
+      @apply p-2;
+    }
+  }
+
+  /* ── Form elements ───────────────────────────────── */
+
+  .input {
+    @apply w-full rounded-md border border-slate-300 bg-white
+           px-3 py-2 text-sm text-slate-900
+           placeholder:text-slate-400
+           transition-colors duration-150
+           shadow-[inset_0_1px_2px_0_rgb(0_0_0_/_0.04)];
+
+    &:hover:not(:disabled) {
+      @apply border-slate-400;
+    }
+
+    &:focus {
+      @apply outline-none border-brand-700
+             ring-2 ring-brand-700/20;
+    }
+
+    &:disabled {
+      @apply bg-slate-50 text-slate-400 cursor-not-allowed;
+    }
+
+    &.input-error {
+      @apply border-red-400 ring-2 ring-red-400/20;
+    }
+  }
+
+  .label {
+    @apply block text-xs font-medium text-slate-700 mb-1;
+  }
+
+  .field-error {
+    @apply mt-1 text-xs text-red-600;
+  }
+
+  .select {
+    @apply input appearance-none bg-no-repeat pr-8;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%2364748b'%3E%3Cpath fill-rule='evenodd' d='M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z' clip-rule='evenodd'/%3E%3C/svg%3E");
+    background-position: right 0.5rem center;
+    background-size: 1rem 1rem;
+  }
+
+  /* ── Cards ───────────────────────────────────────── */
+
+  .card {
+    @apply bg-white rounded-lg border border-slate-200
+           shadow-[0_1px_3px_0_rgb(0_0_0_/_0.06)];
+  }
+
+  .card-header {
+    @apply px-5 py-4 border-b border-slate-200
+           flex items-center justify-between gap-3;
+  }
+
+  .card-title {
+    @apply text-sm font-semibold text-slate-900;
+  }
+
+  .card-body {
+    @apply px-5 py-4;
+  }
+
+  .card-footer {
+    @apply px-5 py-3 border-t border-slate-200 bg-slate-50/50
+           rounded-b-lg;
+  }
+
+  /* ── Badges / Pills ──────────────────────────────── */
+
+  /* Base badge — always pair with a color variant */
+  .badge {
+    @apply inline-flex items-center gap-1
+           px-2 py-0.5
+           text-xs font-medium
+           rounded-full
+           leading-none;
+  }
+
+  .badge-brand {
+    @apply badge bg-brand-100 text-brand-800;
+  }
+
+  .badge-success {
+    @apply badge bg-green-100 text-green-800;
+  }
+
+  .badge-warning {
+    @apply badge bg-amber-100 text-amber-800;
+  }
+
+  .badge-danger {
+    @apply badge bg-red-100 text-red-700;
+  }
+
+  .badge-info {
+    @apply badge bg-blue-100 text-blue-800;
+  }
+
+  .badge-neutral {
+    @apply badge bg-slate-100 text-slate-700;
+  }
+
+  /* Dot indicator inside a badge */
+  .badge-dot {
+    @apply w-1.5 h-1.5 rounded-full bg-current opacity-80;
+  }
+
+  /* ── Tables ──────────────────────────────────────── */
+
+  .table-wrapper {
+    @apply overflow-x-auto rounded-lg border border-slate-200;
+  }
+
+  .table {
+    @apply w-full text-sm text-left border-collapse;
+
+    thead {
+      @apply bg-slate-50;
+    }
+
+    thead th {
+      @apply px-4 py-3 text-xs font-semibold text-slate-500
+             uppercase tracking-wider
+             border-b border-slate-200
+             whitespace-nowrap;
+    }
+
+    tbody tr {
+      @apply border-b border-slate-100 last:border-b-0
+             transition-colors duration-100;
+
+      &:hover {
+        @apply bg-slate-50/70;
+      }
+    }
+
+    tbody td {
+      @apply px-4 py-3 text-slate-700 align-middle;
+    }
+
+    tfoot td {
+      @apply px-4 py-3 text-xs text-slate-500
+             border-t border-slate-200 bg-slate-50/50;
+    }
+  }
+
+  /* ── Skeleton loading ────────────────────────────── */
+
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      #f1f5f9 0%,        /* slate-100 */
+      #e2e8f0 50%,       /* slate-200 */
+      #f1f5f9 100%       /* slate-100 */
+    );
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 2s linear infinite;
+    border-radius: var(--radius);
+    color: transparent !important;
+    user-select: none;
+    pointer-events: none;
+
+    /* Mask any children while loading */
+    * { visibility: hidden; }
+  }
+
+  .skeleton-text {
+    @apply skeleton h-3 rounded;
+  }
+
+  .skeleton-circle {
+    @apply skeleton rounded-full;
+  }
+
+  /* ── Page shell / layout primitives ─────────────── */
+
+  /* Top-level page wrapper inside router-outlet */
+  .page {
+    @apply min-h-full p-6 flex flex-col gap-6;
+  }
+
+  .page-header {
+    @apply flex items-start justify-between gap-4;
+  }
+
+  .page-title {
+    @apply text-xl font-semibold text-slate-900 leading-tight;
+  }
+
+  .page-subtitle {
+    @apply text-sm text-slate-500 mt-0.5;
+  }
+
+  /* Stats grid — KPI cards row */
+  .stats-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4;
+  }
+
+  .stat-card {
+    @apply card p-5 flex flex-col gap-1;
+  }
+
+  .stat-label {
+    @apply text-xs font-medium text-slate-500 uppercase tracking-wider;
+  }
+
+  .stat-value {
+    @apply text-2xl font-bold text-slate-900 leading-none mt-1;
+  }
+
+  .stat-delta {
+    @apply text-xs font-medium mt-1;
+
+    &.positive { @apply text-green-600; }
+    &.negative { @apply text-red-600; }
+    &.neutral   { @apply text-slate-500; }
+  }
+
+  /* ── Sidebar nav items ───────────────────────────── */
+
+  /* Applied to <a routerLink> inside the sidebar */
+  .nav-item {
+    @apply flex items-center gap-2.5 px-3 py-2
+           rounded-md text-sm font-medium
+           text-slate-400 transition-colors duration-150
+           hover:bg-slate-800 hover:text-slate-100;
+
+    /* Active state applied by routerLinkActive */
+    &.active {
+      @apply bg-slate-800 text-white;
+
+      /* Left accent bar on active item */
+      box-shadow: inset 3px 0 0 var(--color-brand-700);
+    }
+  }
+
+  /* Nav section header */
+  .nav-section {
+    @apply pt-4 pb-1 px-3
+           text-2xs font-semibold tracking-widest
+           text-slate-500 uppercase;
+  }
+
+  /* ── Dividers ────────────────────────────────────── */
+
+  .divider {
+    @apply border-t border-slate-200 my-4;
+  }
+
+  .divider-vertical {
+    @apply border-l border-slate-200 self-stretch;
+  }
+
+  /* ── Empty state ─────────────────────────────────── */
+
+  .empty-state {
+    @apply flex flex-col items-center justify-center
+           py-16 px-6 text-center;
+  }
+
+  .empty-state-icon {
+    @apply w-12 h-12 text-slate-300 mb-4;
+  }
+
+  .empty-state-title {
+    @apply text-sm font-semibold text-slate-700;
+  }
+
+  .empty-state-desc {
+    @apply text-sm text-slate-500 mt-1 max-w-xs;
+  }
+
+  /* ── Toast / notification strip ─────────────────── */
+
+  .toast {
+    @apply fixed bottom-4 right-4 z-[80]
+           flex items-center gap-3
+           min-w-[280px] max-w-sm
+           bg-slate-900 text-white
+           px-4 py-3 rounded-lg shadow-lg
+           text-sm font-medium
+           animate-fade-in;
+
+    &.toast-success { @apply bg-green-700; }
+    &.toast-danger  { @apply bg-red-700; }
+    &.toast-warning { @apply bg-amber-600; }
+  }
+
+  /* ── Modal backdrop ──────────────────────────────── */
+
+  .modal-backdrop {
+    @apply fixed inset-0 z-[70]
+           bg-slate-900/60 backdrop-blur-sm
+           flex items-center justify-center p-4;
+  }
+
+  .modal {
+    @apply bg-white rounded-xl shadow-xl
+           w-full max-w-lg
+           animate-fade-in;
+  }
+
+  .modal-header {
+    @apply px-6 py-4 border-b border-slate-200
+           flex items-center justify-between;
+  }
+
+  .modal-title {
+    @apply text-sm font-semibold text-slate-900;
+  }
+
+  .modal-body {
+    @apply px-6 py-5;
+  }
+
+  .modal-footer {
+    @apply px-6 py-4 border-t border-slate-200
+           flex items-center justify-end gap-3
+           bg-slate-50 rounded-b-xl;
+  }
+
+  /* ── Dropdown menu ───────────────────────────────── */
+
+  .dropdown {
+    @apply absolute z-[60]
+           min-w-[10rem] bg-white
+           border border-slate-200 rounded-lg shadow-md
+           py-1 text-sm text-slate-700
+           animate-fade-in;
+  }
+
+  .dropdown-item {
+    @apply flex items-center gap-2
+           px-3 py-2 w-full text-left
+           hover:bg-slate-100
+           transition-colors duration-100;
+
+    &.destructive {
+      @apply text-red-600 hover:bg-red-50;
+    }
+  }
+
+  .dropdown-divider {
+    @apply border-t border-slate-200 my-1;
+  }
+
+  /* ── Search input ────────────────────────────────── */
+
+  .search-input {
+    @apply input pl-9 pr-3;
+
+    /* Icon is positioned via parent wrapper:
+       <div class="search-wrapper"><svg …/><input class="search-input"/></div> */
+  }
+
+  .search-wrapper {
+    @apply relative;
+
+    svg.search-icon {
+      @apply absolute left-3 top-1/2 -translate-y-1/2
+             w-4 h-4 text-slate-400 pointer-events-none;
+    }
+  }
+}
+
+/* ─── Utility layer additions ───────────────────────────────── */
+@layer utilities {
+
+  /* Truncate with tooltip-friendly title attribute */
+  .truncate-cell {
+    @apply max-w-[12rem] truncate;
+  }
+
+  /* Monospaced numeric value (table amounts) */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum';
+  }
+
+  /* Subtle text gradient for brand heading */
+  .text-brand-gradient {
+    background: linear-gradient(135deg, var(--color-brand-700), var(--color-brand-500));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Full-bleed sidebar section */
+  .sidebar-section {
+    @apply py-4 border-b border-slate-800 last:border-b-0;
+  }
+
+  /* Inset focus ring (for use inside cards) */
+  .focus-ring {
+    @apply focus-visible:outline-none
+           focus-visible:ring-2
+           focus-visible:ring-brand-700/30
+           focus-visible:ring-offset-1;
+  }
+
+  /* Visually hidden but accessible */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+}

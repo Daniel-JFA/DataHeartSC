@@ -1,35 +1,101 @@
-<div class="flex h-screen bg-gray-100">
-  <aside class="w-64 bg-gray-900 text-white flex flex-col">
-    <div class="px-6 py-5 border-b border-gray-700">
-      <h1 class="text-lg font-bold text-red-400">DataHeartSC</h1>
-      <p class="text-xs text-gray-400">Fundación Santiago Corazón</p>
+<div class="flex h-screen bg-slate-50">
+
+  <!-- Sidebar -->
+  <aside class="w-64 bg-slate-900 text-white flex flex-col flex-shrink-0">
+
+    <!-- Logo / Brand -->
+    <div class="px-6 py-5 border-b border-slate-700/60">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center flex-shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-white">
+            <path d="M9.653 16.915l-.005-.003-.019-.01a20.759 20.759 0 01-1.162-.682 22.045 22.045 0 01-2.582-2.025C4.363 12.476 2.5 10.43 2.5 7.5a4.5 4.5 0 018.29-2.396A4.5 4.5 0 0117.5 7.5c0 2.93-1.863 4.976-3.385 6.195a22.045 22.045 0 01-2.582 2.025 20.759 20.759 0 01-1.162.682l-.019.01-.005.003h-.001l-.003.001-.002.001zm0 0l.003-.001.002-.001" />
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-sm font-bold text-white leading-tight">DataHeartSC</h1>
+          <p class="text-xs text-slate-400 leading-tight">Santiago Corazón</p>
+        </div>
+      </div>
     </div>
-    <nav class="flex-1 px-4 py-4 space-y-1">
-      <a routerLink="/dashboard" routerLinkActive="bg-gray-700"
-         class="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-gray-300 hover:bg-gray-700 transition-colors">
-        <span>🏠</span> Dashboard
+
+    <!-- Navigation -->
+    <nav class="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+
+      <!-- Dashboard -->
+      <a routerLink="/dashboard" routerLinkActive="bg-brand-600 text-white"
+         [routerLinkActiveOptions]="{exact: true}"
+         class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors group">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 flex-shrink-0">
+          <path fill-rule="evenodd" d="M9.293 2.293a1 1 0 011.414 0l7 7A1 1 0 0117 11h-1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-3a1 1 0 00-1-1H9a1 1 0 00-1 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-6H3a1 1 0 01-.707-1.707l7-7z" clip-rule="evenodd" />
+        </svg>
+        <span>Dashboard</span>
       </a>
-      <div class="pt-3 pb-1 px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">CRM</div>
-      <a routerLink="/clients" routerLinkActive="bg-gray-700"
-         class="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-gray-300 hover:bg-gray-700 transition-colors">
-        <span>👥</span> Clientes / Donantes
+
+      <!-- CRM Section -->
+      <div class="pt-4 pb-1.5 px-3">
+        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">CRM</span>
+      </div>
+      <a routerLink="/clients" routerLinkActive="bg-brand-600 text-white"
+         class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors group">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 flex-shrink-0">
+          <path d="M7 8a3 3 0 100-6 3 3 0 000 6zM14.5 9a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM1.615 16.428a1.224 1.224 0 01-.569-1.175 6.002 6.002 0 0111.908 0c.058.467-.172.92-.57 1.174A9.953 9.953 0 017 18a9.953 9.953 0 01-5.385-1.572zM14.5 16h-.106c.07-.297.088-.611.048-.933a7.47 7.47 0 00-1.588-3.755 4.502 4.502 0 015.874 2.636.818.818 0 01-.36.98A7.465 7.465 0 0114.5 16z" />
+        </svg>
+        <span>Clientes / Donantes</span>
       </a>
-      <div class="pt-3 pb-1 px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Inventario</div>
-      <a routerLink="/products" routerLinkActive="bg-gray-700"
-         class="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-gray-300 hover:bg-gray-700 transition-colors">
-        <span>🛍️</span> Productos
+
+      <a routerLink="/donations" routerLinkActive="bg-brand-600 text-white"
+         class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors group">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 flex-shrink-0">
+          <path d="M9.653 16.915l-.005-.003-.019-.01a20.759 20.759 0 01-1.162-.682 22.045 22.045 0 01-2.582-2.025C4.363 12.476 2.5 10.43 2.5 7.5a4.5 4.5 0 018.29-2.396A4.5 4.5 0 0117.5 7.5c0 2.93-1.863 4.976-3.385 6.195a22.045 22.045 0 01-2.582 2.025 20.759 20.759 0 01-1.162.682l-.019.01-.005.003h-.001l-.003.001-.002.001z" />
+        </svg>
+        <span>Donaciones</span>
       </a>
-      <div class="pt-3 pb-1 px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Ventas</div>
-      <a routerLink="/orders" routerLinkActive="bg-gray-700"
-         class="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-gray-300 hover:bg-gray-700 transition-colors">
-        <span>📋</span> Pedidos
+
+      <!-- Inventario Section -->
+      <div class="pt-4 pb-1.5 px-3">
+        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Inventario</span>
+      </div>
+      <a routerLink="/products" routerLinkActive="bg-brand-600 text-white"
+         class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors group">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 flex-shrink-0">
+          <path d="M12.232 4.232a2.5 2.5 0 013.536 3.536l-1.225 1.224a.75.75 0 001.061 1.06l1.224-1.224a4 4 0 00-5.656-5.656l-3 3a4 4 0 00.225 5.865.75.75 0 00.977-1.138 2.5 2.5 0 01-.142-3.667l3-3z" />
+          <path d="M11.603 7.963a.75.75 0 00-.977 1.138 2.5 2.5 0 01.142 3.667l-3 3a2.5 2.5 0 01-3.536-3.536l1.225-1.224a.75.75 0 00-1.061-1.06l-1.224 1.224a4 4 0 105.656 5.656l3-3a4 4 0 00-.225-5.865z" />
+        </svg>
+        <span>Productos</span>
       </a>
+
+      <!-- Ventas Section -->
+      <div class="pt-4 pb-1.5 px-3">
+        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Ventas</span>
+      </div>
+      <a routerLink="/orders" routerLinkActive="bg-brand-600 text-white"
+         class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors group">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 flex-shrink-0">
+          <path fill-rule="evenodd" d="M6 4.75A.75.75 0 016.75 4h10.5a.75.75 0 010 1.5H6.75A.75.75 0 016 4.75zM6 10a.75.75 0 01.75-.75h10.5a.75.75 0 010 1.5H6.75A.75.75 0 016 10zm0 5.25a.75.75 0 01.75-.75h10.5a.75.75 0 010 1.5H6.75a.75.75 0 01-.75-.75zM1.99 4.75a1 1 0 011-1H3a1 1 0 011 1v.01a1 1 0 01-1 1h-.01a1 1 0 01-1-1v-.01zM1.99 15.25a1 1 0 011-1H3a1 1 0 011 1v.01a1 1 0 01-1 1h-.01a1 1 0 01-1-1v-.01zM1.99 10a1 1 0 011-1H3a1 1 0 011 1v.01a1 1 0 01-1 1h-.01a1 1 0 01-1-1V10z" clip-rule="evenodd" />
+        </svg>
+        <span>Pedidos</span>
+      </a>
+
     </nav>
-    <div class="px-4 py-4 border-t border-gray-700">
-      <p class="text-xs text-gray-500">Sprint 4 — DataHeartSC</p>
+
+    <!-- User info -->
+    <div class="px-3 py-4 border-t border-slate-700/60">
+      <div class="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">
+        <div class="w-8 h-8 rounded-full bg-brand-600 flex items-center justify-center flex-shrink-0">
+          <span class="text-xs font-bold text-white">A</span>
+        </div>
+        <div class="min-w-0">
+          <p class="text-sm font-medium text-white truncate">Admin</p>
+          <p class="text-xs text-slate-400 truncate">admin&#64;santiagocorazon.org</p>
+        </div>
+      </div>
     </div>
+
   </aside>
+
+  <!-- Main content area -->
   <main class="flex-1 overflow-auto">
     <router-outlet />
   </main>
+
 </div>

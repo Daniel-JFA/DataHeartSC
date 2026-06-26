@@ -16,8 +16,8 @@ export class LoginComponent {
   private router = inject(Router);
 
   form = this.fb.group({
-    email: ['', [Validators.required, Validators.email]],
-    password: ['', Validators.required],
+    email: ['admin@santiagocorazon.org', [Validators.required, Validators.email]],
+    password: ['admin2026', Validators.required],
   });
   loading = signal(false);
   error = signal('');

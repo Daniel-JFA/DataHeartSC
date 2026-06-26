@@ -4,18 +4,35 @@ You are collaborating on this codebase with another AI agent named **Claude**.
 To ensure synchronization and prevent overwriting or repeating work, you must adhere to the following workflow:
 
 ## 1. PRE-TASK ACTION (Mandatory)
-Before starting ANY task, running any command, or editing any file, you **MUST** read the last 20 lines of the cooperation log:
+Before starting ANY task, running any command, or editing any file, you **MUST** read the last 30 lines of the cooperation log:
 - [ai_cooperation_log.md](file:///home/djfa/Dev/projects/Propios/SC/ai_cooperation_log.md)
 
 This will tell you what the other agent recently did, the current status of the repository, and what is expected next.
 
-## 2. POST-TASK ACTION (Mandatory)
-Immediately after making changes, completing a task, or debugging:
-- Append a new log entry to [ai_cooperation_log.md](file:///home/djfa/Dev/projects/Propios/SC/ai_cooperation_log.md) outlining your work.
-- Use the exact markdown format specified in the log file.
-- Keep the log concise but highly informative (list files modified, new state, next steps).
+## 2. POST-TASK ACTION (Mandatory — después de CADA prompt del usuario)
+Immediately after completing **any** prompt — whether it's a code change, a documentation update, a config change, or even a question answered — append a new entry to the cooperation log.
+
+**No exceptions.** Even if the task was small (e.g. "fix a typo", "explain something", "update the progress board"), log it.
+
+### Log entry format:
+```
+### [YYYY-MM-DD HH:MM] - Agent: Antigravity
+- **Task/Goal:** <what the user asked>
+- **Files Modified/Created:** <list or "none">
+- **Current Status / Results:** <what was done, verified results>
+- **Estado del proyecto:** <what is committed vs. uncommitted, any blockers>
+- **Pending Tasks / Notes for next agent (Claude):** <what Claude should know or do next>
+```
 
 ## 3. TECH STACK & ARCHITECTURE RULES
-- Backend: NestJS, Prisma ORM, PostgreSQL.
-- Frontend: Angular 18 (Tailwind CSS).
-- Monorepo structure: /backend, /frontend.
+- Backend: NestJS v11, Prisma v7, PostgreSQL 16 + PostGIS.
+- Frontend: Angular 18, Tailwind CSS v3, standalone components only, Angular Signals (no RxJS BehaviorSubject), @if/@for (no *ngIf/*ngFor).
+- Monorepo: /backend (puerto 3000), /frontend (puerto 4200).
+- Docs: /docs/progress-board.html — tablero de entregables para el cliente. Actualizar cuando cambie el estado de un sprint.
+
+## 4. CURRENT PROJECT STATE (al 2026-06-26)
+- Hito 1 completo (Sprints 1–4 commiteados, commit 8d9c7c9).
+- Sin commitear: DashboardModule, DonationsModule, rediseño UI, progress-board actualizado.
+- Próximo trabajo: Sprint 5 (Shopify webhooks), Sprint 6 (Wompi/PayU webhooks automáticos), Sprint 7 (BullMQ + PDF).
+- Bloqueante: el cliente debe proveer credenciales sandbox de Wompi, PayU y Shopify.
+- Servidor de docs corriendo en puerto 8888 (python3 http.server). Backend en puerto 3000.

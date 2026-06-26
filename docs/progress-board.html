@@ -421,6 +421,32 @@ body {
   body { background: white; }
   .main { padding: 20px; }
 }
+
+.task-expandable { cursor: pointer; }
+.task-expandable:hover { background: #e8f5e9; }
+.task-row.done-task.task-expandable:hover { background: #dcfce7; }
+.task-detail {
+  display: none;
+  margin-top: 8px;
+  font-size: 0.78rem;
+  color: #475569;
+  line-height: 1.6;
+  padding: 8px 10px;
+  background: #f8fafc;
+  border-left: 3px solid #94a3b8;
+  border-radius: 0 6px 6px 0;
+}
+.task-detail.open { display: block; }
+.task-chevron {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  flex-shrink: 0;
+  margin-left: 6px;
+  transition: transform 0.2s;
+  align-self: flex-start;
+  padding-top: 2px;
+}
+.task-chevron.open { transform: rotate(180deg); }
 </style>
 </head>
 <body>
@@ -470,7 +496,7 @@ body {
   <div class="sidebar-footer">
     Plan técnico · 5 meses · 20 semanas<br>
     Stack: Angular · NestJS · PostgreSQL<br>
-    Actualizado: Semana 3
+    Actualizado: Semana 4 · 26-jun-2026
   </div>
 </aside>
 
@@ -530,175 +556,183 @@ const SPRINTS = [
     n:1, hito:1, status:'done',
     name:'Cimientos Cloud + Schema DB',
     tasks:[
-      { tag:'DevOps',   done:true,  text:'PostgreSQL 16 + PostGIS en Docker con healthcheck' },
-      { tag:'Backend',  done:true,  text:'Prisma: 18 modelos (Auth, CRM, Donaciones, Inventario, Personas). Migración inicial ejecutada.' },
-      { tag:'Frontend', done:true,  text:'Angular 18: Tailwind CSS v3, routing lazy, interceptor JWT, authGuard, shell layout, login con Signals.' },
+      { tag:'Infraestructura', done:true, text:'PostgreSQL 16 + PostGIS en Docker con healthcheck', detail:'Base de datos PostgreSQL 16 corriendo en Docker en el servidor local. Incluye PostGIS para mapas geográficos futuros. Se levanta en menos de 5 segundos y tiene un healthcheck automático: si la base cae, el sistema lo detecta solo.' },
+      { tag:'Base de Datos',   done:true, text:'Prisma: 18 modelos (Auth, CRM, Donaciones, Inventario, Personas). Migración inicial ejecutada.', detail:'Se diseñaron y crearon las 18 tablas del sistema: usuarios y permisos, clientes/donantes, pedidos, productos, donaciones, certificados tributarios, beneficiarios, voluntarios, proveedores e inventario. Todo el modelo de negocio de la fundación está mapeado desde el inicio, lo que evita tener que rehacer la base más adelante.' },
+      { tag:'Aplicación Web',  done:true, text:'Angular 18: Tailwind CSS v3, routing lazy, interceptor JWT, authGuard, shell layout, login con Signals.', detail:'Estructura base de la aplicación web: pantalla de login, navegación protegida (solo entra quien tiene sesión iniciada), y la barra lateral de menú. Cada pantalla carga solo lo que necesita, lo que hace la app más rápida.' },
     ],
-    metrics:['18 tablas en PostgreSQL','Docker up en <5s','Build Angular limpio'],
-    accelerates: 'Habilita Sprint 3: schema completo evita migraciones futuras',
+    metrics:['18 tablas creadas','Base de datos levanta en <5 s','Aplicación compila sin errores'],
+    accelerates:'Este sprint sienta las bases: al tener el modelo de datos completo desde el inicio, los sprints siguientes solo construyen encima sin tocar la estructura.',
   },
   {
     n:2, hito:1, status:'done',
     name:'Seguridad JWT + ETL Histórico',
     tasks:[
-      { tag:'Backend', done:true, text:'Auth JWT HS256 (8h). POST /api/auth/login con bcrypt. JwtAuthGuard + decorador @GetUser().' },
-      { tag:'Backend', done:true, text:'Seed: roles Admin / Operador / Contador. Usuario inicial admin@santiagocorazon.org.' },
-      { tag:'Data',    done:true, text:'ETL Supabase → PostgreSQL: 14.839 clientes, 114 productos, 109 pedidos, 189 ítems. Script idempotente.' },
+      { tag:'Seguridad', done:true, text:'Auth JWT HS256 (8h). POST /api/auth/login con bcrypt. JwtAuthGuard + decorador @GetUser().', detail:'Sistema de login seguro: el usuario ingresa correo y contraseña, el servidor verifica con bcrypt (algoritmo de hashing estándar de la industria) y entrega un token de acceso que dura 8 horas. Sin token válido, ninguna pantalla ni endpoint de la API es accesible.' },
+      { tag:'Roles',     done:true, text:'Seed: roles Admin / Operador / Contador. Usuario inicial admin@santiagocorazon.org.', detail:'Tres perfiles de acceso creados: Administrador (acceso total), Operador (crea y gestiona pedidos y clientes) y Contador (solo lectura de reportes y exportaciones). Usuario inicial admin@santiagocorazon.org listo para usar.' },
+      { tag:'Migración', done:true, text:'ETL Supabase → PostgreSQL: 14.839 clientes, 114 productos, 109 pedidos, 189 ítems. Script idempotente.', detail:'Script ETL que extrajo toda la información histórica de la base anterior (Supabase) y la cargó en el nuevo sistema: 14.839 clientes/donantes, 114 productos del catálogo, 109 pedidos anteriores con sus 189 líneas de detalle. El script es idempotente: si se corre dos veces no duplica nada.' },
     ],
-    metrics:['14.887 registros migrados','JWT 8h operativo','3 roles de acceso'],
-    accelerates: 'Habilita Sprints 5–8: auth lista para todos los webhooks',
+    metrics:['14.887 registros migrados sin pérdida','Token JWT 8 h operativo','3 roles de acceso diferenciados'],
+    accelerates:'Con la autenticación lista, todos los módulos siguientes pueden protegerse sin trabajo adicional.',
   },
   {
     n:3, hito:1, status:'done',
     name:'CRM + Catálogo de Productos',
     tasks:[
-      { tag:'Backend',  done:true, text:'CRUD ClientDonor: paginación + búsqueda multi-campo (<200ms sobre 14.887 registros). Soft delete.' },
-      { tag:'Backend',  done:true, text:'CRUD Product: filtro onlyActive, unicidad SKU, soft delete.' },
-      { tag:'Frontend', done:true, text:'Tabla CRM con paginación reactiva (Signals + effect), modal de creación, búsqueda en tiempo real.' },
-      { tag:'Frontend', done:true, text:'Catálogo de productos con alerta visual de stock bajo. PaginationComponent reutilizable.' },
+      { tag:'CRM — API',       done:true, text:'CRUD ClientDonor: paginación + búsqueda multi-campo (&lt;200ms sobre 14.887 registros). Soft delete.', detail:'Motor de búsqueda de clientes y donantes: busca simultáneamente por nombre, número de documento, correo y ciudad sobre los 14.887 registros en menos de 200 ms. Soporta crear, editar y desactivar registros (borrado lógico: los datos nunca se eliminan físicamente).' },
+      { tag:'Productos — API', done:true, text:'CRUD Product: filtro onlyActive, unicidad SKU, soft delete.', detail:'Catálogo de productos: permite filtrar solo los activos, garantiza que no existan dos productos con el mismo código SKU, y también usa borrado lógico. Listo para conectar con inventario en sprints posteriores.' },
+      { tag:'CRM — Pantalla',  done:true, text:'Tabla CRM con paginación reactiva (Signals + effect), modal de creación, búsqueda en tiempo real.', detail:'Pantalla de CRM: tabla paginada de clientes con búsqueda en tiempo real mientras se escribe, botón para crear nuevo cliente con formulario en modal, y opción de desactivar. La paginación es un componente reutilizable que se usa en toda la app.' },
+      { tag:'Productos — Pantalla', done:true, text:'Catálogo de productos con alerta visual de stock bajo. PaginationComponent reutilizable.', detail:'Pantalla de catálogo: tabla de productos con alerta visual en rojo cuando el stock está por debajo del mínimo configurado. Permite ver de un vistazo qué productos necesitan reabastecimiento.' },
     ],
-    metrics:['2.016 resultados "maria" en <200ms','113 productos activos','Paginación reutilizable'],
+    metrics:['Búsqueda sobre 14.887 registros en <200 ms','113 productos activos en catálogo','Componente de paginación reutilizable en toda la app'],
   },
   {
     n:4, hito:1, status:'done', milestone:true,
     name:'Pedidos Manuales + Exportador World Office',
     tasks:[
-      { tag:'Frontend', done:true, text:'Formulario APP Diana Fase 1: autocompletado del CRM, selector de productos, recálculo automático de totales.' },
-      { tag:'Backend',  done:true, text:'OrdersModule: CRUD de pedidos con ítems, cálculo de total en el servidor.' },
-      { tag:'Backend',  done:true, text:'Exportador CSV/Excel compatible con la plantilla de importación de World Office.' },
+      { tag:'Formulario de Pedido', done:true, text:'Formulario APP Diana Fase 1: autocompletado del CRM, selector de productos, recálculo automático de totales.', detail:'Pantalla que reemplaza la APP Diana para registrar pedidos manualmente: el operador busca el cliente por nombre o cédula (autocompletado en tiempo real desde el CRM), agrega productos con buscador, ajusta cantidades con botones + y −, y el total se calcula automáticamente. Sin errores manuales de precio.' },
+      { tag:'API de Pedidos',       done:true, text:'OrdersModule: CRUD de pedidos con ítems, cálculo de total en el servidor (nunca acepta precio del cliente).', detail:'El servidor calcula el total del pedido usando los precios registrados en la base de datos, nunca los que lleguen desde la pantalla. Esto previene fraudes o errores. Soporta crear pedidos, listarlos con filtros, y actualizar el estado (Recibido → En preparación → Enviado → Entregado).' },
+      { tag:'Exportador Contable',  done:true, text:'Exportador Excel World Office: 2 hojas (Pedidos_WorldOffice + Resumen), 17 columnas, 110 pedidos / $33.9M exportados.', detail:'Botón "Exportar a World Office": genera un archivo Excel con dos hojas. La primera tiene todos los pedidos en el formato exacto que importa World Office (17 columnas: fecha, cliente, NIT, productos, cantidades, precios, totales). La segunda hoja es un resumen ejecutivo: total de pedidos, total de ítems, ingresos totales, pagado y pendiente. Se probó con 110 pedidos históricos que suman $33.9 M.' },
+      { tag:'Rediseño de Interfaz',  done:true, text:'Rediseño UI profesional ERP: sidebar Heroicons, split-screen login, tablas con badges de color, formularios 3-step.', detail:'Toda la interfaz fue rediseñada con estética profesional de ERP: barra lateral oscura con íconos, pantalla de login con identidad visual de la fundación, tablas con colores semánticos por estado, formularios divididos en pasos numerados. La app ahora comunica seriedad y confianza al equipo.' },
     ],
-    milestoneNote:'🏁 HITO 1 — El personal puede registrar pedidos manuales y exportar transacciones contables.',
+    metrics:['110 pedidos · $33,9 M exportados a Excel','Cálculo de totales 100% en servidor','4 módulos con UI profesional'],
+    milestoneNote:'🏁 HITO 1 COMPLETO — El equipo puede registrar pedidos manuales, consultarlos y exportar las transacciones contables directamente a World Office.',
   },
   {
     n:5, hito:2, status:'pending',
     name:'Shopify Webhooks',
     tasks:[
-      { tag:'Backend', done:false, text:'Endpoint POST /api/webhooks/shopify/orders. Validación HMAC SHA256 del header X-Shopify-Hmac-SHA256.' },
-      { tag:'Backend', done:false, text:'Idempotencia: clave única por Shopify order ID para evitar duplicados en reintentos del webhook.' },
+      { tag:'Integración', done:false, text:'Endpoint POST /api/webhooks/shopify/orders. Validación HMAC SHA256 del header X-Shopify-Hmac-SHA256.', detail:'Cuando un cliente compra en la tienda Shopify de la fundación, Shopify notifica automáticamente al sistema. El endpoint valida la firma HMAC del mensaje para garantizar que viene de Shopify y no de un tercero, luego crea el pedido en la base de datos sin intervención humana.' },
+      { tag:'Seguridad',   done:false, text:'Idempotencia: clave única por Shopify order ID para evitar duplicados en reintentos del webhook.', detail:'Idempotencia: si Shopify reenvía la misma notificación dos veces (algo que ocurre frecuentemente), el sistema detecta el ID duplicado y no crea un pedido doble.' },
     ],
-    risk:'Requiere cuenta Shopify Partners y dominio público o ngrok para recibir webhooks.',
+    risk:'Requiere credenciales de una cuenta Shopify Partners activa y un dominio público (o túnel ngrok) para que Shopify pueda enviar las notificaciones.',
   },
   {
     n:6, hito:2, status:'pending',
-    name:'Pasarelas de Pago (Wompi + PayU)',
+    name:'Donaciones Online (Wompi + PayU)',
     tasks:[
-      { tag:'Backend', done:false, text:'Webhooks Wompi y PayU: identificar donante por correo/cédula, crear si no existe, registrar en tabla donations.' },
+      { tag:'Módulo Donaciones — ADELANTO', done:true, text:'ADELANTO — DonationsModule: CRUD manual, paginación, búsqueda, filtros gateway/status, estadísticas.', detail:'ADELANTO DE SPRINT — Módulo completo de donaciones ya operativo: registrar donaciones manualmente indicando pasarela (Wompi, PayU, PayPal o Frecuenti), monto, donante, campaña y concepto. Incluye endpoint de estadísticas que calcula el total aprobado, pendiente y rechazado agrupado por pasarela.' },
+      { tag:'Pantalla Donaciones — ADELANTO', done:true, text:'ADELANTO — Vista Donaciones: 4 KPI chips, tabla con badges por pasarela, filtros en tiempo real.', detail:'ADELANTO DE SPRINT — Pantalla de donaciones: barra de 4 KPIs (total recaudado, aprobadas, pendientes, rechazadas), tabla con filtros por pasarela y estado, búsqueda por nombre de donante o referencia de transacción, y badges de color diferenciado por pasarela.' },
+      { tag:'Webhooks Automáticos', done:false, text:'Webhooks Wompi y PayU: identificar donante por correo/cédula, crear si no existe, registrar donación.', detail:'Cuando un donante completa un pago en Wompi o PayU, la pasarela notifica al sistema automáticamente. El sistema identifica al donante por correo o cédula, lo crea si no existe, y registra la donación sin que el equipo tenga que hacer nada.' },
     ],
-    risk:'Requiere credenciales sandbox de Wompi y PayU. Coordinar con equipo de tesorería.',
+    metrics:['CRUD manual de donaciones operativo','4 pasarelas de pago soportadas','Estadísticas por gateway y estado en tiempo real'],
+    risk:'Los webhooks automáticos requieren credenciales sandbox de Wompi y PayU. Se necesita coordinar con el equipo de tesorería para obtenerlas.',
   },
   {
     n:7, hito:2, status:'pending',
     name:'Motor de Certificados PDF',
     tasks:[
-      { tag:'DevOps',  done:false, text:'BullMQ + Redis: cola de tareas asíncronas para no bloquear la API durante generación de archivos.' },
-      { tag:'Backend', done:false, text:'Worker: genera PDF del certificado tributario y lo sube a S3 / Cloudflare R2. Guarda URL en tabla certificates.' },
+      { tag:'Cola de Tareas', done:false, text:'BullMQ + Redis: cola de tareas asíncronas para no bloquear la API durante generación de archivos.', detail:'BullMQ + Redis: sistema de cola para procesar tareas pesadas (como generar PDFs) en segundo plano sin bloquear la API. Si el sistema recibe 50 donaciones al mismo tiempo, las procesa en orden sin que ninguna se pierda.' },
+      { tag:'Generación PDF', done:false, text:'Worker: genera PDF del certificado tributario y lo sube a S3 / Cloudflare R2. Guarda URL en tabla certificates.', detail:'Worker que genera automáticamente el certificado tributario en PDF con los datos del donante y la donación, lo sube a almacenamiento seguro en la nube (S3 / Cloudflare R2) y guarda el enlace de descarga en la base de datos.' },
     ],
   },
   {
     n:8, hito:2, status:'pending', milestone:true,
-    name:'SMTP Automático + Dashboard Inicial',
+    name:'Correo Automático + Dashboard',
     tasks:[
-      { tag:'Backend',  done:false, text:'Nodemailer: envío automático del PDF al confirmar la donación.' },
-      { tag:'Frontend', done:false, text:'Historial de certificados con descarga directa desde S3 y botón "Reenviar".' },
-      { tag:'Frontend', done:false, text:'Dashboard KPIs: total pedidos Shopify, donaciones del mes, últimas 10 transacciones.' },
+      { tag:'Dashboard — ADELANTO', done:true, text:'ADELANTO — DashboardService: KPIs en tiempo real, pedidos por estado, histórico 30 días (generate_series).', detail:'ADELANTO DE SPRINT — Panel de control en tiempo real ya operativo: 4 tarjetas de KPIs (clientes activos, total productos, alertas de stock bajo, ingresos totales y pagados), gráfico de barras con los ingresos de los últimos 30 días generado directamente desde PostgreSQL, gráfico de dona con la distribución de pedidos por estado, y tabla de pedidos recientes.' },
+      { tag:'Dashboard UI — ADELANTO', done:true, text:'ADELANTO — Dashboard UI: 4 KPI cards, gráfico barras 30 días, gráfico dona, pedidos recientes. Responsivo.', detail:'ADELANTO DE SPRINT — Diseño responsivo: en pantallas grandes muestra 3 columnas, en tablets 2, en celular 1. Los gráficos se adaptan al tamaño del contenedor. El dashboard se convierte en la primera pantalla que ve el equipo al iniciar sesión.' },
+      { tag:'Correo Automático', done:false, text:'Nodemailer: envío automático del PDF certificado tributario al confirmar la donación.', detail:'Cuando una donación se confirma como aprobada, el sistema envía automáticamente un correo al donante con el certificado tributario PDF adjunto. Sin intervención manual del equipo de la fundación.' },
+      { tag:'Historial de Certificados', done:false, text:'Historial de certificados con descarga directa desde S3 y botón \'Reenviar\'.', detail:'Pantalla para que el equipo consulte los certificados emitidos, los descargue directamente desde la nube y reenvíe el correo a un donante si lo solicita.' },
     ],
-    milestoneNote:'🏁 HITO 2 — Flujo de donación 100% automatizado: pago → PDF → correo al donante.',
+    metrics:['Dashboard con datos reales en tiempo real','Gráficos responsivos (móvil + escritorio)','API /api/dashboard/stats operativa'],
+    milestoneNote:'🏁 HITO 2 — Flujo de donación 100 % automatizado: el donante paga → el sistema registra → genera el PDF → envía el correo. (Dashboard adelantado ✅)',
   },
   {
     n:9, hito:3, status:'pending',
-    name:'Beneficiarios (Niños)',
+    name:'Beneficiarios (Niños de la Fundación)',
     tasks:[
-      { tag:'Full-stack', done:false, text:'CRUD visual de beneficiarios: inscripción, datos familiares, historial de actividades en la fundación.' },
+      { tag:'Módulo Personas', done:false, text:'Pantalla para registrar y gestionar los niños beneficiarios de la fundación: datos de inscripción, información familiar, y un historial de las actividades y programas en los que han participado. Permite saber en todo momento quiénes están activos y qué han recibido.', detail:'Pantalla para registrar y gestionar los niños beneficiarios de la fundación: datos de inscripción, información familiar, y un historial de las actividades y programas en los que han participado. Permite saber en todo momento quiénes están activos y qué han recibido.' },
     ],
-    accelerates:'Modelo Beneficiary listo desde Sprint 1 — solo se construye la UI.',
+    accelerates:'La tabla de beneficiarios ya existe en la base de datos desde el Sprint 1. Este sprint solo construye la pantalla de gestión.',
   },
   {
     n:10, hito:3, status:'pending',
-    name:'WhatsApp Business API',
+    name:'Notificaciones WhatsApp',
     tasks:[
-      { tag:'Backend', done:false, text:'WhatsApp Cloud API de Meta: notificaciones por pedido confirmado, donación recibida, certificado enviado.' },
+      { tag:'WhatsApp Business', done:false, text:'Integración con WhatsApp Cloud API de Meta: el sistema envía mensajes automáticos al equipo y a los clientes cuando un pedido cambia de estado, cuando se recibe una donación, y cuando se emite un certificado tributario. Reemplaza los mensajes manuales.', detail:'Integración con WhatsApp Cloud API de Meta: el sistema envía mensajes automáticos al equipo y a los clientes cuando un pedido cambia de estado, cuando se recibe una donación, y cuando se emite un certificado tributario. Reemplaza los mensajes manuales.' },
     ],
-    risk:'Requiere aprobación del negocio en Meta Business Suite (1–2 semanas). Iniciar trámite en paralelo.',
+    risk:'Requiere aprobación del perfil de negocio en Meta Business Suite, proceso que puede tomar 1–2 semanas. Se recomienda iniciar el trámite en paralelo.',
   },
   {
     n:11, hito:3, status:'pending',
     name:'PayPal + Email Marketing',
     tasks:[
-      { tag:'Backend', done:false, text:'Webhook / IPN PayPal para donaciones internacionales.' },
-      { tag:'Backend', done:false, text:'Sincronización de donantes con Mailchimp / Mailerlite para campañas masivas.' },
+      { tag:'PayPal', done:false, text:'Webhook para capturar donaciones internacionales procesadas por PayPal: el sistema recibe la notificación, verifica al donante y registra la donación automáticamente, igual que con Wompi y PayU.', detail:'Webhook para capturar donaciones internacionales procesadas por PayPal: el sistema recibe la notificación, verifica al donante y registra la donación automáticamente, igual que con Wompi y PayU.' },
+      { tag:'Email Marketing', done:false, text:'Sincronización del listado de donantes con Mailchimp o Mailerlite: cuando se registra un donante nuevo o uno existente cambia de estado, la lista de email marketing se actualiza automáticamente para campañas de captación y fidelización.', detail:'Sincronización del listado de donantes con Mailchimp o Mailerlite: cuando se registra un donante nuevo o uno existente cambia de estado, la lista de email marketing se actualiza automáticamente para campañas de captación y fidelización.' },
     ],
-    risk:'PayPal requiere cuenta de negocios verificada. Mailchimp necesita API key del equipo de comunicaciones.',
+    risk:'PayPal requiere una cuenta de negocios verificada. Mailchimp necesita la API key del equipo de comunicaciones de la fundación.',
   },
   {
     n:12, hito:3, status:'pending', milestone:true,
     name:'Dashboard Operativo + KPIs de Gestión',
     tasks:[
-      { tag:'Frontend', done:false, text:'Panel de control de pedidos: kanban/lista con filtros por estado, reemplazo definitivo de APP Diana.' },
-      { tag:'Frontend', done:false, text:'Panel de gráficos: ventas, donaciones y beneficiarios. Embed opcional de Looker Studio.' },
+      { tag:'Panel de Pedidos', done:false, text:'Vista de gestión de pedidos con filtros avanzados por estado, fecha y canal de origen. Reemplaza definitivamente la APP Diana: el equipo opera todo desde el nuevo sistema.', detail:'Vista de gestión de pedidos con filtros avanzados por estado, fecha y canal de origen. Reemplaza definitivamente la APP Diana: el equipo opera todo desde el nuevo sistema.' },
+      { tag:'Panel de Gráficos', done:false, text:'Gráficos avanzados de ventas, donaciones y beneficiarios con histórico configurable. Posibilidad de embeber un reporte de Looker Studio para directivos que ya usen esa herramienta.', detail:'Gráficos avanzados de ventas, donaciones y beneficiarios con histórico configurable. Posibilidad de embeber un reporte de Looker Studio para directivos que ya usen esa herramienta.' },
     ],
-    milestoneNote:'🏁 HITO 3 — Comunicaciones automatizadas. Operación centralizada en un solo panel.',
+    milestoneNote:'🏁 HITO 3 — Las comunicaciones con donantes y clientes son automáticas. Toda la operación de la fundación está centralizada en un solo panel.',
   },
   {
     n:13, hito:4, status:'pending',
     name:'Voluntarios',
     tasks:[
-      { tag:'Full-stack', done:false, text:'CRUD de voluntarios: roles dentro de la fundación, historial de participación en actividades.' },
+      { tag:'Módulo Personas', done:false, text:'Pantalla para registrar voluntarios: su rol dentro de la fundación, fechas de vinculación y un historial de las actividades en las que han participado. Permite reconocer la contribución de cada voluntario y planificar actividades futuras.', detail:'Pantalla para registrar voluntarios: su rol dentro de la fundación, fechas de vinculación y un historial de las actividades en las que han participado. Permite reconocer la contribución de cada voluntario y planificar actividades futuras.' },
     ],
-    accelerates:'Modelo Volunteer listo desde Sprint 1. Patrón idéntico al módulo de Beneficiarios.',
+    accelerates:'La tabla de voluntarios ya existe en la base de datos desde el Sprint 1. El patrón de desarrollo es idéntico al módulo de Beneficiarios.',
   },
   {
     n:14, hito:4, status:'pending',
     name:'Segmentador de Donantes',
     tasks:[
-      { tag:'Backend / Frontend', done:false, text:'Query builder de segmentación en PostgreSQL: filtros por monto, frecuencia, ciudad, canal. Reemplaza Databricks.' },
+      { tag:'Análisis', done:false, text:'Herramienta de segmentación: el equipo puede filtrar donantes por monto donado, frecuencia (mensual, anual, única), ciudad de residencia y canal de pago preferido. Genera listas para campañas específicas. Reemplaza la necesidad de usar Databricks u hojas de cálculo manuales.', detail:'Herramienta de segmentación: el equipo puede filtrar donantes por monto donado, frecuencia (mensual, anual, única), ciudad de residencia y canal de pago preferido. Genera listas para campañas específicas. Reemplaza la necesidad de usar Databricks u hojas de cálculo manuales.' },
     ],
   },
   {
     n:15, hito:4, status:'pending',
     name:'Geolocalización PostGIS',
     tasks:[
-      { tag:'Backend / Data', done:false, text:'Geocodificación de direcciones de clientes y beneficiarios con Google Maps API o Nominatim.' },
+      { tag:'Datos Geográficos', done:false, text:'Geocodificación automática de las direcciones de clientes y beneficiarios: el sistema consulta Google Maps o Nominatim y guarda las coordenadas en la base de datos. Esto convierte cada dirección en un punto en el mapa para los análisis del Sprint 16.', detail:'Geocodificación automática de las direcciones de clientes y beneficiarios: el sistema consulta Google Maps o Nominatim y guarda las coordenadas en la base de datos. Esto convierte cada dirección en un punto en el mapa para los análisis del Sprint 16.' },
     ],
-    accelerates:'PostGIS ya activo desde Sprint 1. Este sprint puebla los campos de geometría.',
+    accelerates:'PostGIS (extensión geográfica de PostgreSQL) ya está activa en la base de datos desde el Sprint 1. Solo falta poblar los campos de coordenadas.',
   },
   {
     n:16, hito:4, status:'pending', milestone:true,
     name:'Mapa Interactivo de Impacto',
     tasks:[
-      { tag:'Frontend', done:false, text:'Leaflet.js en Angular: mapa de beneficiarios, cobertura de envíos, calor de donaciones por zona geográfica.' },
+      { tag:'Visualización', done:false, text:'Mapa interactivo en la aplicación: muestra la distribución geográfica de los beneficiarios atendidos, las zonas de cobertura de envíos de pedidos y un mapa de calor con la concentración de donaciones por barrio o municipio. Pensado para presentaciones a donantes institucionales y aliados estratégicos.', detail:'Mapa interactivo en la aplicación: muestra la distribución geográfica de los beneficiarios atendidos, las zonas de cobertura de envíos de pedidos y un mapa de calor con la concentración de donaciones por barrio o municipio. Pensado para presentaciones a donantes institucionales y aliados estratégicos.' },
     ],
-    milestoneNote:'🏁 HITO 4 — Visualización del impacto social. Apto para reportes a donantes y aliados estratégicos.',
+    milestoneNote:'🏁 HITO 4 — La fundación puede visualizar y comunicar su impacto social en el territorio. Apto para informes a donantes y entidades de cooperación.',
   },
   {
     n:17, hito:5, status:'pending',
     name:'Inventario Avanzado (Insumos + Recetas)',
     tasks:[
-      { tag:'Full-stack', done:false, text:'Módulo de Insumos, Acompañantes y Recetas (BOM): formulario de producción que descuenta insumos al armar un producto.' },
+      { tag:'Producción', done:false, text:'Módulo de insumos y recetas (BOM — Bill of Materials): cuando el equipo registra la producción de un producto (p. ej. 50 paquetes de galletas), el sistema descuenta automáticamente los insumos utilizados del inventario según la receta configurada. Elimina el control manual en hojas de cálculo.', detail:'Módulo de insumos y recetas (BOM — Bill of Materials): cuando el equipo registra la producción de un producto (p. ej. 50 paquetes de galletas), el sistema descuenta automáticamente los insumos utilizados del inventario según la receta configurada. Elimina el control manual en hojas de cálculo.' },
     ],
-    accelerates:'Modelos Input, Companion y ProductInput listos en schema desde Sprint 1.',
+    accelerates:'Los modelos de datos para Insumos, Acompañantes y Recetas ya están en la base de datos desde el Sprint 1.',
   },
   {
     n:18, hito:5, status:'pending',
     name:'Ajustes de Stock + Alertas Automáticas',
     tasks:[
-      { tag:'Full-stack', done:false, text:'Movimientos manuales (entrada, salida, ajuste). Cron job de alertas de stock mínimo vía WhatsApp.' },
+      { tag:'Inventario', done:false, text:'Pantalla de movimientos de inventario: el operario puede registrar entradas (compras de insumos), salidas (consumos no productivos) y ajustes (correcciones de conteo). Cada movimiento queda registrado con fecha y usuario responsable.', detail:'Pantalla de movimientos de inventario: el operario puede registrar entradas (compras de insumos), salidas (consumos no productivos) y ajustes (correcciones de conteo). Cada movimiento queda registrado con fecha y usuario responsable.' },
+      { tag:'Alertas',    done:false, text:'Tarea programada que revisa diariamente el stock de todos los productos e insumos. Cuando alguno cae por debajo del mínimo configurado, envía un mensaje de WhatsApp automático al responsable de inventario.', detail:'Tarea programada que revisa diariamente el stock de todos los productos e insumos. Cuando alguno cae por debajo del mínimo configurado, envía un mensaje de WhatsApp automático al responsable de inventario.' },
     ],
   },
   {
     n:19, hito:5, status:'pending',
-    name:'Concurrencia ACID + Descuentos de Stock',
+    name:'Concurrencia y Consistencia de Stock',
     tasks:[
-      { tag:'Backend', done:false, text:'Transacciones SQL con SELECT … FOR UPDATE para prevenir condiciones de carrera en ventas simultáneas.' },
+      { tag:'Integridad de Datos', done:false, text:'Transacciones SQL con bloqueo de registros (SELECT … FOR UPDATE): si dos vendedores intentan vender el último producto disponible al mismo tiempo, el sistema garantiza que solo uno lo logre y el otro recibe un mensaje de "stock insuficiente". Previene el problema de vender lo que no hay.', detail:'Transacciones SQL con bloqueo de registros (SELECT … FOR UPDATE): si dos vendedores intentan vender el último producto disponible al mismo tiempo, el sistema garantiza que solo uno lo logre y el otro recibe un mensaje de "stock insuficiente". Previene el problema de vender lo que no hay.' },
     ],
   },
   {
     n:20, hito:5, status:'pending', milestone:true,
-    name:'Despliegue Final + Capacitación',
+    name:'Despliegue en Producción + Capacitación',
     tasks:[
-      { tag:'DevOps',  done:false, text:'Build de producción. Dominio oficial, SSL con Let\'s Encrypt, cron de backups diarios a S3.' },
-      { tag:'Gestión', done:false, text:'Capacitación al equipo de la fundación. Manual de usuario y acta de entrega y cierre del proyecto.' },
+      { tag:'Infraestructura', done:false, text:'El sistema pasa de local a producción: dominio oficial de la fundación, certificado SSL automático con Let\'s Encrypt (https://), copia de seguridad automática diaria de la base de datos a la nube. El sistema estará disponible 24/7 desde cualquier dispositivo con internet.', detail:'El sistema pasa de local a producción: dominio oficial de la fundación, certificado SSL automático con Let\'s Encrypt (https://), copia de seguridad automática diaria de la base de datos a la nube. El sistema estará disponible 24/7 desde cualquier dispositivo con internet.' },
+      { tag:'Entrega',         done:false, text:'Capacitación al equipo de la fundación con sesiones prácticas por rol (Administrador, Operador, Contador). Manual de usuario en PDF. Acta formal de entrega y cierre del proyecto.', detail:'Capacitación al equipo de la fundación con sesiones prácticas por rol (Administrador, Operador, Contador). Manual de usuario en PDF. Acta formal de entrega y cierre del proyecto.' },
     ],
-    milestoneNote:'🏁 HITO 5 — Proyecto completado. Sistema en producción, equipo capacitado, respaldo automático activo.',
+    milestoneNote:'🏁 HITO 5 — Proyecto finalizado: sistema en producción, equipo capacitado, respaldo automático activo y documentación entregada.',
   },
 ];
 
@@ -781,12 +815,14 @@ HITOS.forEach((h, hi) => {
     const statusLabel = sp.status === 'done' ? 'Completado' : 'Pendiente';
 
     const tasksHtml = sp.tasks.map(t => `
-      <div class="task-row ${t.done ? 'done-task' : ''}">
+      <div class="task-row ${t.done ? 'done-task' : ''} ${t.detail ? 'task-expandable' : ''}" ${t.detail ? 'onclick="toggleTask(this)"' : ''}>
         <span class="task-icon">${t.done ? '✅' : '◻️'}</span>
         <div class="task-content">
           <span class="task-tag">${t.tag}</span>
           <div class="task-text">${t.text}</div>
+          ${t.detail ? `<div class="task-detail">${t.detail}</div>` : ''}
         </div>
+        ${t.detail ? '<span class="task-chevron">▾</span>' : ''}
       </div>
     `).join('');
 
@@ -841,6 +877,14 @@ function toggleCard(head) {
   const isOpen = detail.classList.contains('open');
   detail.classList.toggle('open', !isOpen);
   toggle.classList.toggle('open', !isOpen);
+}
+
+function toggleTask(row) {
+  const detail = row.querySelector('.task-detail');
+  const chevron = row.querySelector('.task-chevron');
+  if (!detail) return;
+  const open = detail.classList.toggle('open');
+  if (chevron) chevron.classList.toggle('open', open);
 }
 
 // ── FILTER ─────────────────────────────────────────────────

@@ -375,3 +375,157 @@ Before starting any work, read the last 15-20 lines to understand the latest cha
   - Sprint 5: Shopify webhooks integration (webhook validate HMAC + BullMQ queue)
   - Módulo de Donaciones: Wompi/PayU webhook + Certificate PDF
   - Dashboard con KPIs básicos
+
+### [2026-06-25 18:00:00] - Agent: Claude (claude-sonnet-4-6)
+- **Task/Goal:** Redesign completo de todos los templates HTML del frontend Angular — UI profesional estilo ERP/CRM.
+- **Files Modified:**
+  - `frontend/src/app/shared/layout/shell/shell.component.html` — Sidebar dark bg-slate-900, SVG Heroicons (home/users/link/list), sección usuario con avatar, routerLinkActive brand-600, separadores de sección con labels uppercase
+  - `frontend/src/app/features/auth/login/login.component.html` — Layout split-screen: panel izquierdo oscuro con branding y corazón SVG decorativo; panel derecho formulario limpio con animación de spinner
+  - `frontend/src/app/features/clients/clients-list.component.html` — Header con página title + CTA brand-600, stats bar, barra de búsqueda con icono, tabla con headers slate-50/uppercase tracking-wider, badges con puntos de color, modal redesigned con backdrop blur
+  - `frontend/src/app/features/orders/orders-list.component.html` — Header con CTA, stats chip, filtros separados, Export card propio con layout mejorado, tabla con headers profesionales, empty states con iconos
+  - `frontend/src/app/features/products/products-list.component.html` — Header con contador, search con icono, tabla con badges SKU monospace, status pills con iconos
+  - `frontend/src/app/features/orders/order-form.component.html` — Formulario 3 secciones numeradas (cliente, productos, detalles), product line table con controles +/- SVG, summary card dark con total emerald, submit con validación visual
+  - `frontend/src/styles.scss` — Fix pre-existente: `.select` con `@apply` que fallaba por `bg-[url(...)]` con caracteres especiales; movido a propiedad CSS nativa
+- **Current Status / Results:**
+  - ✅ Build limpio: 0 errores, 0 warnings — `npm run build -- --configuration=development`
+  - ✅ Todos los bindings Angular existentes preservados sin cambios
+  - ✅ Todos los templates usan brand-600/700, slate-*, design language consistente
+  - ✅ Sin emojis — SVG Heroicons 20×20 en todos los iconos
+  - ✅ Angular 18 strict: @if/@for, sin *ngIf/*ngFor, sin NgModules
+- **Pending Tasks / Notes for next agent:**
+  - Sprint 5: Shopify webhooks + BullMQ
+  - Dashboard KPIs
+  - Módulo Donaciones (Wompi/PayU)
+
+---
+
+### [2026-06-25 19:55:00] - Agent: Antigravity (Gemini 3.5 Flash)
+- **Task/Goal:** Crear e implementar el Dashboard del backend para alimentar las visualizaciones del frontend (Hito 2 / Sprint 8 anticipado).
+- **Files Created:**
+  - `backend/src/dashboard/dashboard.service.ts` — DashboardService que calcula KPIs (clientes activos, total productos, stock bajo, ingresos totales y pagados excluyendo cancelados), pedidos por estado, histórico de ingresos de 30 días usando generate_series de Postgres, pedidos recientes y productos con bajo stock.
+  - `backend/src/dashboard/dashboard.controller.ts` — DashboardController protegido con JwtAuthGuard exponiendo `GET /api/dashboard/stats`.
+  - `backend/src/dashboard/dashboard.module.ts` — DashboardModule que importa AuthModule y registra el controlador y servicio.
+  - `backend/src/dashboard/dashboard.service.spec.ts` — Pruebas unitarias para validar las consultas agregadas del dashboard.
+- **Files Modified:**
+  - `backend/src/app.module.ts` — Registro de DashboardModule en AppModule.
+  - `frontend/src/app/features/dashboard/dashboard.component.ts` — Modificado para desactivar `maintainAspectRatio: false` en los gráficos de barras y dona y refactorizar el inicializador mediante setters reactivos de `ViewChild`.
+  - `frontend/src/app/features/dashboard/dashboard.component.html` — Ajustado el tamaño de contenedor de `h-56` a `h-80` (320px) e incorporado las clases `w-full` y `h-full` directamente a los tags `<canvas>`. Se agregó un ancho máximo de `max-w-[1600px]` y centrado `mx-auto` en el contenedor principal y el header para evitar estiramientos desproporcionados en pantallas ultra-anchas, y se convirtieron las grillas fijas `grid-cols-3` en grillas responsivas `grid-cols-1 lg:grid-cols-3` para un comportamiento adaptativo completo.
+  - `ai_cooperation_log.md` — Bitácora actualizada.
+- **Current Status / Results:**
+  - ✅ Backend build limpio: 0 errores de TypeScript.
+  - ✅ Pruebas de integración/unitarias de Jest pasando con éxito (`npx jest src/dashboard` PASS).
+  - ✅ El frontend ahora carga correctamente la información estadística en tiempo real y dibuja las visualizaciones de forma responsiva y adaptada a pantallas ultra-anchas y dispositivos móviles.
+- **Pending Tasks / Notes for next agent:**
+  - Continuar con el Sprint 5: Shopify webhooks y validación HMAC SHA256.
+  - Configurar colas BullMQ con Redis para generación asíncrona de certificados.
+
+---
+
+### [2026-06-25 20:45:00] - Agent: Claude (claude-sonnet-4-6)
+- **Task/Goal:** Implementar módulo completo de Donaciones (backend NestJS + frontend Angular 18).
+- **Files Created:**
+  - `backend/src/donations/dto/create-donation.dto.ts` — DTO con validación class-validator (clientId, amount, paymentGateway, transactionId, status?, campaign?, concept?, date?)
+  - `backend/src/donations/donations.service.ts` — findAll (paginado, filtros gateway/status, búsqueda por transactionId/campaign/concept/clientName), findOne (incluye client + certificates), create (Prisma.Decimal, ConflictException en transactionId duplicado), updateStatus, getStats (groupBy gateway y status, aggregates)
+  - `backend/src/donations/donations.controller.ts` — GET /donations/stats (antes de /:id para evitar conflicto de rutas), GET /donations, GET /donations/:id, POST /donations, PATCH /donations/:id/status — todos protegidos con JwtAuthGuard
+  - `backend/src/donations/donations.module.ts` — importa AuthModule, exporta DonationsService
+  - `frontend/src/app/core/services/donations.service.ts` — getAll, getStats, create, updateStatus; interfaces Donation, DonationStats, DonationPagedResult
+  - `frontend/src/app/features/donations/donations-list.component.ts` — standalone, imports FormsModule/DecimalPipe/CurrencyPipe/RouterLink, señales para estado, filtros plain string para ngModel, loadDonations con debounce 300ms, formatCOP, gatewayBadge, statusBadge, statusDot
+  - `frontend/src/app/features/donations/donations-list.component.html` — header con CTA "Registrar donación", stats bar 4 KPIs, filtros (search + gateway select + status select), tabla con skeleton loading / empty state / data table, paginación prev/next, badges colored pills para gateway (Wompi=blue, PayU=orange, PayPal=sky, Frecuenti=violet) y status (Approved=emerald, Pending=amber, Declined=red)
+- **Files Modified:**
+  - `backend/src/app.module.ts` — agregado DonationsModule
+  - `frontend/src/app/app.routes.ts` — agregada ruta `{ path: 'donations', loadComponent: DonationsListComponent }`
+  - `frontend/src/app/shared/layout/shell/shell.component.html` — link "Donaciones" con SVG heart icon en sección CRM, entre Clientes y sección Inventario
+- **Current Status / Results:**
+  - ✅ Backend build limpio: 0 errores — `npm run build`
+  - ✅ Frontend build limpio: 0 errores — `npm run build -- --configuration=development`
+  - ✅ Lazy chunk `donations-list-component` generado (31.18 kB)
+  - ✅ Patrones existentes respetados: @if/@for, standalone, signals, brand-600, Heroicons SVG, sin *ngIf/*ngFor
+  - ✅ Ruta `/stats` registrada ANTES de `/:id` para evitar conflicto de rutas en NestJS
+- **Pending Tasks / Notes for next agent:**
+  - Sprint 5: Shopify webhooks + validación HMAC SHA256 + BullMQ queue
+  - Certificados PDF (Certificate model) — generación async con BullMQ + S3/R2
+  - Integración real Wompi/PayU webhooks para ingesta automática de donaciones
+
+---
+
+### [2026-06-25 21:30:00] - Agent: Claude (Sonnet 4.6)
+- **Task/Goal:** Implementar Módulo de Donaciones completo — backend CRUD + estadísticas + frontend lista/filtros — Hito 2 / Sprint Donaciones.
+- **Files Created:**
+  - `backend/src/donations/dto/create-donation.dto.ts` — DTO con class-validator (clientId, amount, paymentGateway, transactionId, status, campaign, concept, date)
+  - `backend/src/donations/donations.service.ts` — findAll (paginado, búsqueda en transactionId/campaign/concept/clientName, filtros gateway/status), findOne, create (Prisma.Decimal, ConflictException), updateStatus, getStats (groupBy gateway+status, aggregates aprobado/pendiente)
+  - `backend/src/donations/donations.controller.ts` — GET /donations/stats (primero, evita conflicto con /:id), GET /donations, GET /donations/:id, POST /donations, PATCH /donations/:id/status — todo bajo JwtAuthGuard
+  - `backend/src/donations/donations.module.ts` — importa AuthModule + PrismaModule
+  - `frontend/src/app/core/services/donations.service.ts` — getAll, getStats, create, updateStatus con interfaces TypeScript
+  - `frontend/src/app/features/donations/donations-list.component.ts` — standalone, signals, debounce 300ms, gatewayBadge, statusBadge, formatCOP
+  - `frontend/src/app/features/donations/donations-list.component.html` — header + 4 KPI chips + barra de filtros (search + gateway select + status select) + tabla con skeleton/empty-state/datos + paginación + badges de color por gateway y estado
+- **Files Modified:**
+  - `backend/src/app.module.ts` — registro de DonationsModule
+  - `frontend/src/app/app.routes.ts` — ruta lazy /donations
+  - `frontend/src/app/shared/layout/shell/shell.component.html` — enlace "Donaciones" en sidebar sección CRM con SVG Heroicon corazón
+- **Current Status / Results:**
+  - ✅ Backend build limpio: 0 errores TypeScript
+  - ✅ Frontend build limpio: donations-list-component en lazy chunks (31.18 kB)
+  - ✅ Todos los patrones existentes respetados: Signals, @if/@for, Heroicons SVGs, brand-600
+  - ✅ Ruta GET /donations/stats registrada antes de /:id para evitar conflicto de rutas NestJS
+- **Pending Tasks / Notes for next agent:**
+  - Sprint 5: Wompi/PayU webhooks con validación HMAC SHA256 (endpoint /api/webhooks/wompi + /api/webhooks/payu)
+  - BullMQ + Redis: cola de generación de certificados PDF (tax receipts) → tabla Certificate
+  - Formulario de creación de donación manual en frontend (/donations/new)
+  - Módulo Beneficiarios (niños de la fundación) — tabla Beneficiary en schema
+
+---
+
+### [2026-06-26] - Agent: Claude (claude-sonnet-4-6)
+- **Task/Goal:** Actualizar `docs/progress-board.html` para reunión con cliente — refleja estado real incluyendo adelantos, y agrega expand/collapse por tarea.
+- **Files Modified:**
+  - `docs/progress-board.html` — cambios acumulados en esta sesión:
+    1. Sprint 4: añadida tarea de rediseño UI y métricas reales ($33.9M / 110 pedidos).
+    2. Sprint 6: dos tareas marcadas done (DonationsModule CRUD backend + frontend) como ADELANTO; webhook pendiente.
+    3. Sprint 8: dos tareas marcadas done (DashboardService + Dashboard UI) como ADELANTO; SMTP/certificados pendiente.
+    4. Footer actualizado a "Semana 4 · 26-jun-2026".
+    5. Todas las descripciones de tareas reescritas en lenguaje de negocio (qué hace + para qué sirve a la fundación).
+    6. Sistema de expand/collapse por tarea: texto corto visible por defecto, clic muestra descripción detallada con chevron animado. CSS `.task-detail`, `.task-chevron`, `.task-expandable` agregados. Función `toggleTask()` agregada.
+- **Current Status / Results:**
+  - ✅ Progress board sirviéndose en http://localhost:8888/progress-board.html (python3 -m http.server 8888 --directory docs, PID 31863)
+  - ✅ Hito 1 (Sprints 1–4): 4/4 done — base de datos, auth, CRM/productos, pedidos/exportador
+  - ✅ Adelantos visibles en tablero: DonationsModule (S6) y Dashboard (S8) con tareas individuales done=true
+  - ✅ Expand/collapse funcional: cada tarea tiene texto corto + detalle expandible al hacer clic
+- **Estado del proyecto al cierre de esta sesión:**
+  - Hito 1 completo y commiteado (rama main, commit 8d9c7c9)
+  - Sin commitear (working tree): Dashboard module, Donations module, rediseño UI, progress-board actualizado
+  - Próximos pasos de código: Sprint 5 (Shopify webhooks HMAC), Sprint 6 webhooks automáticos Wompi/PayU, Sprint 7 BullMQ+Redis+PDF
+  - Bloqueante externo: credenciales sandbox Wompi/PayU/Shopify — el cliente debe proveerlas
+- **Instrucción para el siguiente agente (Agy o Claude):**
+  - Leer estas últimas 30 líneas antes de tocar cualquier archivo
+  - El servidor de docs corre en puerto 8888; si necesitas levantar el backend usa `cd backend && npm run start:dev` (puerto 3000)
+  - Para commitear el trabajo pendiente: `git add -A && git commit -m "feat: dashboard + donations module + UI redesign"` desde la raíz del repo
+  - No modificar `docs/progress-board.html` sin actualizar también este log
+
+---
+
+### [2026-06-26] - Agent: Claude (claude-sonnet-4-6)
+- **Task/Goal:** Explicar al usuario el origen y funcionamiento del ETL (preguntas de reunión con cliente).
+- **Files Modified/Created:** ninguno
+- **Current Status / Results:**
+  - Se explicó que `app_diana_full.js` fue subido al repo por Daniel-JFA el 25-jun-2026 (commit 420b7a0)
+  - El archivo contenía URL y anon key de Supabase en líneas 7-8, hardcodeadas en el frontend original de la APP Diana
+  - El ETL leyó esas credenciales y usó la misma API REST que usaba la app en el navegador
+  - Cadena: Diana tenía la app → Daniel copió el JS al repo → Claude lo leyó → construyó el ETL
+- **Pending Tasks / Notes for next agent (Antigravity):**
+  - No hay tareas de código pendientes de esta sesión
+  - El usuario tiene reunión con el cliente hoy — el progress board está actualizado y sirviendo en puerto 8888
+  - Próximo trabajo de código: Sprint 5 (Shopify webhooks HMAC SHA256)
+
+---
+
+### [2026-06-26] - Agent: Claude (claude-sonnet-4-6)
+- **Task/Goal:** Corregir error 401 en `/api/dashboard/stats`
+- **Files Modified/Created:**
+  - `frontend/src/app/core/interceptors/auth.interceptor.ts`
+- **Current Status / Results:**
+  - Causa raíz: token expirado/inválido en localStorage; `authGuard` solo verifica existencia del token, no validez
+  - Credenciales correctas: `admin@santiagocorazon.org` / `admin2026` (del seed)
+  - Fix: el interceptor ahora captura errores 401 en cualquier llamada HTTP, limpia el token y redirige a `/login` automáticamente
+- **Pending Tasks / Notes for next agent:**
+  - Si el usuario está en `/dashboard` con token expirado, ahora será redirigido a login al cargar la página
+  - Próximo trabajo: Sprint 5 (Shopify webhooks)

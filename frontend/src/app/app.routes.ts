@@ -32,6 +32,10 @@ export const routes: Routes = [
         path: 'orders/new',
         loadComponent: () => import('./features/orders/order-form.component').then(m => m.OrderFormComponent),
       },
+      {
+        path: 'donations',
+        loadComponent: () => import('./features/donations/donations-list.component').then(m => m.DonationsListComponent),
+      },
     ],
   },
   { path: '**', redirectTo: 'dashboard' },
