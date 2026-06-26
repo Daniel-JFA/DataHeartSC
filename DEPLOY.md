@@ -166,6 +166,22 @@ cd ../frontend && npm run build
 # Nginx sirve automáticamente los nuevos archivos estáticos
 ```
 
+## Migrar datos históricos desde Supabase (ETL)
+
+Correr **después** del paso 4 (migraciones aplicadas). Importa clientes, productos y pedidos desde Supabase.
+
+```bash
+cd /opt/dataheart/scripts/etl
+npm install
+node migrate.js
+```
+
+El script imprime un resumen al final con cuántos registros se insertaron y si hubo errores. Los errores individuales quedan en `etl_errors.json`.
+
+> El ETL es idempotente — si ya corrió antes, los registros duplicados se saltan por el constraint `UNIQUE` en `doc_number` y `sku`.
+
+---
+
 ## Progress Board (dashboard de avances del proyecto)
 
 ```bash
