@@ -589,3 +589,17 @@ Before starting any work, read the last 15-20 lines to understand the latest cha
   - Sprint 5: webhooks Shopify (HMAC SHA256)
   - Opcional: mostrar badge de rol del usuario en el footer del sidebar
   - Opcional: página 403 dedicada en vez de redirigir silenciosamente a /dashboard
+
+---
+
+### [2026-07-01 03:00:00] - Agent: Claude (claude-sonnet-4-6)
+- **Task/Goal:** Actualizar `docs/progress-board.html` para reflejar el RBAC granular completado
+- **Files Modified/Created:**
+  - `docs/progress-board.html` — Sprint 2: nueva tarea RBAC Granular (done), métricas actualizadas (7 roles + 14 permisos), footer con fecha 01-jul-2026
+- **Current Status / Results:**
+  - ✅ Sprint 2 ahora refleja: 7 roles reales, 14 permisos, PermissionsGuard, sidebar dinámico frontend
+  - Sprints 1–4 marcados como completados (Hito 1 ✅)
+  - Hito 2: adelantos en Sprints 6 (CRUD donaciones) y 8 (Dashboard); pendientes: webhooks, BullMQ, PDF, correo
+- **Pending Tasks / Notes for next agent:**
+  - Próximo trabajo de código: Sprint 5 (Shopify webhooks HMAC SHA256) — requiere credenciales del cliente
+  - No hay deuda técnica pendiente; base de seguridad sólida con RBAC granular

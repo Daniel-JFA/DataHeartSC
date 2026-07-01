@@ -496,7 +496,7 @@ body {
   <div class="sidebar-footer">
     Plan técnico · 5 meses · 20 semanas<br>
     Stack: Angular · NestJS · PostgreSQL<br>
-    Actualizado: Semana 4 · 26-jun-2026
+    Actualizado: Semana 5 · 01-jul-2026
   </div>
 </aside>
 
@@ -569,9 +569,10 @@ const SPRINTS = [
     tasks:[
       { tag:'Seguridad', done:true, text:'Auth JWT HS256 (8h). POST /api/auth/login con bcrypt. JwtAuthGuard + decorador @GetUser().', detail:'Sistema de login seguro: el usuario ingresa correo y contraseña, el servidor verifica con bcrypt (algoritmo de hashing estándar de la industria) y entrega un token de acceso que dura 8 horas. Sin token válido, ninguna pantalla ni endpoint de la API es accesible.' },
       { tag:'Roles',     done:true, text:'Seed: roles Admin / Operador / Contador. Usuario inicial admin@santiagocorazon.org.', detail:'Tres perfiles de acceso creados: Administrador (acceso total), Operador (crea y gestiona pedidos y clientes) y Contador (solo lectura de reportes y exportaciones). Usuario inicial admin@santiagocorazon.org listo para usar.' },
+      { tag:'RBAC Granular', done:true, text:'7 roles reales de la fundación (Directora, Líder DataHeart, Contadora, Líder Atención Familias, etc.) + 14 permisos granulares + PermissionsGuard en todos los controllers. Frontend: sidebar y rutas protegidos por permiso.', detail:'Se expandió el sistema de 3 roles genéricos a 7 roles reales de la fundación: DIRECTORA, LIDER_DATA_HEART, ASISTENTE_CONTABLE, CONTADORA, LIDER_CLIENTES_BENEFACTORES, LIDER_ATENCION_FAMILIAS, LIDER_COMUNICACIONES. 14 permisos granulares (dashboards:read, segmentacion:read/write, inventario:read/write, ventas_donaciones:read/write) con 69 mappings rol→permiso. PermissionsGuard valida cada endpoint mediante el decorador @RequirePermission. En el frontend, el sidebar muestra solo las secciones que el usuario puede ver (según permisos en el JWT), y navegar a una ruta sin el permiso requerido redirige automáticamente al dashboard.' },
       { tag:'Migración', done:true, text:'ETL Supabase → PostgreSQL: 14.839 clientes, 114 productos, 109 pedidos, 189 ítems. Script idempotente.', detail:'Script ETL que extrajo toda la información histórica de la base anterior (Supabase) y la cargó en el nuevo sistema: 14.839 clientes/donantes, 114 productos del catálogo, 109 pedidos anteriores con sus 189 líneas de detalle. El script es idempotente: si se corre dos veces no duplica nada.' },
     ],
-    metrics:['14.887 registros migrados sin pérdida','Token JWT 8 h operativo','3 roles de acceso diferenciados'],
+    metrics:['14.887 registros migrados sin pérdida','Token JWT 8h operativo','7 roles reales + 14 permisos granulares','Sidebar dinámico por permisos'],
     accelerates:'Con la autenticación lista, todos los módulos siguientes pueden protegerse sin trabajo adicional.',
   },
   {
