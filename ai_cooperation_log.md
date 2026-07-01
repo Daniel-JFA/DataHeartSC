@@ -529,3 +529,63 @@ Before starting any work, read the last 15-20 lines to understand the latest cha
 - **Pending Tasks / Notes for next agent:**
   - Si el usuario está en `/dashboard` con token expirado, ahora será redirigido a login al cargar la página
   - Próximo trabajo: Sprint 5 (Shopify webhooks)
+
+---
+
+### [2026-07-01 00:00:00] - Agent: Claude (claude-sonnet-4-6)
+- **Task/Goal:** Implementar RBAC real basado en Matriz de Accesos (Roles.jpeg) — seed con 7 roles reales + 14 permisos + mappings + 7 usuarios, guard de permisos granulares.
+- **Files Modified/Created:**
+  - `backend/prisma/seed.ts` (reescrito completo) — 10 roles (7 reales + 3 heredados), 14 permisos, 69 mappings rol→permiso, 7 usuarios reales + admin técnico
+  - `backend/src/auth/auth.service.ts` (modificado) — login carga permisos desde DB (`role.permissions.permission.keyName`), los incluye en JwtPayload y en la respuesta de login
+  - `backend/src/auth/require-permission.decorator.ts` (creado) — `@RequirePermission('modulo:accion')` — SetMetadata wrapper
+  - `backend/src/auth/permissions.guard.ts` (creado) — `PermissionsGuard` — lee `permissions[]` del JWT, lanza 403 si el permiso requerido no está presente
+  - `backend/src/auth/auth.module.ts` (modificado) — agrega PermissionsGuard a providers y exports
+- **Current Status / Results:**
+  - ✅ `npm run build` limpio, 0 errores TypeScript strict
+  - ✅ `npm run db:seed` exitoso: 14 permisos + 10 roles + 69 mappings + 8 usuarios en DB
+  - ✅ Login Ana (LIDER_DATA_HEART) → JWT con 14 permisos (acceso total)
+  - ✅ Login Luisa (DIRECTORA) → JWT con 7 permisos (solo :read)
+  - ✅ Login Doris (CONTADORA) → JWT con 6 permisos (finanzas+inventario únicamente)
+  - Roles creados: DIRECTORA, LIDER_DATA_HEART, ASISTENTE_CONTABLE, CONTADORA, LIDER_CLIENTES_BENEFACTORES, LIDER_ATENCION_FAMILIAS, LIDER_COMUNICACIONES
+  - Credenciales todos los usuarios reales: `dataheart2026` (contraseña temporal)
+- **Pending Tasks / Notes for next agent:**
+  - Aplicar `@UseGuards(JwtAuthGuard, PermissionsGuard)` + `@RequirePermission(...)` en los controllers existentes (clients, products, orders, donations, dashboard)
+  - Ejemplo de uso: `@RequirePermission('inventario:write')` en POST/PUT/DELETE de ProductsController
+  - Frontend: el token ya trae `permissions[]` — usarlo para ocultar botones/rutas según permisos del usuario logueado
+  - Las contraseñas son temporales (`dataheart2026`) — el cliente debe cambiarlas en producción
+  - El PermissionsGuard es permisivo si no hay `@RequirePermission` (solo aplica JwtAuthGuard) — retrocompatible con endpoints existentes
+
+---
+
+### [2026-07-01 01:00:00] - Agent: Claude (claude-sonnet-4-6)
+- **Task/Goal:** Verificar y confirmar aplicación de RBAC granular en todos los controllers
+- **Files Modified/Created:** ninguno nuevo (cambios ya estaban presentes desde sesión anterior)
+- **Current Status / Results:**
+  - ✅ `npm run build` limpio — 0 errores TypeScript
+  - ✅ Todos los controllers protegidos con `@UseGuards(JwtAuthGuard, PermissionsGuard)` al nivel de clase
+  - ✅ Permisos por endpoint: dashboards:read, segmentacion:read/write, inventario:read/write, ventas_donaciones:read/write
+- **Pending Tasks / Notes for next agent:**
+  - Frontend: leer `permissions[]` del JWT decodificado en AuthService, exponer como Signal, usarlo para ocultar botones/secciones de sidebar según permisos del usuario
+  - Ejemplo: solo mostrar "Inventario" en sidebar si el usuario tiene `inventario:read`
+
+---
+
+### [2026-07-01 02:00:00] - Agent: Claude (claude-sonnet-4-6)
+- **Task/Goal:** Frontend RBAC — sidebar dinámico y guard de rutas según permisos del JWT
+- **Files Modified/Created:**
+  - `frontend/src/app/core/services/auth.service.ts` — añadida interfaz `AuthUser`, signal `currentUser`, método `hasPermission(key)`, decodificación JWT al login y al arrancar la app
+  - `frontend/src/app/core/guards/permission.guard.ts` (creado) — `permissionGuard: CanActivateFn`, lee `route.data.permission`, redirige a /dashboard si no tiene el permiso
+  - `frontend/src/app/app.routes.ts` — import `permissionGuard`, añadido `canActivate: [permissionGuard]` + `data: { permission }` en cada ruta hija protegida
+  - `frontend/src/app/shared/layout/shell/shell.component.ts` — inyectado `AuthService`, expuesto `auth` y método `logout()`
+  - `frontend/src/app/shared/layout/shell/shell.component.html` — links y secciones del sidebar envueltos en `@if (auth.hasPermission(...))`, footer muestra nombre/email real + botón logout
+- **Current Status / Results:**
+  - ✅ `npm run build --configuration=development` limpio, 0 errores
+  - ✅ Sidebar muestra solo lo que el usuario tiene permiso de ver
+  - ✅ Navegar directamente a /products sin `inventario:read` redirige a /dashboard
+  - ✅ Nombre/email real en el footer del sidebar (del JWT decodificado)
+  - ✅ Botón de logout funcional
+  - Mapeo permisos → sidebar: dashboards:read→Dashboard, segmentacion:read→Clientes, ventas_donaciones:read→Donaciones+Pedidos, inventario:read→Productos
+- **Pending Tasks / Notes for next agent:**
+  - Sprint 5: webhooks Shopify (HMAC SHA256)
+  - Opcional: mostrar badge de rol del usuario en el footer del sidebar
+  - Opcional: página 403 dedicada en vez de redirigir silenciosamente a /dashboard

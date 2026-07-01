@@ -12,6 +12,7 @@ export interface JwtPayload {
   sub: string;
   email: string;
   role: string;
+  permissions: string[];
 }
 
 @Injectable()
@@ -24,7 +25,13 @@ export class AuthService {
   async login(dto: LoginDto) {
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
-      include: { role: true },
+      include: {
+        role: {
+          include: {
+            permissions: { include: { permission: true } },
+          },
+        },
+      },
     });
 
     if (!user || !user.isActive) {
@@ -36,10 +43,13 @@ export class AuthService {
       throw new UnauthorizedException('Credenciales inválidas');
     }
 
+    const permissions = user.role.permissions.map((rp) => rp.permission.keyName);
+
     const payload: JwtPayload = {
       sub: user.id,
       email: user.email,
       role: user.role.name,
+      permissions,
     };
 
     return {
@@ -50,6 +60,7 @@ export class AuthService {
         firstName: user.firstName,
         lastName: user.lastName,
         role: user.role.name,
+        permissions,
       },
     };
   }

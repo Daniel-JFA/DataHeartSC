@@ -7,14 +7,17 @@ import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { PermissionsGuard } from '../auth/permissions.guard';
+import { RequirePermission } from '../auth/require-permission.decorator';
 import { GetUser } from '../auth/get-user.decorator';
 
 @Controller('orders')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 export class OrdersController {
   constructor(private ordersService: OrdersService) {}
 
   @Get()
+  @RequirePermission('ventas_donaciones:read')
   findAll(
     @Query('page',   new DefaultValuePipe(1),  ParseIntPipe) page: number,
     @Query('limit',  new DefaultValuePipe(20), ParseIntPipe) limit: number,
@@ -27,6 +30,7 @@ export class OrdersController {
 
   // IMPORTANT: export must come BEFORE :id route to avoid Express matching 'export' as an ID
   @Get('export')
+  @RequirePermission('ventas_donaciones:read')
   async export(
     @Query('from') from: string,
     @Query('to')   to: string,
@@ -43,16 +47,19 @@ export class OrdersController {
   }
 
   @Get(':id')
+  @RequirePermission('ventas_donaciones:read')
   findOne(@Param('id') id: string) {
     return this.ordersService.findOne(id);
   }
 
   @Post()
+  @RequirePermission('ventas_donaciones:write')
   create(@Body() dto: CreateOrderDto, @GetUser() user: any) {
     return this.ordersService.create(dto, user.sub);
   }
 
   @Put(':id/status')
+  @RequirePermission('ventas_donaciones:write')
   updateStatus(@Param('id') id: string, @Body() dto: UpdateOrderDto) {
     return this.ordersService.updateStatus(id, dto);
   }

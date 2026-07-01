@@ -13,18 +13,22 @@ import {
 import { DonationsService } from './donations.service';
 import { CreateDonationDto } from './dto/create-donation.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { PermissionsGuard } from '../auth/permissions.guard';
+import { RequirePermission } from '../auth/require-permission.decorator';
 
 @Controller('donations')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 export class DonationsController {
   constructor(private donationsService: DonationsService) {}
 
   @Get('stats')
+  @RequirePermission('ventas_donaciones:read')
   getStats() {
     return this.donationsService.getStats();
   }
 
   @Get()
+  @RequirePermission('ventas_donaciones:read')
   findAll(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
@@ -42,16 +46,19 @@ export class DonationsController {
   }
 
   @Get(':id')
+  @RequirePermission('ventas_donaciones:read')
   findOne(@Param('id') id: string) {
     return this.donationsService.findOne(id);
   }
 
   @Post()
+  @RequirePermission('ventas_donaciones:write')
   create(@Body() dto: CreateDonationDto) {
     return this.donationsService.create(dto);
   }
 
   @Patch(':id/status')
+  @RequirePermission('ventas_donaciones:write')
   updateStatus(
     @Param('id') id: string,
     @Body() body: { status: string },
