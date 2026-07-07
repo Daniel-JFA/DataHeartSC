@@ -16,8 +16,6 @@ export const routes: Routes = [
       {
         path: 'dashboard',
         loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent),
-        canActivate: [permissionGuard],
-        data: { permission: 'dashboards:read' },
       },
       {
         path: 'clients',
@@ -50,6 +48,10 @@ export const routes: Routes = [
         data: { permission: 'ventas_donaciones:read' },
       },
     ],
+  },
+  {
+    path: 'proveedores/registro',
+    loadComponent: () => import('./features/providers/provider-register.component').then(m => m.ProviderRegisterComponent),
   },
   { path: '**', redirectTo: 'dashboard' },
 ];

@@ -603,3 +603,174 @@ Before starting any work, read the last 15-20 lines to understand the latest cha
 - **Pending Tasks / Notes for next agent:**
   - Próximo trabajo de código: Sprint 5 (Shopify webhooks HMAC SHA256) — requiere credenciales del cliente
   - No hay deuda técnica pendiente; base de seguridad sólida con RBAC granular
+
+---
+
+### [2026-07-06 00:00:00] - Agent: Claude (claude-sonnet-4-6)
+- **Task/Goal:** Actualizar `docs/progress-board.html` para marcar Sprint 5 como bloqueado y Sprint 6 como parcialmente bloqueado — esperando credenciales del cliente.
+- **Files Modified:**
+  - `docs/progress-board.html` — nuevo estado `blocked` (color naranja), nuevo CSS `.blocked-badge`, Sprint 5 status:'blocked' con badge detallado, Sprint 6 badge parcial, leyenda actualizada, fecha footer 06-jul-2026
+- **Current Status / Results:**
+  - ✅ Sprint 5 ("Shopify Webhooks") se muestra en naranja con estado "Bloqueado" y badge desplegado por defecto indicando exactamente qué 3 items necesita el cliente (cuenta Shopify Partners, webhook secret, dominio/ngrok)
+  - ✅ Sprint 6 ("Donaciones Online") mantiene adelantos en verde pero agrega badge de bloqueo parcial para la parte de webhooks automáticos (Wompi + PayU sandbox)
+  - ✅ Leyenda actualizada con color naranja para "Bloqueado — esperando cliente"
+  - Progress board sirviendo en http://localhost:8888/progress-board.html
+- **Pending Tasks / Notes for next agent:**
+  - Cuando el cliente provea credenciales Shopify → implementar Sprint 5 (menos de 1 día de trabajo)
+  - Cuando el cliente provea credenciales Wompi/PayU → implementar webhooks del Sprint 6
+  - Sprint 7 (BullMQ + PDF) y Sprint 8 (Correo automático) son independientes y pueden hacerse sin esperar al cliente
+
+---
+
+### [2026-07-06] - Agent: Claude (claude-sonnet-4-6)
+- **Task/Goal:** ETL Excel "BD Ventas y Donaciones.xlsx" + migración schema para nuevos campos.
+- **Files Modified/Created:**
+  - `backend/prisma/schema.prisma` — Order: +orderType, +invoiceNumber, +canalAtencion, +municipioEntrega, +domiciliario; Product: +categoryName, +subcategoryName, +externalId
+  - `scripts/etl/migrate_excel.py` — ETL Python completo (pandas + psycopg2)
+  - Migración SQL aplicada directamente (campos nuevos en orders y products)
+- **Current Status / Results:**
+  - ✅ Schema actualizado con 5 campos nuevos en orders y 3 en products
+  - ✅ 705 clientes nuevos insertados (11,095 ya existían del ETL anterior de Supabase)
+  - ✅ 355 productos del catálogo Excel insertados (con categoryName, subcategoryName, externalId)
+  - ✅ 25,040 órdenes históricas insertadas (2015–2026), tipificadas: Venta / ReciboCaja / NotaCredito / Remision
+  - ✅ 38,086 order_items insertados
+  - ✅ 4,493 donaciones insertadas (productos de categoría "Donaciones" separados automáticamente)
+  - ✅ 4,309 órdenes actualizadas con canal de atención (WhatsApp, Sitio Web, etc.), municipio y domiciliario
+  - Total en DB: 15,594 clientes | 468 productos | 25,151 órdenes | 4,493 donaciones | $5,173M COP en órdenes
+- **Pending Tasks / Notes for next agent:**
+  - "Inventario de Plataformas y Accesos.xlsx" contiene contraseñas en texto plano — NO commitear al repo
+  - El campo `estado_cliente` de la hoja clientes fue sanitizado (textos >20 chars → "Activo")
+  - Los `id_cliente = SinCedula` se crearon con doc_number único (SC-NombreHash)
+  - Hay 14 productos de categoría "Donaciones" — las transacciones con esos productos fueron a tabla `donations`, no `orders`
+  - Hay 414 órdenes con orderType="NotaCredito" (amounts negativos = devoluciones)
+  - Exposición de nuevos campos en API: orders controller puede exponer canalAtencion/municipioEntrega en GET
+
+---
+## 2026-07-06 — Claude — Formulario público de registro de proveedores
+
+- **Task:** Crear formulario público de registro de proveedores con carga de documentos (sin autenticación)
+- **Files Modified/Created:**
+  - `backend/prisma/schema.prisma` — Provider: +department, +rutPath, +camaraComercioPath, +certBancariaPath, +formatoProveedorPath; status default → 'Pendiente'
+  - `backend/src/providers/providers.controller.ts` — POST /register público (sin JwtAuthGuard) con multer FileFieldsInterceptor
+  - `backend/src/providers/providers.service.ts` — register(), findAll(page,limit,search), updateStatus()
+  - `backend/src/providers/dto/register-provider.dto.ts` — class-validator DTO con @IsIn(['CC','NIT'])
+  - `backend/src/providers/providers.module.ts` — imports AuthModule
+  - `backend/src/app.module.ts` — ProvidersModule añadido
+  - `backend/src/main.ts` — NestExpressApplication + useStaticAssets para servir uploads/
+  - `frontend/src/app/features/providers/provider-register.component.ts` — Standalone, Signals, FormData multipart
+  - `frontend/src/app/features/providers/provider-register.component.html` — 3 estados (form/success/error), 4 secciones, 4 campos de archivo
+  - `frontend/src/app/app.routes.ts` — ruta pública /proveedores/registro (fuera del shell authGuard)
+- **Current Status / Results:**
+  - ✅ Backend compila sin errores — endpoint POST /api/providers/register acepta multipart/form-data
+  - ✅ Archivos almacenados en uploads/providers/ con nombres UUID
+  - ✅ Frontend build limpio — provider-register-component lazy chunk 29 kB
+  - ✅ Ruta pública /proveedores/registro accesible sin login
+- **Pending Tasks / Notes for next agent:**
+  - Reiniciar backend y frontend dev servers para que se cargue la nueva ruta en vivo
+  - La migración de schema (nuevos campos en Provider) fue aplicada manualmente por psql — no está en Prisma migrations table; crear migration file manual si se necesita deploy limpio
+  - Panel interno de gestión de proveedores (GET /api/providers, PATCH /api/providers/:id/status) pendiente de implementar en frontend bajo ruta protegida
+  - Considerar añadir validación de tamaño de archivo en el frontend antes de enviar
+
+---
+## 2026-07-06 — Claude — SAGRILAFT Comprehensive Provider Form
+
+- **Task:** Implement comprehensive SAGRILAFT provider registration form covering all 13 sections of the Excel template
+- **Files changed:**
+  - `backend/prisma/schema.prisma` — Provider model: +55 new fields (SAGRILAFT secciones 1-13, rep legal JSON, referencias JSON, accionistas JSON, operaciones JSON, PPE booleans, financial info strings)
+  - `backend/src/providers/dto/register-provider.dto.ts` — Full DTO with class-validator decorators; @Transform for booleans and JSON fields; aceptaDeclaracion + aceptaTratamientoDatos required
+  - `backend/src/providers/providers.service.ts` — register() maps all new DTO fields to Prisma create call
+  - `frontend/src/app/features/providers/provider-register.component.ts` — naturaleza signal, actividadTipoSelected signal, formaPagoSelected signal; all 13 form sections; JSON serialization before FormData submission
+  - `frontend/src/app/features/providers/provider-register.component.html` — Full 13-section form: conditional sections 3/4 based on naturaleza(), checkboxes for actividad and formaPago, radio buttons for PPE questions, 2 references rows, accionistas textarea, required declaration checkboxes
+- **Migration:** Applied via `prisma migrate diff --from-config-datasource --to-schema --script | psql` — ALTER TABLE adds 55 columns to providers table
+- **Current Status / Results:**
+  - ✅ Prisma migration applied — all 55 new columns present in providers table
+  - ✅ Prisma client regenerated
+  - ✅ Frontend build clean — provider-register-component chunk 99 kB (was 29 kB)
+  - ✅ All Angular rules respected: standalone, signals, @if/@for, ReactiveFormsModule only
+- **Pending Tasks / Notes for next agent:**
+  - Backend dev server needs restart to pick up new DTO and service changes
+  - Consider adding backend validation: if naturaleza=NATURAL require primerApellido/primerNombre/docNumberNatural; if naturaleza=JURIDICA require name/nit
+  - Consider front-end UX: progressive disclosure with step indicator (the form is now very long)
+  - accionistasTexto parsing assumes pipe-delimited lines; may want a proper dynamic row UI in the future
+
+## 2026-07-06 — Claude — Provider Registration Form → 5-Step Wizard
+
+- **Task:** Refactor the single-page SAGRILAFT provider registration form into a 5-step wizard with per-step validation and an animated progress bar
+- **Files changed:**
+  - `frontend/src/app/features/providers/provider-register.component.ts` — Added `currentStep` signal (starts at 1), `totalSteps = 5`, `stepErrors` signal; `nextStep()` / `prevStep()` methods with scroll-to-top; private `validateStep(step)` with rules for steps 2, 3 and 5; `submit()` now calls `validateStep(5)` first
+  - `frontend/src/app/features/providers/provider-register.component.html` — Full wizard layout: animated progress bar (5 numbered circles + connecting lines, green checkmarks for completed steps, brand-600 for active, slate-200 for future); `@if (currentStep() === N)` panels for each of the 5 steps; nav buttons (← Anterior / Siguiente → / Enviar solicitud) with disabled-when-loading state; step error banner in red; ALL 13 original sections preserved intact
+- **Step grouping:**
+  - Step 1: Tipo de solicitud + Naturaleza + Forma de pago
+  - Step 2: Datos persona natural OR jurídica (conditional)
+  - Step 3: Actividad económica + Información de pagos + Contacto de facturación
+  - Step 4: Referencias comerciales + Accionistas (jurídica only) + Financiero + Operaciones internacionales
+  - Step 5: PPE + Documentos + Declaraciones (submit here)
+- **Current Status / Results:**
+  - ✅ `npm run build -- --configuration=development` → 0 errors, 0 warnings
+  - ✅ All Angular rules respected: standalone, signals only (no RxJS BehaviorSubject), `@if`/`@for` control flow, no NgModules
+  - ✅ Progress bar width driven by `(currentStep() - 1) / (totalSteps - 1) * 100`%
+- **Pending Tasks / Notes for next agent:**
+  - No backend changes needed — submit payload is identical
+  - Consider adding a "step 5 re-validate" call on page load when returning from error state
+
+## 2026-07-06 — Claude — Animated SVG Heart Progress Indicator
+
+- **Task:** Replace the horizontal step progress bar with an animated SVG heart that fills bottom-to-top as the user advances through the 5-step provider wizard
+- **Files changed:**
+  - `frontend/src/app/features/providers/provider-register.component.ts`
+    - Added `computed` to the `@angular/core` import
+    - Added `heartFillPct` computed signal: step 1 → 8%, steps 2–5 → linearly scaled up to 100% (formula: `((s-1)/(totalSteps-1)) * 92 + 8`)
+    - Added `stepLabel` computed signal: maps step number to Spanish label string
+  - `frontend/src/app/features/providers/provider-register.component.html`
+    - Replaced the entire horizontal progress bar block (lines 42–172) with the heart widget
+    - Heart SVG: 160×160, viewBox 0 0 32 30, rose gradient fill (#e11d48 → #fb7185), slate-200 background, clipPath heart shape
+    - Fill level driven by `heartFillPct()` via `[attr.y]` and `[attr.height]` on a `<rect>` — CSS `transition: 0.6s ease` for smooth animation
+    - Heartbeat CSS keyframe animation (`heart-pulse` class) applied only on step 5
+    - Step label text below heart from `stepLabel()` signal
+    - 5 numbered dots row: completed = brand-600 filled + checkmark, current = brand-600 ring, pending = slate-300
+    - Error banner preserved, now inside the centered flex column
+- **Current Status:**
+  - ✅ `npm run build -- --configuration=development` → 0 errors, 0 warnings
+  - ✅ Angular Signals only — no RxJS; `computed()` for derived values
+  - ✅ No new npm packages added
+  - ✅ All form step panels and navigation buttons unchanged
+- **Pending Tasks / Notes for next agent:**
+  - The `<style>` tag with `@keyframes heartbeat` is inline in the HTML template; if global styles consolidation is desired, move the keyframes to `src/styles.css`
+  - The heart SVG path is a simplified bezier approximation — can be swapped for a more precise path if pixel-perfect branding is needed
+
+---
+
+## 2026-07-07 — Claude — Corrección progress-board + Documentación técnica completa
+
+- **Task:** 1) Corregir bug 0% en progress board. 2) Crear documentación técnica profesional completa.
+- **Files Modified/Created:**
+  - `docs/progress-board.html` — Fix bug JS: tarea "Módulo Proveedores" estaba fuera del array tasks[] del Sprint 4 (sintaxis inválida → todo el script fallaba → ring en 0%). Sprint '2b' agregado a HITOS[0].sprints. Lookup `SPRINTS[n-1]` reemplazado por `sprintByN[n]` para soportar IDs string. Fecha actualizada a 07-jul-2026.
+  - `docs/TECHNICAL_DOCUMENTATION.md` (NUEVO) — 1,373 líneas. Documentación técnica completa con: resumen ejecutivo, diagrama de arquitectura ASCII, stack tecnológico, estructura del monorepo, modelo ER (Mermaid), descripción de las 18 tablas con conteos actuales, todos los endpoints REST con auth/permisos, flujos de datos (crear pedido, dashboard, exportador), detalle ETL Sprint 2 y 2b, módulo proveedores SAGRILAFT, credenciales de desarrollo, usuarios del sistema, integraciones pendientes, comandos de desarrollo, historial de todos los sprints completados, roadmap de sprints pendientes, convenciones de seguridad, guía de despliegue, protocolo de colaboración IA.
+- **Current Status:**
+  - ✅ Progress board ahora muestra 24% correcto (5/21 sprints)
+  - ✅ TECHNICAL_DOCUMENTATION.md creado en docs/
+  - Backend corriendo en http://localhost:3000
+  - Frontend corriendo en http://localhost:4200
+- **Pending Tasks / Notes for next agent:**
+  - Actualizar TECHNICAL_DOCUMENTATION.md al completar cada sprint (sección 14 "Historial de Sprints")
+  - El archivo progress-board.html también debe actualizarse por sprint
+  - Pendiente de Ana: Excel de beneficiarios y Excel de voluntarios (seguimiento viernes 11-jul-2026)
+  - Pendiente del cliente: credenciales Shopify (Sprint 5) y Wompi/PayU (Sprint 6)
+
+---
+
+## 2026-07-07 — Claude — Script setup_db.sh + Documentación en progress-board
+
+- **Task:** 1) Crear script maestro de setup de base de datos para servidor. 2) Agregar enlace a documentación técnica en el progress-board.
+- **Files Modified/Created:**
+  - `scripts/setup_db.sh` (NUEVO) — Script idempotente completo: levanta Docker, crea .env si falta, aplica migraciones Prisma, corre seed, ETL Supabase (migrate.js) y ETL Excel (migrate_excel.py). Modos: `--check` (solo muestra estado), `--only-db` (sin ETLs), default (todo). Detecta si los ETLs ya corrieron antes para evitar duplicados.
+  - `docs/progress-board.html` — Agregada sección "Documentación" en el sidebar con enlace a TECHNICAL_DOCUMENTATION.md y fecha de actualización 07-jul-2026.
+- **Current Status:**
+  - ✅ setup_db.sh syntax OK (bash -n)
+  - ✅ 3 modos de ejecución: full / --only-db / --check
+  - ✅ Idempotente: detecta clientes >5k y órdenes >20k para saltar ETLs ya ejecutados
+  - Dato importante: el Excel "BD Ventas y Donaciones.xlsx" debe estar en la raíz del proyecto para que corra el ETL #2
+- **Pending Tasks / Notes for next agent:**
+  - Pendiente de Ana: Excel de beneficiarios y Excel de voluntarios (seguimiento viernes 11-jul-2026)
+  - Pendiente del cliente: credenciales Shopify (Sprint 5) y Wompi/PayU (Sprint 6)
+  - Para verificar estado de la DB en cualquier momento: `bash scripts/setup_db.sh --check`

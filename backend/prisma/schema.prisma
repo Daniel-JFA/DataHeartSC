@@ -93,19 +93,25 @@ model ClientDonor {
 }
 
 model Order {
-  id              String      @id @default(uuid())
-  clientId        String      @map("client_id")
-  orderDate       DateTime    @default(now()) @map("order_date")
-  status          String      @default("Recibido") // Recibido, En preparación, Despachado, Entregado
-  totalAmount     Decimal     @map("total_amount") @db.Decimal(12, 2)
-  paymentStatus   String      @default("Pendiente") @map("payment_status") // Pendiente, Pagado
-  source          String      @default("Manual") // Shopify, Manual, TiendaFísica
-  createdByUserId String?     @map("created_by_user_id")
-  client          ClientDonor @relation(fields: [clientId], references: [id], onDelete: Restrict)
-  createdByUser   User?       @relation("OrdersCreatedByUser", fields: [createdByUserId], references: [id], onDelete: SetNull)
-  items           OrderItem[]
+  id               String      @id @default(uuid())
+  clientId         String      @map("client_id")
+  orderDate        DateTime    @default(now()) @map("order_date")
+  status           String      @default("Recibido") // Recibido, En preparación, Despachado, Entregado
+  totalAmount      Decimal     @map("total_amount") @db.Decimal(12, 2)
+  paymentStatus    String      @default("Pendiente") @map("payment_status") // Pendiente, Pagado
+  source           String      @default("Manual") // Shopify, Manual, TiendaFísica, WhatsApp, Web
+  orderType        String      @default("Venta") @map("order_type") // Venta, ReciboCaja, NotaCredito, Remision, Historico
+  invoiceNumber    String?     @map("invoice_number") // Número original: "FV FSC 30265"
+  canalAtencion    String?     @map("canal_atencion") // Sitio Web, WhatsApp, Tienda física, Correo, Interno, Frecuenti
+  municipioEntrega String?     @map("municipio_entrega")
+  domiciliario     String?
+  createdByUserId  String?     @map("created_by_user_id")
+  client           ClientDonor @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  createdByUser    User?       @relation("OrdersCreatedByUser", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  items            OrderItem[]
 
   @@index([clientId])
+  @@index([invoiceNumber])
   @@map("orders")
 }
 
@@ -154,16 +160,19 @@ model Certificate {
 }
 
 model Product {
-  id        String         @id @default(uuid())
-  name      String
-  sku       String         @unique
-  stock     Int            @default(0)
-  minStock  Int            @default(0) @map("min_stock")
-  price     Decimal        @db.Decimal(12, 2)
-  isActive  Boolean        @default(true) @map("is_active")
-  items     OrderItem[]
-  inputs    ProductInput[]
-  movements InventoryMovement[] @relation("ProductMovements")
+  id              String         @id @default(uuid())
+  name            String
+  sku             String         @unique
+  stock           Int            @default(0)
+  minStock        Int            @default(0) @map("min_stock")
+  price           Decimal        @db.Decimal(12, 2)
+  isActive        Boolean        @default(true) @map("is_active")
+  categoryName    String?        @map("category_name")    // Categoría del Excel: Donaciones, Productos, Eventos…
+  subcategoryName String?        @map("subcategory_name") // Subcategoría: Bonos de Pésame, Plantas…
+  externalId      String?        @unique @map("external_id") // id_producto original del Excel
+  items           OrderItem[]
+  inputs          ProductInput[]
+  movements       InventoryMovement[] @relation("ProductMovements")
 
   @@map("products")
 }
@@ -266,19 +275,91 @@ model Volunteer {
 }
 
 model Provider {
-  id           String    @id @default(uuid())
-  name         String
-  docType      String    @map("doc_type")  // NIT, Cédula
-  docNumber    String    @unique @map("doc_number")
-  contactName  String?   @map("contact_name")
-  email        String?
-  phone        String?
-  address      String?
-  city         String?
-  category     String?   // Materia prima, Servicios, Logística
-  status       String    @default("Activo")
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime  @updatedAt @map("updated_at")
+  id                         String    @id @default(uuid())
+  // Base
+  name                       String
+  docType                    String    @map("doc_type")
+  docNumber                  String    @unique @map("doc_number")
+  contactName                String?   @map("contact_name")
+  email                      String?
+  phone                      String?
+  address                    String?
+  city                       String?
+  department                 String?
+  category                   String?
+  status                     String    @default("Pendiente")
+  // Sección 1 - Tipo solicitud
+  tipoSolicitud              String?   @map("tipo_solicitud")
+  tipoSolicitudOtro          String?   @map("tipo_solicitud_otro")
+  // Sección 2 - Naturaleza
+  naturaleza                 String?
+  formaPagoTipo              String?   @map("forma_pago_tipo")
+  diasCredito                String?   @map("dias_credito")
+  // Sección 3 - Persona Natural
+  lugarExpedicion            String?   @map("lugar_expedicion")
+  fechaExpedicion            String?   @map("fecha_expedicion")
+  nationality                String?
+  departamentoResidencia     String?   @map("departamento_residencia")
+  ciudadResidencia           String?   @map("ciudad_residencia")
+  telefonoDomicilio          String?   @map("telefono_domicilio")
+  primerApellido             String?   @map("primer_apellido")
+  segundoApellido            String?   @map("segundo_apellido")
+  primerNombre               String?   @map("primer_nombre")
+  segundoNombre              String?   @map("segundo_nombre")
+  // Sección 4 - Persona Jurídica
+  nit                        String?
+  digitoVerificacion         String?   @map("digito_verificacion")
+  correoEmpresa              String?   @map("correo_empresa")
+  telefonoEmpresa            String?   @map("telefono_empresa")
+  direccionOficina           String?   @map("direccion_oficina")
+  repLegal                   Json?     @map("rep_legal")
+  // Sección 5 - Actividad económica
+  actividadTipo              String?   @map("actividad_tipo")
+  actividadOtro              String?   @map("actividad_otro")
+  codigoCIIU                 String?   @map("codigo_ciiu")
+  descripcionActividad       String?   @map("descripcion_actividad")
+  // Sección 6 - Información de pagos
+  formaPago                  String?   @map("forma_pago")
+  tipoCuenta                 String?   @map("tipo_cuenta")
+  numeroCuenta               String?   @map("numero_cuenta")
+  diasPago                   String?   @map("dias_pago")
+  // Sección 7 - Contacto de facturación
+  factNombre                 String?   @map("fact_nombre")
+  factCargo                  String?   @map("fact_cargo")
+  factTelefono               String?   @map("fact_telefono")
+  factExt                    String?   @map("fact_ext")
+  factCelular                String?   @map("fact_celular")
+  factEmail                  String?   @map("fact_email")
+  // Sección 8 - Referencias comerciales
+  referencias                Json?
+  // Sección 9 - Accionistas
+  accionistas                Json?
+  // Sección 10 - Información financiera
+  totalActivos               String?   @map("total_activos")
+  totalPasivos               String?   @map("total_pasivos")
+  totalPatrimonio            String?   @map("total_patrimonio")
+  ingresosMensuales          String?   @map("ingresos_mensuales")
+  egresosMensuales           String?   @map("egresos_mensuales")
+  otrosIngresosMensuales     String?   @map("otros_ingresos_mensuales")
+  conceptoOtrosIngresos      String?   @map("concepto_otros_ingresos")
+  // Sección 11 - Operaciones internacionales
+  operaciones                Json?
+  // Sección 12 - PPE
+  manejaRecursosPublicos     Boolean?  @map("maneja_recursos_publicos")
+  tieneReconocimientoPublico Boolean?  @map("tiene_reconocimiento_publico")
+  ejercePoder                Boolean?  @map("ejerce_poder")
+  esFamiliarPPE              Boolean?  @map("es_familiar_ppe")
+  familiarPPEInfo            String?   @map("familiar_ppe_info")
+  // Sección 13 - Declaraciones
+  aceptaDeclaracion          Boolean?  @map("acepta_declaracion")
+  aceptaTratamientoDatos     Boolean?  @map("acepta_tratamiento_datos")
+  // Rutas de archivos adjuntos
+  rutPath                    String?   @map("rut_path")
+  camaraComercioPath         String?   @map("camara_comercio_path")
+  certBancariaPath           String?   @map("cert_bancaria_path")
+  formatoProveedorPath       String?   @map("formato_proveedor_path")
+  createdAt                  DateTime  @default(now()) @map("created_at")
+  updatedAt                  DateTime  @updatedAt @map("updated_at")
 
   @@index([docNumber])
   @@map("providers")

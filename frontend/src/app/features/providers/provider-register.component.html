@@ -1,0 +1,1227 @@
+<!-- ════════════════════════════════════════════════════════════════
+     Formulario SAGRILAFT — Registro de Proveedores (Wizard 5 pasos)
+     Fundación Infantil Santiago Corazón
+     ════════════════════════════════════════════════════════════════ -->
+
+<div class="min-h-screen bg-slate-50 flex flex-col">
+
+  <!-- ── Header ─────────────────────────────────────────────────── -->
+  <header class="bg-white border-b border-slate-200 shadow-sm">
+    <div class="max-w-4xl mx-auto px-6 py-4 flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl bg-brand-600 flex items-center justify-center flex-shrink-0">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 text-white">
+          <path d="M9.653 16.915l-.005-.003-.019-.01a20.759 20.759 0 01-1.162-.682 22.045 22.045 0 01-2.582-2.025C4.363 12.476 2.5 10.43 2.5 7.5a4.5 4.5 0 018.29-2.396A4.5 4.5 0 0117.5 7.5c0 2.93-1.863 4.976-3.385 6.195a22.045 22.045 0 01-2.582 2.025 20.759 20.759 0 01-1.162.682l-.019.01-.005.003h-.001l-.003.001-.002.001z" />
+        </svg>
+      </div>
+      <div>
+        <p class="text-xs text-slate-500 leading-none">Fundación Infantil</p>
+        <h1 class="text-sm font-bold text-slate-900 leading-tight">Santiago Corazón</h1>
+      </div>
+      <div class="ml-auto text-right hidden sm:block">
+        <p class="text-xs text-slate-400">Vinculación SAGRILAFT</p>
+        <p class="text-xs font-medium text-slate-600">Formato de Proveedores</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── Contenido central ─────────────────────────────────────── -->
+  <main class="flex-1 flex items-start justify-center px-4 py-10">
+    <div class="w-full max-w-4xl">
+
+      <!-- ════════════ ESTADO: FORMULARIO ════════════ -->
+      @if (step() === 'form') {
+
+        <div class="mb-8 text-center">
+          <h2 class="text-2xl font-bold text-slate-900">Registro de Proveedores</h2>
+          <p class="text-sm text-slate-500 mt-1.5 max-w-xl mx-auto">
+            Diligencia todos los campos requeridos del formulario de vinculación SAGRILAFT.
+            El equipo revisará tu solicitud y te contactará pronto.
+          </p>
+        </div>
+
+        <!-- ── Progreso en dots ───────────────────────── -->
+        <div class="flex flex-col items-center gap-3 mb-8">
+
+          <!-- Dots de pasos -->
+          <div class="flex items-center gap-2">
+            @for (n of [1, 2, 3, 4, 5]; track n) {
+              @if (currentStep() > n) {
+                <!-- Completado -->
+                <div class="w-7 h-7 rounded-full bg-brand-600 flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3 h-3 text-white">
+                    <path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z"/>
+                  </svg>
+                </div>
+              } @else if (currentStep() === n) {
+                <!-- Actual -->
+                <div class="w-7 h-7 rounded-full ring-2 ring-brand-600 bg-white flex items-center justify-center">
+                  <span class="text-xs font-bold text-brand-600">{{ n }}</span>
+                </div>
+              } @else {
+                <!-- Pendiente -->
+                <div class="w-7 h-7 rounded-full bg-slate-200 flex items-center justify-center">
+                  <span class="text-xs font-medium text-slate-400">{{ n }}</span>
+                </div>
+              }
+            }
+          </div>
+
+          <!-- Etiqueta del paso actual -->
+          <p class="text-sm font-semibold text-slate-700">{{
+            ['', 'Tipo y naturaleza', 'Datos del proveedor', 'Actividad y pagos', 'Referencias y finanzas', 'Declaraciones y documentos'][currentStep()]
+          }}</p>
+
+          <!-- Error de paso -->
+          @if (stepErrors()) {
+            <div class="flex items-center gap-2 bg-red-50 border border-red-200 rounded-lg px-4 py-2.5 max-w-md w-full">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-red-500 flex-shrink-0">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
+              </svg>
+              <p class="text-sm text-red-700">{{ stepErrors() }}</p>
+            </div>
+          }
+        </div>
+
+        <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-6" novalidate>
+
+          <!-- ════════════════════════════════════════
+               PASO 1 — Tipo y naturaleza
+               ════════════════════════════════════════ -->
+          @if (currentStep() === 1) {
+
+            <!-- ══ Tipo de solicitud ══ -->
+            <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+              <div class="px-5 py-3.5 border-b border-slate-100 bg-slate-50">
+                <h3 class="text-xs font-semibold text-slate-700 uppercase tracking-wider">1. Tipo de solicitud</h3>
+              </div>
+              <div class="px-5 py-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Tipo de solicitud</label>
+                  <select formControlName="tipoSolicitud"
+                          class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 bg-white
+                                 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors">
+                    <option value="REGISTRO_INICIAL">Registro inicial</option>
+                    <option value="ACTUALIZACION">Actualización de datos</option>
+                    <option value="OTRO">Otro</option>
+                  </select>
+                </div>
+                @if (form.get('tipoSolicitud')?.value === 'OTRO') {
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Especifique</label>
+                    <input formControlName="tipoSolicitudOtro" type="text" placeholder="Especifique el tipo de solicitud"
+                           class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                  focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                  </div>
+                }
+              </div>
+            </section>
+
+            <!-- ══ Naturaleza del proveedor ══ -->
+            <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+              <div class="px-5 py-3.5 border-b border-slate-100 bg-slate-50">
+                <h3 class="text-xs font-semibold text-slate-700 uppercase tracking-wider">2. Naturaleza del proveedor</h3>
+              </div>
+              <div class="px-5 py-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-2">Naturaleza <span class="text-brand-600">*</span></label>
+                  <div class="flex gap-4">
+                    <label class="flex items-center gap-1.5 cursor-pointer">
+                      <input type="radio" formControlName="naturaleza" value="NATURAL"
+                             class="text-brand-600 focus:ring-brand-500" />
+                      <span class="text-sm text-slate-700">Persona Natural</span>
+                    </label>
+                    <label class="flex items-center gap-1.5 cursor-pointer">
+                      <input type="radio" formControlName="naturaleza" value="JURIDICA"
+                             class="text-brand-600 focus:ring-brand-500" />
+                      <span class="text-sm text-slate-700">Persona Jurídica</span>
+                    </label>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Forma de pago</label>
+                  <select formControlName="formaPagoTipo"
+                          class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 bg-white
+                                 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors">
+                    <option value="CONTADO">Contado</option>
+                    <option value="CREDITO">Crédito</option>
+                  </select>
+                </div>
+                @if (form.get('formaPagoTipo')?.value === 'CREDITO') {
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Días de crédito</label>
+                    <input formControlName="diasCredito" type="number" min="0" placeholder="Ej: 30"
+                           class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                  focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                  </div>
+                }
+              </div>
+            </section>
+
+          }
+
+          <!-- ════════════════════════════════════════
+               PASO 2 — Datos del proveedor
+               ════════════════════════════════════════ -->
+          @if (currentStep() === 2) {
+
+            <!-- ══ Datos Persona Natural ══ -->
+            @if (naturaleza() === 'NATURAL') {
+              <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="px-5 py-3.5 border-b border-slate-100 bg-slate-50">
+                  <h3 class="text-xs font-semibold text-slate-700 uppercase tracking-wider">3. Datos de la persona natural</h3>
+                </div>
+                <div class="px-5 py-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
+                  <!-- Tipo de documento -->
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Tipo de documento <span class="text-brand-600">*</span></label>
+                    <select formControlName="docTypeNatural"
+                            class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 bg-white
+                                   focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors">
+                      <option value="CC">Cédula de Ciudadanía (CC)</option>
+                      <option value="CE">Cédula de Extranjería (CE)</option>
+                    </select>
+                  </div>
+
+                  <!-- Número de documento -->
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Número de documento <span class="text-brand-600">*</span></label>
+                    <input formControlName="docNumberNatural" type="text" placeholder="Ej: 1001234567"
+                           class="w-full border rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                  focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors"
+                           [class.border-red-400]="isInvalid('docNumberNatural')"
+                           [class.border-slate-300]="!isInvalid('docNumberNatural')" />
+                  </div>
+
+                  <!-- Lugar de expedición -->
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Lugar de expedición</label>
+                    <input formControlName="lugarExpedicion" type="text" placeholder="Ej: Medellín"
+                           class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                  focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                  </div>
+
+                  <!-- Fecha de expedición -->
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Fecha de expedición</label>
+                    <input formControlName="fechaExpedicion" type="date"
+                           class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900
+                                  focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                  </div>
+
+                  <!-- Nacionalidad -->
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Nacionalidad</label>
+                    <input formControlName="nationality" type="text" placeholder="Colombiana"
+                           class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                  focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                  </div>
+
+                  <!-- Primer apellido -->
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Primer apellido <span class="text-brand-600">*</span></label>
+                    <input formControlName="primerApellido" type="text" placeholder="Ej: Rodríguez"
+                           class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                  focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                  </div>
+
+                  <!-- Segundo apellido -->
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Segundo apellido</label>
+                    <input formControlName="segundoApellido" type="text" placeholder="Ej: García"
+                           class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                  focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                  </div>
+
+                  <!-- Primer nombre -->
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Primer nombre <span class="text-brand-600">*</span></label>
+                    <input formControlName="primerNombre" type="text" placeholder="Ej: María"
+                           class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                  focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                  </div>
+
+                  <!-- Segundo nombre -->
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Segundo nombre</label>
+                    <input formControlName="segundoNombre" type="text" placeholder="Ej: Camila"
+                           class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                  focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                  </div>
+
+                  <!-- Departamento de residencia -->
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Departamento de residencia</label>
+                    <input formControlName="departamentoResidencia" type="text" placeholder="Ej: Antioquia"
+                           class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                  focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                  </div>
+
+                  <!-- Ciudad de residencia -->
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Ciudad de residencia</label>
+                    <input formControlName="ciudadResidencia" type="text" placeholder="Ej: Medellín"
+                           class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                  focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                  </div>
+
+                  <!-- Celular -->
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Celular <span class="text-brand-600">*</span></label>
+                    <input formControlName="phone" type="tel" placeholder="Ej: 3001234567"
+                           class="w-full border rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                  focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors"
+                           [class.border-red-400]="isInvalid('phone')"
+                           [class.border-slate-300]="!isInvalid('phone')" />
+                    @if (isInvalid('phone')) {
+                      <p class="mt-1 text-xs text-red-600">Ingresa un número válido (solo dígitos).</p>
+                    }
+                  </div>
+
+                  <!-- Teléfono domicilio -->
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Teléfono domicilio</label>
+                    <input formControlName="telefonoDomicilio" type="tel" placeholder="Ej: 6041234567"
+                           class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                  focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                  </div>
+
+                  <!-- Dirección domicilio -->
+                  <div class="sm:col-span-2 lg:col-span-2">
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Dirección domicilio</label>
+                    <input formControlName="address" type="text" placeholder="Ej: Calle 50 # 43-50, Laureles"
+                           class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                  focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                  </div>
+
+                  <!-- Correo electrónico -->
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Correo electrónico <span class="text-brand-600">*</span></label>
+                    <input formControlName="email" type="email" placeholder="correo@ejemplo.com"
+                           class="w-full border rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                  focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors"
+                           [class.border-red-400]="isInvalid('email')"
+                           [class.border-slate-300]="!isInvalid('email')" />
+                    @if (isInvalid('email')) {
+                      <p class="mt-1 text-xs text-red-600">Correo electrónico inválido.</p>
+                    }
+                  </div>
+
+                </div>
+              </section>
+            }
+
+            <!-- ══ Datos Persona Jurídica ══ -->
+            @if (naturaleza() === 'JURIDICA') {
+              <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="px-5 py-3.5 border-b border-slate-100 bg-slate-50">
+                  <h3 class="text-xs font-semibold text-slate-700 uppercase tracking-wider">3. Datos de la persona jurídica</h3>
+                </div>
+                <div class="px-5 py-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
+                  <!-- Razón social -->
+                  <div class="sm:col-span-2 lg:col-span-3">
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Razón social <span class="text-brand-600">*</span></label>
+                    <input formControlName="name" type="text" placeholder="Ej: Distribuidora El Corazón S.A.S"
+                           class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                  focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                  </div>
+
+                  <!-- NIT -->
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">NIT <span class="text-brand-600">*</span></label>
+                    <input formControlName="nit" type="text" placeholder="Ej: 900123456"
+                           class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                  focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                  </div>
+
+                  <!-- Dígito verificación -->
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Dígito verificación</label>
+                    <input formControlName="digitoVerificacion" type="text" maxlength="1" placeholder="Ej: 1"
+                           class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                  focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                  </div>
+
+                  <!-- Correo empresa -->
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Correo empresa <span class="text-brand-600">*</span></label>
+                    <input formControlName="correoEmpresa" type="email" placeholder="contacto@empresa.com"
+                           class="w-full border rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                  focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors"
+                           [class.border-red-400]="isInvalid('correoEmpresa')"
+                           [class.border-slate-300]="!isInvalid('correoEmpresa')" />
+                    @if (isInvalid('correoEmpresa')) {
+                      <p class="mt-1 text-xs text-red-600">Correo electrónico inválido.</p>
+                    }
+                  </div>
+
+                  <!-- Departamento -->
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Departamento</label>
+                    <input formControlName="department" type="text" placeholder="Ej: Antioquia"
+                           class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                  focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                  </div>
+
+                  <!-- Ciudad -->
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Ciudad</label>
+                    <input formControlName="city" type="text" placeholder="Ej: Medellín"
+                           class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                  focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                  </div>
+
+                  <!-- Teléfono empresa -->
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Teléfono empresa</label>
+                    <input formControlName="telefonoEmpresa" type="tel" placeholder="Ej: 6041234567"
+                           class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                  focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                  </div>
+
+                  <!-- Dirección oficina -->
+                  <div class="sm:col-span-2 lg:col-span-3">
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Dirección oficina principal</label>
+                    <input formControlName="direccionOficina" type="text" placeholder="Ej: Carrera 43A # 18-15"
+                           class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                  focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                  </div>
+
+                </div>
+
+                <!-- Representante Legal -->
+                <div class="px-5 pb-5">
+                  <div class="border border-slate-200 rounded-lg overflow-hidden">
+                    <div class="px-4 py-2.5 bg-slate-50 border-b border-slate-200">
+                      <h4 class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Representante Legal</h4>
+                    </div>
+                    <div class="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
+                      <div>
+                        <label class="block text-xs font-medium text-slate-700 mb-1">Tipo documento</label>
+                        <select formControlName="repDocType"
+                                class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 bg-white
+                                       focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors">
+                          <option value="CC">CC</option>
+                          <option value="CE">CE</option>
+                          <option value="OTRO">Otro</option>
+                        </select>
+                      </div>
+
+                      @if (form.get('repDocType')?.value === 'OTRO') {
+                        <div>
+                          <label class="block text-xs font-medium text-slate-700 mb-1">Especifique tipo</label>
+                          <input formControlName="repDocTypeOtro" type="text"
+                                 class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                        focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                        </div>
+                      }
+
+                      <div>
+                        <label class="block text-xs font-medium text-slate-700 mb-1">Número de documento</label>
+                        <input formControlName="repDocNumber" type="text" placeholder="Ej: 71234567"
+                               class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                      focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                      </div>
+
+                      <div>
+                        <label class="block text-xs font-medium text-slate-700 mb-1">Lugar de expedición</label>
+                        <input formControlName="repLugarExpedicion" type="text" placeholder="Ej: Bogotá"
+                               class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                      focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                      </div>
+
+                      <div>
+                        <label class="block text-xs font-medium text-slate-700 mb-1">Fecha de expedición</label>
+                        <input formControlName="repFechaExpedicion" type="date"
+                               class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900
+                                      focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                      </div>
+
+                      <div>
+                        <label class="block text-xs font-medium text-slate-700 mb-1">Primer apellido</label>
+                        <input formControlName="repPrimerApellido" type="text" placeholder="Ej: Martínez"
+                               class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                      focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                      </div>
+
+                      <div>
+                        <label class="block text-xs font-medium text-slate-700 mb-1">Segundo apellido</label>
+                        <input formControlName="repSegundoApellido" type="text"
+                               class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                      focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                      </div>
+
+                      <div>
+                        <label class="block text-xs font-medium text-slate-700 mb-1">Primer nombre</label>
+                        <input formControlName="repPrimerNombre" type="text" placeholder="Ej: Carlos"
+                               class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                      focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                      </div>
+
+                      <div>
+                        <label class="block text-xs font-medium text-slate-700 mb-1">Segundo nombre</label>
+                        <input formControlName="repSegundoNombre" type="text"
+                               class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                      focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                      </div>
+
+                      <div>
+                        <label class="block text-xs font-medium text-slate-700 mb-1">Departamento</label>
+                        <input formControlName="repDepartamento" type="text" placeholder="Ej: Cundinamarca"
+                               class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                      focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                      </div>
+
+                      <div>
+                        <label class="block text-xs font-medium text-slate-700 mb-1">Ciudad</label>
+                        <input formControlName="repCiudad" type="text" placeholder="Ej: Bogotá"
+                               class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                      focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                      </div>
+
+                      <div>
+                        <label class="block text-xs font-medium text-slate-700 mb-1">Dirección</label>
+                        <input formControlName="repDireccion" type="text" placeholder="Ej: Av. El Dorado # 68-10"
+                               class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                      focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                      </div>
+
+                      <div>
+                        <label class="block text-xs font-medium text-slate-700 mb-1">Nacionalidad</label>
+                        <input formControlName="repNacionalidad" type="text" placeholder="Colombiana"
+                               class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                      focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                      </div>
+
+                      <div>
+                        <label class="block text-xs font-medium text-slate-700 mb-1">Celular</label>
+                        <input formControlName="repCelular" type="tel" placeholder="Ej: 3001234567"
+                               class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                      focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                      </div>
+
+                      <div>
+                        <label class="block text-xs font-medium text-slate-700 mb-1">Otro teléfono</label>
+                        <input formControlName="repOtroTel" type="tel"
+                               class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                      focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                      </div>
+
+                      <div>
+                        <label class="block text-xs font-medium text-slate-700 mb-1">Correo electrónico</label>
+                        <input formControlName="repEmail" type="email" placeholder="rep@empresa.com"
+                               class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                      focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+              </section>
+            }
+
+          }
+
+          <!-- ════════════════════════════════════════
+               PASO 3 — Actividad + Pagos + Facturación
+               ════════════════════════════════════════ -->
+          @if (currentStep() === 3) {
+
+            <!-- ══ Actividad económica ══ -->
+            <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+              <div class="px-5 py-3.5 border-b border-slate-100 bg-slate-50">
+                <h3 class="text-xs font-semibold text-slate-700 uppercase tracking-wider">4. Actividad económica</h3>
+              </div>
+              <div class="px-5 py-5 space-y-4">
+
+                <!-- Checkboxes de actividad -->
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-2">Tipo de actividad</label>
+                  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+                    @for (act of ACTIVIDADES; track act.value) {
+                      <label class="flex items-center gap-2 cursor-pointer p-2 rounded-lg border transition-colors"
+                             [class.border-brand-400]="isActividadSelected(act.value)"
+                             [class.bg-brand-50]="isActividadSelected(act.value)"
+                             [class.border-slate-200]="!isActividadSelected(act.value)">
+                        <input type="checkbox"
+                               [checked]="isActividadSelected(act.value)"
+                               (change)="toggleActividad(act.value)"
+                               class="text-brand-600 focus:ring-brand-500 rounded" />
+                        <span class="text-xs text-slate-700">{{ act.label }}</span>
+                      </label>
+                    }
+                  </div>
+                </div>
+
+                @if (isActividadSelected('OTRO')) {
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Especifique la actividad</label>
+                    <input formControlName="actividadOtro" type="text" placeholder="Describa la actividad"
+                           class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                  focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                  </div>
+                }
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Código CIIU</label>
+                    <input formControlName="codigoCIIU" type="text" placeholder="Ej: 4711"
+                           class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                  focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Descripción de la actividad <span class="text-brand-600">*</span></label>
+                    <input formControlName="descripcionActividad" type="text" placeholder="Ej: Comercio al por menor de alimentos"
+                           class="w-full border rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                  focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors"
+                           [class.border-red-400]="isInvalid('descripcionActividad')"
+                           [class.border-slate-300]="!isInvalid('descripcionActividad')" />
+                  </div>
+                </div>
+
+              </div>
+            </section>
+
+            <!-- ══ Información de pagos ══ -->
+            <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+              <div class="px-5 py-3.5 border-b border-slate-100 bg-slate-50">
+                <h3 class="text-xs font-semibold text-slate-700 uppercase tracking-wider">5. Información de pagos</h3>
+              </div>
+              <div class="px-5 py-5 space-y-4">
+
+                <!-- Forma de pago (checkboxes) -->
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-2">Forma de pago aceptada</label>
+                  <div class="flex flex-wrap gap-3">
+                    @for (fp of FORMAS_PAGO; track fp.value) {
+                      <label class="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg border transition-colors"
+                             [class.border-brand-400]="isFormaPagoSelected(fp.value)"
+                             [class.bg-brand-50]="isFormaPagoSelected(fp.value)"
+                             [class.border-slate-200]="!isFormaPagoSelected(fp.value)">
+                        <input type="checkbox"
+                               [checked]="isFormaPagoSelected(fp.value)"
+                               (change)="toggleFormaPago(fp.value)"
+                               class="text-brand-600 focus:ring-brand-500 rounded" />
+                        <span class="text-xs text-slate-700">{{ fp.label }}</span>
+                      </label>
+                    }
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Tipo de cuenta</label>
+                    <select formControlName="tipoCuenta"
+                            class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 bg-white
+                                   focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors">
+                      <option value="AHORROS">Ahorros</option>
+                      <option value="CORRIENTE">Corriente</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Número de cuenta</label>
+                    <input formControlName="numeroCuenta" type="text" placeholder="Ej: 12345678901"
+                           class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                  focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Días de pago</label>
+                    <input formControlName="diasPago" type="text" placeholder="Ej: 30"
+                           class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                  focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                  </div>
+                </div>
+
+              </div>
+            </section>
+
+            <!-- ══ Contacto de facturación ══ -->
+            <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+              <div class="px-5 py-3.5 border-b border-slate-100 bg-slate-50">
+                <h3 class="text-xs font-semibold text-slate-700 uppercase tracking-wider">6. Contacto de facturación</h3>
+              </div>
+              <div class="px-5 py-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Nombre</label>
+                  <input formControlName="factNombre" type="text" placeholder="Ej: Ana Pérez"
+                         class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Cargo</label>
+                  <input formControlName="factCargo" type="text" placeholder="Ej: Contadora"
+                         class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Teléfono</label>
+                  <input formControlName="factTelefono" type="tel" placeholder="Ej: 6041234567"
+                         class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Ext.</label>
+                  <input formControlName="factExt" type="text" placeholder="Ej: 101"
+                         class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Celular</label>
+                  <input formControlName="factCelular" type="tel" placeholder="Ej: 3001234567"
+                         class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Correo electrónico</label>
+                  <input formControlName="factEmail" type="email" placeholder="facturacion@empresa.com"
+                         class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                </div>
+              </div>
+            </section>
+
+          }
+
+          <!-- ════════════════════════════════════════
+               PASO 4 — Referencias + Financiero + Internacional
+               ════════════════════════════════════════ -->
+          @if (currentStep() === 4) {
+
+            <!-- ══ Referencias comerciales ══ -->
+            <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+              <div class="px-5 py-3.5 border-b border-slate-100 bg-slate-50">
+                <h3 class="text-xs font-semibold text-slate-700 uppercase tracking-wider">7. Referencias comerciales</h3>
+              </div>
+              <div class="px-5 py-5 space-y-5">
+
+                <!-- Referencia 1 -->
+                <div>
+                  <p class="text-xs font-semibold text-slate-500 mb-2 uppercase tracking-wide">Referencia 1</p>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    <div>
+                      <label class="block text-xs font-medium text-slate-700 mb-1">Nombre / Empresa</label>
+                      <input formControlName="ref1Nombre" type="text" placeholder="Ej: Empresa ABC"
+                             class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 placeholder-slate-400
+                                    focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                    </div>
+                    <div>
+                      <label class="block text-xs font-medium text-slate-700 mb-1">Identificación</label>
+                      <input formControlName="ref1Identificacion" type="text" placeholder="NIT / CC"
+                             class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 placeholder-slate-400
+                                    focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                    </div>
+                    <div>
+                      <label class="block text-xs font-medium text-slate-700 mb-1">Teléfono</label>
+                      <input formControlName="ref1Telefono" type="tel" placeholder="Ej: 3001234567"
+                             class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 placeholder-slate-400
+                                    focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                    </div>
+                    <div>
+                      <label class="block text-xs font-medium text-slate-700 mb-1">Correo electrónico</label>
+                      <input formControlName="ref1Email" type="email" placeholder="ref@empresa.com"
+                             class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 placeholder-slate-400
+                                    focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Referencia 2 -->
+                <div>
+                  <p class="text-xs font-semibold text-slate-500 mb-2 uppercase tracking-wide">Referencia 2</p>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    <div>
+                      <label class="block text-xs font-medium text-slate-700 mb-1">Nombre / Empresa</label>
+                      <input formControlName="ref2Nombre" type="text" placeholder="Ej: Empresa XYZ"
+                             class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 placeholder-slate-400
+                                    focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                    </div>
+                    <div>
+                      <label class="block text-xs font-medium text-slate-700 mb-1">Identificación</label>
+                      <input formControlName="ref2Identificacion" type="text" placeholder="NIT / CC"
+                             class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 placeholder-slate-400
+                                    focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                    </div>
+                    <div>
+                      <label class="block text-xs font-medium text-slate-700 mb-1">Teléfono</label>
+                      <input formControlName="ref2Telefono" type="tel" placeholder="Ej: 3009876543"
+                             class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 placeholder-slate-400
+                                    focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                    </div>
+                    <div>
+                      <label class="block text-xs font-medium text-slate-700 mb-1">Correo electrónico</label>
+                      <input formControlName="ref2Email" type="email" placeholder="ref@empresa.com"
+                             class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 placeholder-slate-400
+                                    focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </section>
+
+            <!-- ══ Accionistas/Socios >5% (solo Jurídica) ══ -->
+            @if (naturaleza() === 'JURIDICA') {
+              <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="px-5 py-3.5 border-b border-slate-100 bg-slate-50">
+                  <h3 class="text-xs font-semibold text-slate-700 uppercase tracking-wider">8. Accionistas / Socios con participación &gt; 5%</h3>
+                </div>
+                <div class="px-5 py-5">
+                  <p class="text-xs text-slate-500 mb-2">
+                    Ingresa uno por línea con el formato: <code class="bg-slate-100 px-1 rounded">NIT/CC | Nombre o Razón Social | % Participación</code>.
+                    Puede dejarse en blanco si no aplica.
+                  </p>
+                  <textarea formControlName="accionistasTexto" rows="4"
+                            placeholder="Ej:&#10;900123456 | Inversiones El Roble S.A.S | 60%&#10;71234567 | Juan García | 40%"
+                            class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                   focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors
+                                   resize-none font-mono"></textarea>
+                </div>
+              </section>
+            }
+
+            <!-- ══ Información financiera ══ -->
+            <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+              <div class="px-5 py-3.5 border-b border-slate-100 bg-slate-50">
+                <h3 class="text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                  {{ naturaleza() === 'JURIDICA' ? '9' : '8' }}. Información financiera
+                </h3>
+              </div>
+              <div class="px-5 py-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Total activos (COP)</label>
+                  <input formControlName="totalActivos" type="text" placeholder="Ej: 50.000.000"
+                         class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Total pasivos (COP)</label>
+                  <input formControlName="totalPasivos" type="text" placeholder="Ej: 10.000.000"
+                         class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Total patrimonio (COP)</label>
+                  <input formControlName="totalPatrimonio" type="text" placeholder="Ej: 40.000.000"
+                         class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Ingresos mensuales (COP)</label>
+                  <input formControlName="ingresosMensuales" type="text" placeholder="Ej: 5.000.000"
+                         class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Egresos mensuales (COP)</label>
+                  <input formControlName="egresosMensuales" type="text" placeholder="Ej: 3.000.000"
+                         class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Otros ingresos mensuales (COP)</label>
+                  <input formControlName="otrosIngresosMensuales" type="text" placeholder="Ej: 500.000"
+                         class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                </div>
+                <div class="sm:col-span-2 lg:col-span-3">
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Concepto de otros ingresos</label>
+                  <input formControlName="conceptoOtrosIngresos" type="text"
+                         placeholder="Ej: Arrendamiento, dividendos, etc."
+                         class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                </div>
+              </div>
+            </section>
+
+            <!-- ══ Operaciones internacionales ══ -->
+            <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+              <div class="px-5 py-3.5 border-b border-slate-100 bg-slate-50">
+                <h3 class="text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                  {{ naturaleza() === 'JURIDICA' ? '10' : '9' }}. Operaciones en moneda extranjera
+                </h3>
+                <p class="text-xs text-slate-500 mt-0.5">Marque todas las que apliquen</p>
+              </div>
+              <div class="px-5 py-5 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <label class="flex items-center gap-2.5 cursor-pointer p-2 rounded-lg border transition-colors
+                              border-slate-200 hover:border-brand-300 hover:bg-brand-50">
+                  <input type="checkbox" formControlName="opImportaciones"
+                         class="text-brand-600 focus:ring-brand-500 rounded" />
+                  <span class="text-sm text-slate-700">Importaciones</span>
+                </label>
+                <label class="flex items-center gap-2.5 cursor-pointer p-2 rounded-lg border transition-colors
+                              border-slate-200 hover:border-brand-300 hover:bg-brand-50">
+                  <input type="checkbox" formControlName="opExportaciones"
+                         class="text-brand-600 focus:ring-brand-500 rounded" />
+                  <span class="text-sm text-slate-700">Exportaciones</span>
+                </label>
+                <label class="flex items-center gap-2.5 cursor-pointer p-2 rounded-lg border transition-colors
+                              border-slate-200 hover:border-brand-300 hover:bg-brand-50">
+                  <input type="checkbox" formControlName="opInversiones"
+                         class="text-brand-600 focus:ring-brand-500 rounded" />
+                  <span class="text-sm text-slate-700">Inversiones</span>
+                </label>
+                <label class="flex items-center gap-2.5 cursor-pointer p-2 rounded-lg border transition-colors
+                              border-slate-200 hover:border-brand-300 hover:bg-brand-50">
+                  <input type="checkbox" formControlName="opTransferencias"
+                         class="text-brand-600 focus:ring-brand-500 rounded" />
+                  <span class="text-sm text-slate-700">Transferencias</span>
+                </label>
+                <label class="flex items-center gap-2.5 cursor-pointer p-2 rounded-lg border transition-colors
+                              border-slate-200 hover:border-brand-300 hover:bg-brand-50">
+                  <input type="checkbox" formControlName="opPagoServicios"
+                         class="text-brand-600 focus:ring-brand-500 rounded" />
+                  <span class="text-sm text-slate-700">Pago de servicios</span>
+                </label>
+                <label class="flex items-center gap-2.5 cursor-pointer p-2 rounded-lg border transition-colors
+                              border-slate-200 hover:border-brand-300 hover:bg-brand-50">
+                  <input type="checkbox" formControlName="opPrestamosMonedaExt"
+                         class="text-brand-600 focus:ring-brand-500 rounded" />
+                  <span class="text-sm text-slate-700">Préstamos moneda ext.</span>
+                </label>
+              </div>
+            </section>
+
+          }
+
+          <!-- ════════════════════════════════════════
+               PASO 5 — PPE + Declaraciones + Documentos
+               ════════════════════════════════════════ -->
+          @if (currentStep() === 5) {
+
+            <!-- ══ PPE ══ -->
+            <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+              <div class="px-5 py-3.5 border-b border-slate-100 bg-slate-50">
+                <h3 class="text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                  {{ naturaleza() === 'JURIDICA' ? '11' : '10' }}. Persona Políticamente Expuesta (PPE)
+                </h3>
+                <p class="text-xs text-slate-500 mt-0.5">
+                  PPE: personas que desempeñan o han desempeñado funciones públicas prominentes
+                </p>
+              </div>
+              <div class="px-5 py-5 space-y-4">
+
+                <!-- Maneja recursos públicos -->
+                <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                  <span class="text-sm text-slate-700">
+                    ¿Maneja, administra o controla recursos públicos?
+                  </span>
+                  <div class="flex gap-4 flex-shrink-0 ml-4">
+                    <label class="flex items-center gap-1.5 cursor-pointer">
+                      <input type="radio" formControlName="manejaRecursosPublicos" value="true"
+                             class="text-brand-600 focus:ring-brand-500" />
+                      <span class="text-sm font-medium text-slate-700">Sí</span>
+                    </label>
+                    <label class="flex items-center gap-1.5 cursor-pointer">
+                      <input type="radio" formControlName="manejaRecursosPublicos" value="false"
+                             class="text-brand-600 focus:ring-brand-500" />
+                      <span class="text-sm font-medium text-slate-700">No</span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Tiene reconocimiento público -->
+                <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                  <span class="text-sm text-slate-700">
+                    ¿Tiene reconocimiento público o poder de influencia?
+                  </span>
+                  <div class="flex gap-4 flex-shrink-0 ml-4">
+                    <label class="flex items-center gap-1.5 cursor-pointer">
+                      <input type="radio" formControlName="tieneReconocimientoPublico" value="true"
+                             class="text-brand-600 focus:ring-brand-500" />
+                      <span class="text-sm font-medium text-slate-700">Sí</span>
+                    </label>
+                    <label class="flex items-center gap-1.5 cursor-pointer">
+                      <input type="radio" formControlName="tieneReconocimientoPublico" value="false"
+                             class="text-brand-600 focus:ring-brand-500" />
+                      <span class="text-sm font-medium text-slate-700">No</span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Ejerce poder -->
+                <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                  <span class="text-sm text-slate-700">
+                    ¿Ejerce o ha ejercido algún poder de delegación en entes del Estado?
+                  </span>
+                  <div class="flex gap-4 flex-shrink-0 ml-4">
+                    <label class="flex items-center gap-1.5 cursor-pointer">
+                      <input type="radio" formControlName="ejercePoder" value="true"
+                             class="text-brand-600 focus:ring-brand-500" />
+                      <span class="text-sm font-medium text-slate-700">Sí</span>
+                    </label>
+                    <label class="flex items-center gap-1.5 cursor-pointer">
+                      <input type="radio" formControlName="ejercePoder" value="false"
+                             class="text-brand-600 focus:ring-brand-500" />
+                      <span class="text-sm font-medium text-slate-700">No</span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Es familiar de PPE -->
+                <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                  <span class="text-sm text-slate-700">
+                    ¿Es familiar hasta segundo grado de consanguinidad de una PPE?
+                  </span>
+                  <div class="flex gap-4 flex-shrink-0 ml-4">
+                    <label class="flex items-center gap-1.5 cursor-pointer">
+                      <input type="radio" formControlName="esFamiliarPPE" value="true"
+                             class="text-brand-600 focus:ring-brand-500" />
+                      <span class="text-sm font-medium text-slate-700">Sí</span>
+                    </label>
+                    <label class="flex items-center gap-1.5 cursor-pointer">
+                      <input type="radio" formControlName="esFamiliarPPE" value="false"
+                             class="text-brand-600 focus:ring-brand-500" />
+                      <span class="text-sm font-medium text-slate-700">No</span>
+                    </label>
+                  </div>
+                </div>
+
+                @if (form.get('esFamiliarPPE')?.value === 'true') {
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">
+                      Información del familiar PPE
+                    </label>
+                    <input formControlName="familiarPPEInfo" type="text"
+                           placeholder="Nombre, cargo y entidad del familiar PPE"
+                           class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                  focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                  </div>
+                }
+
+              </div>
+            </section>
+
+            <!-- ══ Documentos ══ -->
+            <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+              <div class="px-5 py-3.5 border-b border-slate-100 bg-slate-50">
+                <h3 class="text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                  {{ naturaleza() === 'JURIDICA' ? '12' : '11' }}. Documentos requeridos
+                </h3>
+                <p class="text-xs text-slate-500 mt-0.5">PDF, JPG o PNG · máximo 5 MB por archivo</p>
+              </div>
+              <div class="px-5 py-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                <!-- RUT -->
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">
+                    RUT <span class="text-brand-600">*</span>
+                  </label>
+                  <label class="flex items-center gap-2.5 w-full border border-dashed border-slate-300 rounded-lg px-3 py-2.5
+                                cursor-pointer hover:border-brand-400 hover:bg-brand-50 transition-colors group">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                         class="w-4 h-4 text-slate-400 group-hover:text-brand-500 flex-shrink-0">
+                      <path d="M9.25 13.25a.75.75 0 001.5 0V4.636l2.955 3.129a.75.75 0 001.09-1.03l-4.25-4.5a.75.75 0 00-1.09 0l-4.25 4.5a.75.75 0 101.09 1.03L9.25 4.636v8.614z"/>
+                      <path d="M3.5 12.75a.75.75 0 00-1.5 0v2.5A2.75 2.75 0 004.75 18h10.5A2.75 2.75 0 0018 15.25v-2.5a.75.75 0 00-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5z"/>
+                    </svg>
+                    <span class="text-xs text-slate-500 truncate group-hover:text-brand-600">
+                      {{ fileNames['rut'] || 'Seleccionar RUT' }}
+                    </span>
+                    <input type="file" class="hidden" accept=".pdf,.jpg,.jpeg,.png"
+                           (change)="onFile($event, 'rut')" />
+                  </label>
+                </div>
+
+                <!-- Cámara de comercio -->
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">
+                    Cámara de comercio <span class="text-xs text-slate-400 font-normal">(si aplica)</span>
+                  </label>
+                  <label class="flex items-center gap-2.5 w-full border border-dashed border-slate-300 rounded-lg px-3 py-2.5
+                                cursor-pointer hover:border-brand-400 hover:bg-brand-50 transition-colors group">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                         class="w-4 h-4 text-slate-400 group-hover:text-brand-500 flex-shrink-0">
+                      <path d="M9.25 13.25a.75.75 0 001.5 0V4.636l2.955 3.129a.75.75 0 001.09-1.03l-4.25-4.5a.75.75 0 00-1.09 0l-4.25 4.5a.75.75 0 101.09 1.03L9.25 4.636v8.614z"/>
+                      <path d="M3.5 12.75a.75.75 0 00-1.5 0v2.5A2.75 2.75 0 004.75 18h10.5A2.75 2.75 0 0018 15.25v-2.5a.75.75 0 00-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5z"/>
+                    </svg>
+                    <span class="text-xs text-slate-500 truncate group-hover:text-brand-600">
+                      {{ fileNames['camaraComercio'] || 'Seleccionar documento' }}
+                    </span>
+                    <input type="file" class="hidden" accept=".pdf,.jpg,.jpeg,.png"
+                           (change)="onFile($event, 'camaraComercio')" />
+                  </label>
+                </div>
+
+                <!-- Certificación bancaria -->
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">
+                    Certificación bancaria <span class="text-brand-600">*</span>
+                  </label>
+                  <label class="flex items-center gap-2.5 w-full border border-dashed border-slate-300 rounded-lg px-3 py-2.5
+                                cursor-pointer hover:border-brand-400 hover:bg-brand-50 transition-colors group">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                         class="w-4 h-4 text-slate-400 group-hover:text-brand-500 flex-shrink-0">
+                      <path d="M9.25 13.25a.75.75 0 001.5 0V4.636l2.955 3.129a.75.75 0 001.09-1.03l-4.25-4.5a.75.75 0 00-1.09 0l-4.25 4.5a.75.75 0 101.09 1.03L9.25 4.636v8.614z"/>
+                      <path d="M3.5 12.75a.75.75 0 00-1.5 0v2.5A2.75 2.75 0 004.75 18h10.5A2.75 2.75 0 0018 15.25v-2.5a.75.75 0 00-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5z"/>
+                    </svg>
+                    <span class="text-xs text-slate-500 truncate group-hover:text-brand-600">
+                      {{ fileNames['certBancaria'] || 'Seleccionar documento' }}
+                    </span>
+                    <input type="file" class="hidden" accept=".pdf,.jpg,.jpeg,.png"
+                           (change)="onFile($event, 'certBancaria')" />
+                  </label>
+                </div>
+
+              </div>
+            </section>
+
+            <!-- ══ Declaraciones ══ -->
+            <section class="bg-white rounded-xl border border-amber-200 shadow-sm overflow-hidden">
+              <div class="px-5 py-3.5 border-b border-amber-100 bg-amber-50">
+                <h3 class="text-xs font-semibold text-amber-800 uppercase tracking-wider">
+                  {{ naturaleza() === 'JURIDICA' ? '13' : '12' }}. Declaraciones y autorizaciones <span class="text-red-600">*</span>
+                </h3>
+              </div>
+              <div class="px-5 py-5 space-y-4">
+
+                <!-- Declaración de fondos -->
+                <label class="flex items-start gap-3 cursor-pointer">
+                  <input type="checkbox" formControlName="aceptaDeclaracion"
+                         class="mt-0.5 text-brand-600 focus:ring-brand-500 rounded flex-shrink-0" />
+                  <div>
+                    <p class="text-sm text-slate-800 leading-snug">
+                      <strong>Declaración de origen de fondos:</strong> Declaro que los recursos que utilizaré en
+                      las operaciones con la Fundación Infantil Santiago Corazón provienen de actividades lícitas
+                      y me obligo a informar cualquier cambio en esta situación. Los datos consignados son verídicos
+                      y autorizo a la Fundación a verificarlos.
+                    </p>
+                    @if (form.get('aceptaDeclaracion')?.invalid && form.get('aceptaDeclaracion')?.touched) {
+                      <p class="mt-1 text-xs text-red-600">Debe aceptar esta declaración para continuar.</p>
+                    }
+                  </div>
+                </label>
+
+                <!-- Tratamiento de datos -->
+                <label class="flex items-start gap-3 cursor-pointer">
+                  <input type="checkbox" formControlName="aceptaTratamientoDatos"
+                         class="mt-0.5 text-brand-600 focus:ring-brand-500 rounded flex-shrink-0" />
+                  <div>
+                    <p class="text-sm text-slate-800 leading-snug">
+                      <strong>Autorización de tratamiento de datos:</strong> Autorizo a la Fundación Infantil
+                      Santiago Corazón para recopilar, almacenar y procesar mis datos personales con el fin de
+                      gestionar la vinculación como proveedor, de acuerdo con la Ley 1581 de 2012 (Ley de
+                      Protección de Datos Personales de Colombia).
+                    </p>
+                    @if (form.get('aceptaTratamientoDatos')?.invalid && form.get('aceptaTratamientoDatos')?.touched) {
+                      <p class="mt-1 text-xs text-red-600">Debe autorizar el tratamiento de datos para continuar.</p>
+                    }
+                  </div>
+                </label>
+
+              </div>
+            </section>
+
+          }
+
+          <!-- ── Navegación entre pasos ──────────────────────────── -->
+          <div class="flex items-center justify-between pt-2">
+
+            <!-- Botón Anterior -->
+            <div>
+              @if (currentStep() > 1) {
+                <button type="button" (click)="prevStep()" [disabled]="loading()"
+                        class="flex items-center gap-2 px-5 py-2.5 border border-slate-300 rounded-lg text-sm font-medium text-slate-700
+                               hover:bg-slate-50 hover:border-slate-400 transition-colors
+                               disabled:opacity-60 disabled:cursor-not-allowed">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+                    <path fill-rule="evenodd" d="M11.78 5.22a.75.75 0 0 1 0 1.06L8.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0z" clip-rule="evenodd"/>
+                  </svg>
+                  Anterior
+                </button>
+              }
+            </div>
+
+            <!-- Botón Siguiente / Enviar -->
+            <div>
+              @if (currentStep() < totalSteps) {
+                <button type="button" (click)="nextStep()" [disabled]="loading()"
+                        class="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white font-semibold px-6 py-2.5 rounded-lg text-sm
+                               transition-colors disabled:opacity-60 disabled:cursor-not-allowed shadow-sm">
+                  Siguiente
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+                    <path fill-rule="evenodd" d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06z" clip-rule="evenodd"/>
+                  </svg>
+                </button>
+              }
+              @if (currentStep() === totalSteps) {
+                <button type="submit" [disabled]="loading()"
+                        class="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white font-semibold px-6 py-2.5 rounded-lg text-sm
+                               transition-colors disabled:opacity-60 disabled:cursor-not-allowed shadow-sm">
+                  @if (loading()) {
+                    <svg class="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                    </svg>
+                    Enviando solicitud…
+                  } @else {
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+                      <path d="M3.105 2.289a.75.75 0 00-.826.95l1.414 4.925A1.5 1.5 0 005.135 9.25h6.115a.75.75 0 010 1.5H5.135a1.5 1.5 0 00-1.442 1.086l-1.414 4.926a.75.75 0 00.826.95 28.896 28.896 0 0015.293-7.154.75.75 0 000-1.115A28.897 28.897 0 003.105 2.289z"/>
+                    </svg>
+                    Enviar solicitud de vinculación
+                  }
+                </button>
+              }
+            </div>
+
+          </div>
+
+        </form>
+
+      }
+
+      <!-- ════════════ ESTADO: ÉXITO ════════════ -->
+      @if (step() === 'success') {
+        <div class="bg-white rounded-2xl border border-green-200 shadow-sm p-10 text-center">
+          <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-5">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-8 h-8 text-green-600">
+              <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <h2 class="text-xl font-bold text-slate-900 mb-2">Solicitud enviada con éxito</h2>
+          <p class="text-sm text-slate-600 max-w-sm mx-auto mb-8">
+            Recibimos tu información y documentos. El equipo de la fundación revisará
+            tu solicitud y te contactará al correo registrado en los próximos días hábiles.
+          </p>
+          <div class="flex items-center gap-3 justify-center mb-6">
+            <div class="h-px bg-slate-200 flex-1 max-w-[80px]"></div>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 text-brand-600">
+              <path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z"/>
+            </svg>
+            <div class="h-px bg-slate-200 flex-1 max-w-[80px]"></div>
+          </div>
+          <p class="text-sm text-slate-500 italic">
+            Con tu ayuda salvamos corazones. Conoce más formas de apoyar este sueño en nuestros canales oficiales.
+          </p>
+          <p class="mt-1 text-xs font-semibold text-brand-700">Cordialmente, Fundación Infantil Santiago Corazón</p>
+        </div>
+      }
+
+      <!-- ════════════ ESTADO: ERROR ════════════ -->
+      @if (step() === 'error') {
+        <div class="bg-white rounded-2xl border border-red-200 shadow-sm p-10 text-center">
+          <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-5">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-8 h-8 text-red-600">
+              <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <h2 class="text-xl font-bold text-slate-900 mb-2">Error al enviar</h2>
+          <p class="text-sm text-red-600 max-w-sm mx-auto mb-6">{{ errorMsg() }}</p>
+          <button (click)="retry()"
+                  class="bg-brand-600 hover:bg-brand-700 text-white font-semibold px-6 py-2.5 rounded-lg text-sm transition-colors">
+            Intentar de nuevo
+          </button>
+        </div>
+      }
+
+    </div>
+  </main>
+
+  <!-- ── Footer ─────────────────────────────────────────────────── -->
+  <footer class="border-t border-slate-200 bg-white py-4 text-center">
+    <p class="text-xs text-slate-400">
+      Fundación Infantil Santiago Corazón &middot; Sistema interno de gestión
+    </p>
+  </footer>
+
+</div>

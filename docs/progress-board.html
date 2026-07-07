@@ -14,6 +14,7 @@
   --hito-bg:    #f5f3ff; --hito-border: #7c3aed; --hito-text: #5b21b6;
   --risk-bg:    #fff1f2; --risk-text: #be123c;
   --accel-bg:   #f0fdf4; --accel-text: #15803d;
+  --blocked-bg: #fff7ed; --blocked-border: #c2410c; --blocked-text: #9a3412;
   --sidebar-w:  260px;
 }
 
@@ -136,6 +137,22 @@ body {
   color: #334155;
   line-height: 1.7;
 }
+
+/* Doc link */
+.doc-link {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #1e293b;
+  text-decoration: none;
+  transition: background 0.15s;
+  margin-top: 4px;
+}
+.doc-link:hover { background: #334155; }
+.doc-link-icon { font-size: 1.1rem; flex-shrink: 0; }
+.doc-link-body { flex: 1; min-width: 0; }
+.doc-link-title { font-size: 0.78rem; font-weight: 700; color: #f8fafc; display: block; }
+.doc-link-sub   { font-size: 0.65rem; color: #64748b; display: block; margin-top: 1px; }
 
 /* ── MAIN CONTENT ── */
 .main {
@@ -260,6 +277,7 @@ body {
 }
 .sprint-node.done    { border-color: #16a34a; background: #16a34a; color: white; }
 .sprint-node.pending { border-color: #cbd5e1; color: #94a3b8; }
+.sprint-node.blocked { border-color: #f97316; color: #f97316; }
 .sprint-week {
   font-size: 0.6rem;
   color: #94a3b8;
@@ -279,6 +297,7 @@ body {
 .sprint-body:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.07); }
 .sprint-body.done    { border-color: #bbf7d0; }
 .sprint-body.pending { border-color: #e2e8f0; }
+.sprint-body.blocked { border-color: #fed7aa; }
 .sprint-body.milestone { border-color: #c4b5fd; }
 
 .sprint-head {
@@ -316,6 +335,7 @@ body {
 }
 .sprint-status.done    { background: #dcfce7; color: #15803d; }
 .sprint-status.pending { background: #f1f5f9; color: #64748b; }
+.sprint-status.blocked { background: #ffedd5; color: #9a3412; }
 .sprint-toggle {
   font-size: 0.75rem;
   color: #94a3b8;
@@ -388,6 +408,16 @@ body {
   border-radius: 8px;
   background: #fff1f2; color: #be123c; border: 1px solid #fecdd3;
   gap: 4px;
+}
+.blocked-badge {
+  display: flex; align-items: center;
+  font-size: 0.75rem; font-weight: 700;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: #fff7ed; color: #9a3412; border: 2px solid #f97316;
+  gap: 6px;
+  margin-top: 12px;
+  line-height: 1.5;
 }
 .accel-badge {
   display: flex; align-items: center;
@@ -483,11 +513,23 @@ body {
   </div>
 
   <div class="sidebar-section">
+    <div class="sidebar-label">Documentación</div>
+    <a href="TECHNICAL_DOCUMENTATION.md" target="_blank" class="doc-link">
+      <span class="doc-link-icon">📄</span>
+      <span class="doc-link-body">
+        <span class="doc-link-title">Documentación Técnica</span>
+        <span class="doc-link-sub">Actualizada: 07-jul-2026</span>
+      </span>
+    </a>
+  </div>
+
+  <div class="sidebar-section">
     <div class="sidebar-label">Referencias</div>
     <div class="legend">
       <div class="legend-item"><div class="legend-dot" style="background:#16a34a"></div> Sprint completado</div>
       <div class="legend-item"><div class="legend-dot" style="background:#d97706"></div> En progreso</div>
       <div class="legend-item"><div class="legend-dot" style="background:#7c3aed"></div> Entrega de Hito</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#f97316"></div> Bloqueado — esperando cliente</div>
       <div class="legend-item"><div class="legend-dot" style="background:#be123c"></div> Riesgo / dependencia externa</div>
       <div class="legend-item"><div class="legend-dot" style="background:#15803d"></div> Acelerador / habilita siguiente</div>
     </div>
@@ -496,7 +538,7 @@ body {
   <div class="sidebar-footer">
     Plan técnico · 5 meses · 20 semanas<br>
     Stack: Angular · NestJS · PostgreSQL<br>
-    Actualizado: Semana 5 · 01-jul-2026
+    Actualizado: Semana 5 · 07-jul-2026
   </div>
 </aside>
 
@@ -523,7 +565,7 @@ const HITOS = [
     n: 1, weeks: 'Semanas 1–4',
     title: 'Consolidación de Datos, Migración y Ventas Manuales',
     desc: 'Base de datos unificada, datos históricos migrados, primer formulario de pedidos operativo.',
-    sprints: [1,2,3,4],
+    sprints: [1,2,'2b',3,4],
   },
   {
     n: 2, weeks: 'Semanas 5–8',
@@ -576,6 +618,16 @@ const SPRINTS = [
     accelerates:'Con la autenticación lista, todos los módulos siguientes pueden protegerse sin trabajo adicional.',
   },
   {
+    n:'2b', hito:1, status:'done',
+    name:'ETL Excel Histórico (Access/Ventas)',
+    tasks:[
+      { tag:'Migración', done:true, text:'ETL Python (pandas + psycopg2): 4 hojas Excel 2015–2026 → PostgreSQL. 25,040 órdenes, 38,086 ítems, 4,493 donaciones, 705 clientes nuevos.', detail:'Script ETL que procesó el histórico completo de ventas y donaciones desde Access/Excel (2015–2026): 25,040 órdenes tipificadas (Venta, ReciboCaja, NotaCredito, Remisión), 38,086 líneas de detalle, 4,493 transacciones de donación (productos categoría "Donaciones" separados automáticamente), 705 clientes nuevos. Total acumulado en DB: 15,594 clientes · 468 productos · 25,151 órdenes · $5,173M COP.' },
+      { tag:'Catálogo', done:true, text:'355 productos del catálogo Excel insertados con categoryName, subcategoryName y externalId. Mapeo canal de atención (WhatsApp, Sitio Web, etc.) y domiciliario por transacción.', detail:'355 productos del catálogo histórico insertados con campos de categoría y subcategoría. 4,309 órdenes actualizadas con canal de atención (WhatsApp, Sitio Web, Frecuenti, etc.), municipio de entrega y nombre del domiciliario.' },
+      { tag:'Schema', done:true, text:'Schema ampliado en Orders (+orderType, +invoiceNumber, +canalAtencion, +municipioEntrega, +domiciliario) y Products (+categoryName, +subcategoryName, +externalId).', detail:'Se añadieron 5 campos a la tabla orders y 3 a products para acomodar la información histórica. Migración aplicada directamente con psql (Prisma v7 no permite migrate dev en TTY no interactivo).' },
+    ],
+    metrics:['25,040 órdenes históricas','38,086 order_items','4,493 donaciones','$5,173M COP total histórico'],
+  },
+  {
     n:3, hito:1, status:'done',
     name:'CRM + Catálogo de Productos',
     tasks:[
@@ -594,18 +646,20 @@ const SPRINTS = [
       { tag:'API de Pedidos',       done:true, text:'OrdersModule: CRUD de pedidos con ítems, cálculo de total en el servidor (nunca acepta precio del cliente).', detail:'El servidor calcula el total del pedido usando los precios registrados en la base de datos, nunca los que lleguen desde la pantalla. Esto previene fraudes o errores. Soporta crear pedidos, listarlos con filtros, y actualizar el estado (Recibido → En preparación → Enviado → Entregado).' },
       { tag:'Exportador Contable',  done:true, text:'Exportador Excel World Office: 2 hojas (Pedidos_WorldOffice + Resumen), 17 columnas, 110 pedidos / $33.9M exportados.', detail:'Botón "Exportar a World Office": genera un archivo Excel con dos hojas. La primera tiene todos los pedidos en el formato exacto que importa World Office (17 columnas: fecha, cliente, NIT, productos, cantidades, precios, totales). La segunda hoja es un resumen ejecutivo: total de pedidos, total de ítems, ingresos totales, pagado y pendiente. Se probó con 110 pedidos históricos que suman $33.9 M.' },
       { tag:'Rediseño de Interfaz',  done:true, text:'Rediseño UI profesional ERP: sidebar Heroicons, split-screen login, tablas con badges de color, formularios 3-step.', detail:'Toda la interfaz fue rediseñada con estética profesional de ERP: barra lateral oscura con íconos, pantalla de login con identidad visual de la fundación, tablas con colores semánticos por estado, formularios divididos en pasos numerados. La app ahora comunica seriedad y confianza al equipo.' },
+      { tag:'Módulo Proveedores', done:true, text:'Formulario público SAGRILAFT: wizard 5 pasos con validación por paso, 13 secciones (vinculación, PPE, declaración de fondos, actividad económica, info financiera, operaciones internacionales). Backend NestJS con multer + 55 campos en DB.', detail:'Formulario público de registro de proveedores (sin login requerido) disponible en /proveedores/registro. Captura todos los campos del Formato de Vinculación SAGRILAFT de la fundación: tipo de solicitud, naturaleza (Natural/Jurídica), datos personales o de empresa + rep. legal, actividad económica con código CIIU, información de pagos, contacto de facturación, referencias comerciales, accionistas, información financiera (activos, pasivos, ingresos), operaciones internacionales y preguntas PPE. Declaraciones de origen de fondos y tratamiento de datos requeridas antes de enviar. Backend: multer para subida de RUT, Cámara de Comercio y Certificación Bancaria (5 MB, PDF/JPG/PNG), 55 nuevos campos en la tabla providers de PostgreSQL. Acordado en reunión con Ana María Betancourt Obando el 06-jul-2026.' },
     ],
-    metrics:['110 pedidos · $33,9 M exportados a Excel','Cálculo de totales 100% en servidor','4 módulos con UI profesional'],
-    milestoneNote:'🏁 HITO 1 COMPLETO — El equipo puede registrar pedidos manuales, consultarlos y exportar las transacciones contables directamente a World Office.',
+    metrics:['110 pedidos · $33,9 M exportados a Excel','Cálculo de totales 100% en servidor','4 módulos con UI profesional','Formulario SAGRILAFT 5 pasos · 55 campos en DB'],
+    milestoneNote:'🏁 HITO 1 COMPLETO — El equipo puede registrar pedidos manuales, consultarlos y exportar las transacciones contables directamente a World Office. Formulario público de proveedores SAGRILAFT operativo.',
   },
   {
-    n:5, hito:2, status:'pending',
+    n:5, hito:2, status:'blocked',
     name:'Shopify Webhooks',
     tasks:[
       { tag:'Integración', done:false, text:'Endpoint POST /api/webhooks/shopify/orders. Validación HMAC SHA256 del header X-Shopify-Hmac-SHA256.', detail:'Cuando un cliente compra en la tienda Shopify de la fundación, Shopify notifica automáticamente al sistema. El endpoint valida la firma HMAC del mensaje para garantizar que viene de Shopify y no de un tercero, luego crea el pedido en la base de datos sin intervención humana.' },
       { tag:'Seguridad',   done:false, text:'Idempotencia: clave única por Shopify order ID para evitar duplicados en reintentos del webhook.', detail:'Idempotencia: si Shopify reenvía la misma notificación dos veces (algo que ocurre frecuentemente), el sistema detecta el ID duplicado y no crea un pedido doble.' },
     ],
     risk:'Requiere credenciales de una cuenta Shopify Partners activa y un dominio público (o túnel ngrok) para que Shopify pueda enviar las notificaciones.',
+    blocked:'🔒 BLOQUEADO — Esperando del cliente: (1) acceso a la cuenta Shopify Partners, (2) Shopify webhook secret, (3) dominio público o túnel ngrok activo. Tan pronto el cliente provea estas credenciales, el sprint puede implementarse en menos de 1 día.',
   },
   {
     n:6, hito:2, status:'pending',
@@ -617,6 +671,7 @@ const SPRINTS = [
     ],
     metrics:['CRUD manual de donaciones operativo','4 pasarelas de pago soportadas','Estadísticas por gateway y estado en tiempo real'],
     risk:'Los webhooks automáticos requieren credenciales sandbox de Wompi y PayU. Se necesita coordinar con el equipo de tesorería para obtenerlas.',
+    blocked:'🔒 BLOQUEADO (parcial) — El CRUD manual de donaciones ya está operativo. La automatización de webhooks espera: (1) credenciales sandbox Wompi, (2) credenciales sandbox PayU. Coordinar con el equipo de tesorería.',
   },
   {
     n:7, hito:2, status:'pending',
@@ -639,20 +694,23 @@ const SPRINTS = [
     milestoneNote:'🏁 HITO 2 — Flujo de donación 100 % automatizado: el donante paga → el sistema registra → genera el PDF → envía el correo. (Dashboard adelantado ✅)',
   },
   {
-    n:9, hito:3, status:'pending',
+    n:9, hito:3, status:'blocked',
     name:'Beneficiarios (Niños de la Fundación)',
     tasks:[
       { tag:'Módulo Personas', done:false, text:'Pantalla para registrar y gestionar los niños beneficiarios de la fundación: datos de inscripción, información familiar, y un historial de las actividades y programas en los que han participado. Permite saber en todo momento quiénes están activos y qué han recibido.', detail:'Pantalla para registrar y gestionar los niños beneficiarios de la fundación: datos de inscripción, información familiar, y un historial de las actividades y programas en los que han participado. Permite saber en todo momento quiénes están activos y qué han recibido.' },
+      { tag:'ETL Beneficiarios', done:false, text:'Migración del Excel de beneficiarios (niños) y ayudas enviado por Ana María Betancourt. Clave primaria: número de documento.', detail:'Migración del Excel de beneficiarios y ayudas que Ana María Betancourt se comprometió a enviar por correo (reunión 06-jul-2026). La tabla ya existe en la DB desde Sprint 1 — solo falta el ETL y la pantalla de gestión.' },
     ],
-    accelerates:'La tabla de beneficiarios ya existe en la base de datos desde el Sprint 1. Este sprint solo construye la pantalla de gestión.',
+    accelerates:'La tabla de beneficiarios ya existe en la base de datos desde el Sprint 1. Este sprint solo construye el ETL + pantalla de gestión.',
+    blocked:'🔒 BLOQUEADO — Esperando que Ana María Betancourt envíe por correo el Excel de beneficiarios (niños patrocinados) y ayudas. Acordado en reunión del 06-jul-2026. Próximo seguimiento: viernes 11-jul-2026.',
   },
   {
     n:10, hito:3, status:'pending',
-    name:'Notificaciones WhatsApp',
+    name:'Integración WhatsApp (App Diana → DB Central)',
     tasks:[
-      { tag:'WhatsApp Business', done:false, text:'Integración con WhatsApp Cloud API de Meta: el sistema envía mensajes automáticos al equipo y a los clientes cuando un pedido cambia de estado, cuando se recibe una donación, y cuando se emite un certificado tributario. Reemplaza los mensajes manuales.', detail:'Integración con WhatsApp Cloud API de Meta: el sistema envía mensajes automáticos al equipo y a los clientes cuando un pedido cambia de estado, cuando se recibe una donación, y cuando se emite un certificado tributario. Reemplaza los mensajes manuales.' },
+      { tag:'Adaptación App Diana', done:false, text:'Adaptar el dashboard de Diana (flujo WhatsApp existente que genera pedidos) para que los datos lleguen directamente a PostgreSQL propio, en lugar de quedarse en Access/Excel. Sin cambios visibles para Diana.', detail:'Actualmente Diana usa un dashboard propio (generado por ella) que recibe pedidos por WhatsApp y los guarda en Access o Excel manualmente. El objetivo es que ese flujo envíe los datos directo a nuestra base de datos sin intervención adicional. Acordado en reunión con Ana María Betancourt el 06-jul-2026. Ana compartirá la carpeta con el flujo/configuración del dashboard.' },
+      { tag:'WhatsApp Cloud API', done:false, text:'Integración con WhatsApp Cloud API de Meta: mensajes automáticos al equipo y clientes cuando un pedido cambia de estado, se recibe una donación o se emite un certificado tributario.', detail:'Integración con WhatsApp Cloud API de Meta: el sistema envía mensajes automáticos al equipo y a los clientes cuando un pedido cambia de estado, cuando se recibe una donación, y cuando se emite un certificado tributario. Reemplaza los mensajes manuales.' },
     ],
-    risk:'Requiere aprobación del perfil de negocio en Meta Business Suite, proceso que puede tomar 1–2 semanas. Se recomienda iniciar el trámite en paralelo.',
+    risk:'Requiere que Ana comparta el flujo/configuración del dashboard de Diana. La integración con WhatsApp Cloud API requiere aprobación de Meta Business Suite (1–2 semanas).',
   },
   {
     n:11, hito:3, status:'pending',
@@ -673,12 +731,14 @@ const SPRINTS = [
     milestoneNote:'🏁 HITO 3 — Las comunicaciones con donantes y clientes son automáticas. Toda la operación de la fundación está centralizada en un solo panel.',
   },
   {
-    n:13, hito:4, status:'pending',
+    n:13, hito:4, status:'blocked',
     name:'Voluntarios',
     tasks:[
       { tag:'Módulo Personas', done:false, text:'Pantalla para registrar voluntarios: su rol dentro de la fundación, fechas de vinculación y un historial de las actividades en las que han participado. Permite reconocer la contribución de cada voluntario y planificar actividades futuras.', detail:'Pantalla para registrar voluntarios: su rol dentro de la fundación, fechas de vinculación y un historial de las actividades en las que han participado. Permite reconocer la contribución de cada voluntario y planificar actividades futuras.' },
+      { tag:'ETL Voluntarios', done:false, text:'Migración del Excel de voluntarios (hoja de vida) enviado por Ana María Betancourt. Se importará con el mismo patrón del ETL de beneficiarios.', detail:'Ana María Betancourt se comprometió a enviar el Excel de voluntarios por correo (reunión 06-jul-2026). La tabla ya existe en la DB desde Sprint 1.' },
     ],
     accelerates:'La tabla de voluntarios ya existe en la base de datos desde el Sprint 1. El patrón de desarrollo es idéntico al módulo de Beneficiarios.',
+    blocked:'🔒 BLOQUEADO — Esperando que Ana María Betancourt envíe por correo el Excel de voluntarios (hoja de vida). Acordado en reunión del 06-jul-2026. Próximo seguimiento: viernes 11-jul-2026.',
   },
   {
     n:14, hito:4, status:'pending',
@@ -737,6 +797,10 @@ const SPRINTS = [
   },
 ];
 
+// ── LOOKUP helper ─────────────────────────────────────────
+const sprintByN = {};
+SPRINTS.forEach(s => { sprintByN[s.n] = s; });
+
 // ── STATS ──────────────────────────────────────────────────
 const done    = SPRINTS.filter(s => s.status === 'done').length;
 const pending = SPRINTS.length - done;
@@ -761,7 +825,7 @@ document.getElementById('stat-grid').innerHTML = `
 const hitoColors = ['#22c55e','#f59e0b','#3b82f6','#8b5cf6','#ec4899'];
 const hitoNav = document.getElementById('hito-nav');
 HITOS.forEach((h, i) => {
-  const spDone = h.sprints.filter(n => SPRINTS[n-1].status === 'done').length;
+  const spDone = h.sprints.filter(n => sprintByN[n].status === 'done').length;
   const spTotal = h.sprints.length;
   const p = Math.round(spDone/spTotal*100);
   hitoNav.innerHTML += `
@@ -776,7 +840,7 @@ HITOS.forEach((h, i) => {
 const roadmap = document.getElementById('roadmap');
 
 HITOS.forEach((h, hi) => {
-  const spDone  = h.sprints.filter(n => SPRINTS[n-1].status === 'done').length;
+  const spDone  = h.sprints.filter(n => sprintByN[n].status === 'done').length;
   const spTotal = h.sprints.length;
   const allDone = spDone === spTotal;
   const none    = spDone === 0;
@@ -803,7 +867,7 @@ HITOS.forEach((h, hi) => {
 
   // Sprint cards
   h.sprints.forEach((spNum, idx) => {
-    const sp = SPRINTS[spNum - 1];
+    const sp = sprintByN[spNum];
     const isMilestone = !!sp.milestone;
     const isLast = idx === h.sprints.length - 1;
 
@@ -812,8 +876,8 @@ HITOS.forEach((h, hi) => {
     card.dataset.status = sp.status;
     card.dataset.milestone = isMilestone ? 'true' : 'false';
 
-    const nodeIcon = sp.status === 'done' ? '✓' : sp.n;
-    const statusLabel = sp.status === 'done' ? 'Completado' : 'Pendiente';
+    const nodeIcon = sp.status === 'done' ? '✓' : (sp.status === 'blocked' ? '⊘' : sp.n);
+    const statusLabel = sp.status === 'done' ? 'Completado' : (sp.status === 'blocked' ? 'Bloqueado' : 'Pendiente');
 
     const tasksHtml = sp.tasks.map(t => `
       <div class="task-row ${t.done ? 'done-task' : ''} ${t.detail ? 'task-expandable' : ''}" ${t.detail ? 'onclick="toggleTask(this)"' : ''}>
@@ -832,11 +896,13 @@ HITOS.forEach((h, hi) => {
         ${sp.metrics.map(m => `<span class="metric-chip">📊 ${m}</span>`).join('')}
       </div>` : '';
 
-    const badgesHtml = (sp.risk || sp.accelerates) ? `
+    const badgesHtml = (sp.risk || sp.accelerates || sp.blocked) ? `
       <div class="badge-row">
         ${sp.risk       ? `<span class="risk-badge">⚠️ ${sp.risk}</span>` : ''}
         ${sp.accelerates ? `<span class="accel-badge">🪜 ${sp.accelerates}</span>` : ''}
-      </div>` : '';
+      </div>
+      ${sp.blocked ? `<div class="blocked-badge">🔒 ${sp.blocked}</div>` : ''}
+      ` : '';
 
     const milestoneHtml = sp.milestoneNote ? `
       <div class="milestone-ribbon">
@@ -856,7 +922,7 @@ HITOS.forEach((h, hi) => {
           <span class="sprint-status ${sp.status}">${statusLabel}</span>
           <span class="sprint-toggle">▼</span>
         </div>
-        <div class="sprint-detail ${sp.status === 'done' ? 'open' : ''}">
+        <div class="sprint-detail ${sp.status === 'done' || sp.status === 'blocked' ? 'open' : ''}">
           <div class="task-list">${tasksHtml}</div>
           ${metricsHtml}
           ${badgesHtml}
