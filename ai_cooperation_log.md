@@ -774,3 +774,18 @@ Before starting any work, read the last 15-20 lines to understand the latest cha
   - Pendiente de Ana: Excel de beneficiarios y Excel de voluntarios (seguimiento viernes 11-jul-2026)
   - Pendiente del cliente: credenciales Shopify (Sprint 5) y Wompi/PayU (Sprint 6)
   - Para verificar estado de la DB en cualquier momento: `bash scripts/setup_db.sh --check`
+
+---
+
+## 2026-07-07 — Claude — Diseño BI Dashboard de Ventas
+
+- **Task:** Diseñar la arquitectura conceptual del Dashboard de Ventas: KPIs, jerarquía visual, filtros y tipos de gráficos. Sin código — solo lógica de negocio.
+- **Files Modified/Created:**
+  - `docs/dashboard-bi-ventas.md` (NUEVO) — Documento de diseño BI completo: jerarquía en 3 niveles (ejecutivo/analítico/operativo), 6 KPIs primarios, KPIs secundarios por área, tabla de filtros con fuente de datos en DB, matriz gráfico-pregunta analítica, principios UX, roadmap de madurez en 3 fases, mapeo de roles RBAC vs. accesos al dashboard.
+- **Current Status:**
+  - ✅ Diseño alineado con el modelo de datos actual (18 tablas, campos reales como `canal_atencion`, `order_type`, `municipio_entrega`)
+  - ✅ Roles mapeados contra el sistema RBAC implementado en Sprint 2
+  - Implementación prevista: Sprint 9 (Fase 1 — visibilidad básica)
+- **Pending Tasks / Notes for next agent:**
+  - Al llegar al Sprint 9, usar este documento como spec de referencia para el backend de analytics
+  - Pendiente de Ana: Excel beneficiarios y voluntarios (seguimiento viernes 11-jul-2026)
