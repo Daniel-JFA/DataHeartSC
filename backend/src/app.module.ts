@@ -10,6 +10,8 @@ import { OrdersModule } from './orders/orders.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { DonationsModule } from './donations/donations.module';
 import { ProvidersModule } from './providers/providers.module';
+import { BeneficiariesModule } from './beneficiaries/beneficiaries.module';
+import { AyudasModule } from './ayudas/ayudas.module';
 
 @Module({
   imports: [
@@ -22,6 +24,8 @@ import { ProvidersModule } from './providers/providers.module';
     DashboardModule,
     DonationsModule,
     ProvidersModule,
+    BeneficiariesModule,
+    AyudasModule,
   ],
   controllers: [AppController],
   providers: [AppService],

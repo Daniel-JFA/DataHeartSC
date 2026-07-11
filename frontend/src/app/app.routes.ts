@@ -47,6 +47,18 @@ export const routes: Routes = [
         canActivate: [permissionGuard],
         data: { permission: 'ventas_donaciones:read' },
       },
+      {
+        path: 'beneficiaries',
+        loadComponent: () => import('./features/beneficiaries/beneficiaries-list.component').then(m => m.BeneficiariesListComponent),
+        canActivate: [permissionGuard],
+        data: { permission: 'beneficiarios:read' },
+      },
+      {
+        path: 'beneficiaries/:id',
+        loadComponent: () => import('./features/beneficiaries/beneficiary-detail.component').then(m => m.BeneficiaryDetailComponent),
+        canActivate: [permissionGuard],
+        data: { permission: 'beneficiarios:read' },
+      },
     ],
   },
   {

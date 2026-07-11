@@ -232,27 +232,116 @@ model InventoryMovement {
 
 model Beneficiary {
   id             String    @id @default(uuid())
+
+  // -- Identificación --
   firstName      String    @map("first_name")
   lastName       String    @map("last_name")
-  docType        String    @map("doc_type")
+  docType        String    @map("doc_type")   // Cédula de Ciudadanía, Registro Civil, Tarjeta de Identidad, Permiso Especial Permanencia, Menor sin Identificación, NO ADRES
   docNumber      String    @unique @map("doc_number")
-  birthDate      DateTime  @map("birth_date")
-  gender         String?
-  phone          String?
-  guardianName   String?   @map("guardian_name")
-  guardianPhone  String?   @map("guardian_phone")
+  birthDate      DateTime? @map("birth_date")
+  birthCity      String?   @map("birth_city")
+  nationality    String?   @default("Colombiana")
+  gender         String?   // Masculino, Femenino
+  etnia          String?
+  condicion      String?
+  deceasedDate   DateTime? @map("deceased_date") // null = vivo; fecha = fallecido
+
+  // -- Contacto --
+  phone          String?   // Teléfono fijo
+  celular        String?   // Celular
+  email          String?
   address        String?
   city           String?
+  department     String?
   commune        String?
   neighborhood   String?
-  status         String    @default("Activo")
-  historicalId   String?   @map("historical_id")
-  enrollDate     DateTime  @default(now()) @map("enroll_date")
-  createdAt      DateTime  @default(now()) @map("created_at")
-  updatedAt      DateTime  @updatedAt @map("updated_at")
+  isDisplaced    Boolean?  @default(false) @map("is_displaced")
+
+  // -- Salud --
+  eps               String?
+  regimen           String?  // Subsidiado, Contributivo, Prepagada
+  sisbenGroup       String?  @map("sisben_group") // A, B, C, D
+  diagnostico       String?  // Cardiopatía principal
+  otherDiagnosis    String?  @map("other_diagnosis") // Otro diagnóstico, discapacidad o limitación
+  tratadoEn         String?  @map("tratado_en")     // Ciudad donde ha sido tratado
+  clinicaHospital   String?  @map("clinica_hospital")
+
+  // -- Familia: Madre --
+  motherName           String?  @map("mother_name")
+  motherDocNumber      String?  @map("mother_doc_number")
+  motherPhone          String?  @map("mother_phone")
+  motherOccupation     String?  @map("mother_occupation")
+  motherEducation      String?  @map("mother_education")   // Sin escolaridad, Primaria, Bachiller, Técnico, Profesional
+  motherProfession     String?  @map("mother_profession")
+  motherLivesWithChild Boolean? @map("mother_lives_with_child")
+  motherRespondsEcon   Boolean? @map("mother_responds_econ")
+
+  // -- Familia: Padre --
+  fatherName           String?  @map("father_name")
+  fatherDocNumber      String?  @map("father_doc_number")
+  fatherPhone          String?  @map("father_phone")
+  fatherOccupation     String?  @map("father_occupation")
+  fatherEducation      String?  @map("father_education")
+  fatherProfession     String?  @map("father_profession")
+  fatherLivesWithChild Boolean? @map("father_lives_with_child")
+  fatherRespondsEcon   Boolean? @map("father_responds_econ")
+
+  // -- Familia: Hermanos y Cuidador --
+  hasSiblings           Boolean? @map("has_siblings")
+  numSiblings           Int?     @map("num_siblings")
+  siblingsData          Json?    @map("siblings_data")       // [{edad, convivenConEllos}]
+  caregiverName         String?  @map("caregiver_name")
+  caregiverRelationship String?  @map("caregiver_relationship")
+  caregiverPhone        String?  @map("caregiver_phone")
+
+  // -- Vivienda y Demografía --
+  zone                  String?  // Rural, Urbano
+  housingType           String?  @map("housing_type")          // Arrendada, Propia, Familiar
+  housingStrata         Int?     @map("housing_strata")        // 1–6
+  publicServices        Json?    @map("public_services")       // ["Energía eléctrica", "Agua potable", ...]
+  publicTransportNearby Boolean? @map("public_transport_nearby")
+  numPeopleInHome       Int?     @map("num_people_in_home")
+
+  // -- Economía --
+  incomeSource       String?  @map("income_source")
+  receivesGovSubsidy Boolean? @map("receives_gov_subsidy")
+  govSubsidyType     String?  @map("gov_subsidy_type")
+
+  // -- Campos legacy (compatibilidad con seed inicial) --
+  guardianName   String?  @map("guardian_name")
+  guardianPhone  String?  @map("guardian_phone")
+
+  // -- Meta --
+  comoSeEntero   String?  @map("como_se_entero")
+  status         String   @default("Activo") // Activo, Inactivo, Fallecido
+  historicalId   String?  @map("historical_id")
+  enrollDate     DateTime @default(now()) @map("enroll_date")
+  lastUpdatedAt  DateTime? @map("last_updated_at") // Fecha de Actualización del Excel
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  ayudas         Ayuda[]
 
   @@index([docNumber])
   @@map("beneficiaries")
+}
+
+model Ayuda {
+  id                   String      @id @default(uuid())
+  beneficiaryId        String      @map("beneficiary_id")
+  fecha                DateTime
+  tipoSolicitud        String      @map("tipo_solicitud") // Transporte, Copagos, Medicamento, Alimentación, Alojamiento, Cita Médica, Ayudas Diagnósticas, Pañales y otros, Ropa y Jugetes, Recreación, Capacitación, Apoyo emprendimientos, Asesorias, Empleo, Servicio Funerario, Otra
+  personasBeneficiadas Int         @default(1) @map("personas_beneficiadas")
+  justificacion        String?
+  valor                Decimal     @default(0) @db.Decimal(12, 2)
+  estado               String      @default("Pendiente") // Pendiente, Resuelta
+  createdAt            DateTime    @default(now()) @map("created_at")
+  updatedAt            DateTime    @updatedAt @map("updated_at")
+  beneficiary          Beneficiary @relation(fields: [beneficiaryId], references: [id], onDelete: Restrict)
+
+  @@index([beneficiaryId])
+  @@index([fecha])
+  @@map("ayudas")
 }
 
 model Volunteer {

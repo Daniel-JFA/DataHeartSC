@@ -57,3 +57,11 @@ Thumbs.db
 # Angular cache and workspace
 .angular/
 .sass-cache/
+
+# Archivos de datos sensibles (ETL sources, documentos internos)
+data/*.xlsx
+data/*.xls
+data/*.csv
+docs/contratos/
+backend/uploads/
+memory/

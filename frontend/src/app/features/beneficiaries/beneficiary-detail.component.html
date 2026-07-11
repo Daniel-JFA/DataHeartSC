@@ -1,0 +1,274 @@
+@if (loading()) {
+  <div class="flex items-center justify-center h-64 text-slate-400">
+    <svg class="animate-spin w-6 h-6 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+    </svg>
+    Cargando…
+  </div>
+} @else if (error()) {
+  <div class="m-8 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">{{ error() }}</div>
+} @else if (b) {
+
+  <!-- Header -->
+  <header class="px-8 py-5 border-b border-slate-200 bg-white flex items-center gap-4">
+    <a routerLink="/beneficiaries"
+       class="text-slate-400 hover:text-slate-600 transition-colors p-1.5 rounded-lg hover:bg-slate-100">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+        <path fill-rule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clip-rule="evenodd" />
+      </svg>
+    </a>
+    <div class="flex-1">
+      <div class="flex items-center gap-3">
+        <h1 class="text-xl font-bold text-slate-900">{{ b.firstName }} {{ b.lastName }}</h1>
+        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold {{ statusBadge(b.status) }}">
+          {{ b.status }}
+        </span>
+      </div>
+      <p class="text-sm text-slate-500 mt-0.5">
+        {{ b.docType }} {{ b.docNumber }}
+        @if (b.birthDate) { · {{ age(b.birthDate) }} }
+        @if (b.gender) { · {{ b.gender }} }
+      </p>
+    </div>
+  </header>
+
+  <div class="px-8 py-6 space-y-6 max-w-5xl">
+
+    <!-- Fila superior: Salud + Contacto -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+      <!-- Información de salud -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5 space-y-3">
+        <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-brand-500">
+            <path d="M9.653 16.915l-.005-.003-.019-.01a20.759 20.759 0 01-1.162-.682 22.045 22.045 0 01-2.582-2.025C4.363 12.476 2.5 10.43 2.5 7.5a4.5 4.5 0 018.29-2.396A4.5 4.5 0 0117.5 7.5c0 2.93-1.863 4.976-3.385 6.195a22.045 22.045 0 01-2.582 2.025 20.759 20.759 0 01-1.162.682l-.019.01-.005.003h-.001l-.003.001-.002.001z" />
+          </svg>
+          Información de Salud
+        </h2>
+        <dl class="space-y-2 text-sm">
+          <div class="flex gap-2">
+            <dt class="w-32 flex-shrink-0 text-slate-500">EPS</dt>
+            <dd class="text-slate-900 font-medium">{{ b.eps || '—' }}</dd>
+          </div>
+          <div class="flex gap-2">
+            <dt class="w-32 flex-shrink-0 text-slate-500">Régimen</dt>
+            <dd class="text-slate-900">{{ b.regimen || '—' }}</dd>
+          </div>
+          <div class="flex gap-2">
+            <dt class="w-32 flex-shrink-0 text-slate-500">Sisbén</dt>
+            <dd class="text-slate-900">{{ b.sisbenGroup ? 'Grupo ' + b.sisbenGroup : '—' }}</dd>
+          </div>
+          <div class="flex gap-2">
+            <dt class="w-32 flex-shrink-0 text-slate-500">Diagnóstico</dt>
+            <dd class="text-slate-900">{{ b.diagnostico || '—' }}</dd>
+          </div>
+          @if (b.otherDiagnosis) {
+            <div class="flex gap-2">
+              <dt class="w-32 flex-shrink-0 text-slate-500">Otro dx</dt>
+              <dd class="text-slate-900">{{ b.otherDiagnosis }}</dd>
+            </div>
+          }
+          <div class="flex gap-2">
+            <dt class="w-32 flex-shrink-0 text-slate-500">Tratado en</dt>
+            <dd class="text-slate-900">{{ b.tratadoEn || '—' }}</dd>
+          </div>
+          @if (b.clinicaHospital) {
+            <div class="flex gap-2">
+              <dt class="w-32 flex-shrink-0 text-slate-500">Clínica</dt>
+              <dd class="text-slate-900">{{ b.clinicaHospital }}</dd>
+            </div>
+          }
+          @if (b.deceasedDate) {
+            <div class="flex gap-2">
+              <dt class="w-32 flex-shrink-0 text-slate-500">Fallecido</dt>
+              <dd class="text-slate-900">{{ b.deceasedDate | date:'dd/MM/yyyy' }}</dd>
+            </div>
+          }
+        </dl>
+      </div>
+
+      <!-- Contacto y ubicación -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5 space-y-3">
+        <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-slate-400">
+            <path fill-rule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clip-rule="evenodd" />
+          </svg>
+          Contacto y Ubicación
+        </h2>
+        <dl class="space-y-2 text-sm">
+          <div class="flex gap-2">
+            <dt class="w-32 flex-shrink-0 text-slate-500">Ciudad</dt>
+            <dd class="text-slate-900">{{ b.city || '—' }}{{ b.department ? ', ' + b.department : '' }}</dd>
+          </div>
+          @if (b.address) {
+            <div class="flex gap-2">
+              <dt class="w-32 flex-shrink-0 text-slate-500">Dirección</dt>
+              <dd class="text-slate-900">{{ b.address }}</dd>
+            </div>
+          }
+          <div class="flex gap-2">
+            <dt class="w-32 flex-shrink-0 text-slate-500">Celular</dt>
+            <dd class="text-slate-900">{{ b.celular || b.phone || '—' }}</dd>
+          </div>
+          @if (b.email) {
+            <div class="flex gap-2">
+              <dt class="w-32 flex-shrink-0 text-slate-500">Correo</dt>
+              <dd class="text-slate-900 break-all">{{ b.email }}</dd>
+            </div>
+          }
+          @if (b.birthCity) {
+            <div class="flex gap-2">
+              <dt class="w-32 flex-shrink-0 text-slate-500">Nació en</dt>
+              <dd class="text-slate-900">{{ b.birthCity }}</dd>
+            </div>
+          }
+          @if (b.nationality && b.nationality !== 'Colombiana') {
+            <div class="flex gap-2">
+              <dt class="w-32 flex-shrink-0 text-slate-500">Nacionalidad</dt>
+              <dd class="text-slate-900">{{ b.nationality }}</dd>
+            </div>
+          }
+          @if (b.isDisplaced) {
+            <div class="flex gap-2">
+              <dt class="w-32 flex-shrink-0 text-slate-500">Desplazado</dt>
+              <dd class="text-amber-600 font-medium">Sí</dd>
+            </div>
+          }
+          <div class="flex gap-2">
+            <dt class="w-32 flex-shrink-0 text-slate-500">Se enteró</dt>
+            <dd class="text-slate-900">{{ b.comoSeEntero || '—' }}</dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+
+    <!-- Familia -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+      <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4 flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-slate-400">
+          <path d="M7 8a3 3 0 100-6 3 3 0 000 6zM14.5 9a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM1.615 16.428a1.224 1.224 0 01-.569-1.175 6.002 6.002 0 0111.908 0c.058.467-.172.92-.57 1.174A9.953 9.953 0 017 18a9.953 9.953 0 01-5.385-1.572zM14.5 16h-.106c.07-.297.088-.611.048-.933a7.47 7.47 0 00-1.588-3.755 4.502 4.502 0 015.874 2.636.818.818 0 01-.36.98A7.465 7.465 0 0114.5 16z" />
+        </svg>
+        Familia
+      </h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
+        <!-- Madre -->
+        <div class="space-y-2">
+          <p class="font-semibold text-slate-600">Madre</p>
+          <dl class="space-y-1.5">
+            <div class="flex gap-2">
+              <dt class="w-24 flex-shrink-0 text-slate-400">Nombre</dt>
+              <dd class="text-slate-800">{{ b.motherName || '—' }}</dd>
+            </div>
+            <div class="flex gap-2">
+              <dt class="w-24 flex-shrink-0 text-slate-400">Celular</dt>
+              <dd class="text-slate-800">{{ b.motherPhone || '—' }}</dd>
+            </div>
+            <div class="flex gap-2">
+              <dt class="w-24 flex-shrink-0 text-slate-400">Ocupación</dt>
+              <dd class="text-slate-800">{{ b.motherOccupation || '—' }}</dd>
+            </div>
+            @if (b.motherEducation) {
+              <div class="flex gap-2">
+                <dt class="w-24 flex-shrink-0 text-slate-400">Escolaridad</dt>
+                <dd class="text-slate-800">{{ b.motherEducation }}</dd>
+              </div>
+            }
+          </dl>
+        </div>
+        <!-- Padre -->
+        <div class="space-y-2">
+          <p class="font-semibold text-slate-600">Padre</p>
+          <dl class="space-y-1.5">
+            <div class="flex gap-2">
+              <dt class="w-24 flex-shrink-0 text-slate-400">Nombre</dt>
+              <dd class="text-slate-800">{{ b.fatherName || '—' }}</dd>
+            </div>
+            <div class="flex gap-2">
+              <dt class="w-24 flex-shrink-0 text-slate-400">Celular</dt>
+              <dd class="text-slate-800">{{ b.fatherPhone || '—' }}</dd>
+            </div>
+            <div class="flex gap-2">
+              <dt class="w-24 flex-shrink-0 text-slate-400">Ocupación</dt>
+              <dd class="text-slate-800">{{ b.fatherOccupation || '—' }}</dd>
+            </div>
+            @if (b.fatherEducation) {
+              <div class="flex gap-2">
+                <dt class="w-24 flex-shrink-0 text-slate-400">Escolaridad</dt>
+                <dd class="text-slate-800">{{ b.fatherEducation }}</dd>
+              </div>
+            }
+          </dl>
+        </div>
+      </div>
+      @if (b.caregiverName) {
+        <div class="mt-4 pt-4 border-t border-slate-100 text-sm">
+          <p class="font-semibold text-slate-600 mb-2">Cuidador principal</p>
+          <dl class="flex gap-6">
+            <div class="flex gap-2"><dt class="text-slate-400">Nombre</dt><dd class="text-slate-800">{{ b.caregiverName }}</dd></div>
+            @if (b.caregiverRelationship) {
+              <div class="flex gap-2"><dt class="text-slate-400">Parentesco</dt><dd class="text-slate-800">{{ b.caregiverRelationship }}</dd></div>
+            }
+            @if (b.caregiverPhone) {
+              <div class="flex gap-2"><dt class="text-slate-400">Contacto</dt><dd class="text-slate-800">{{ b.caregiverPhone }}</dd></div>
+            }
+          </dl>
+        </div>
+      }
+    </div>
+
+    <!-- Historial de ayudas -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+        <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-brand-500">
+            <path fill-rule="evenodd" d="M1 2.75A.75.75 0 011.75 2h10.5a.75.75 0 010 1.5H12v13.75a.75.75 0 01-.75.75h-1.5a.75.75 0 01-.75-.75v-2.5a.75.75 0 00-.75-.75h-2.5a.75.75 0 00-.75.75v2.5a.75.75 0 01-.75.75H3.75A.75.75 0 013 17.25V3.5h-.25A.75.75 0 011 2.75zM4 3.5v13h1v-2.5A2.25 2.25 0 017.25 11.75h2.5A2.25 2.25 0 0112 14v2.5h1V3.5H4z" clip-rule="evenodd" />
+          </svg>
+          Historial de Ayudas
+          <span class="text-xs font-normal text-slate-400 normal-case">(últimas 10)</span>
+        </h2>
+        @if (b.ayudas.length > 0) {
+          <div class="text-sm font-semibold text-slate-700">
+            Total: <span class="text-brand-600">{{ totalAyudas() | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+          </div>
+        }
+      </div>
+
+      @if (b.ayudas.length === 0) {
+        <div class="py-12 text-center text-slate-400">
+          <p class="text-sm">Sin ayudas registradas</p>
+        </div>
+      } @else {
+        <table class="w-full text-sm">
+          <thead class="bg-slate-50 border-b border-slate-200">
+            <tr>
+              <th class="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Fecha</th>
+              <th class="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Tipo</th>
+              <th class="text-center px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Personas</th>
+              <th class="text-right px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Valor</th>
+              <th class="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Estado</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            @for (a of b.ayudas; track a.id) {
+              <tr class="hover:bg-slate-50/70 transition-colors">
+                <td class="px-5 py-3 text-slate-600 whitespace-nowrap">{{ a.fecha | date:'dd/MM/yyyy' }}</td>
+                <td class="px-5 py-3 text-slate-800 font-medium">{{ a.tipoSolicitud }}</td>
+                <td class="px-5 py-3 text-center text-slate-600">{{ a.personasBeneficiadas }}</td>
+                <td class="px-5 py-3 text-right font-semibold text-slate-900">
+                  {{ +a.valor | currency:'COP':'symbol-narrow':'1.0-0' }}
+                </td>
+                <td class="px-5 py-3">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold {{ estadoBadge(a.estado) }}">
+                    {{ a.estado }}
+                  </span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+
+  </div>
+}

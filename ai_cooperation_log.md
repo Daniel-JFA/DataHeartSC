@@ -789,3 +789,112 @@ Before starting any work, read the last 15-20 lines to understand the latest cha
 - **Pending Tasks / Notes for next agent:**
   - Al llegar al Sprint 9, usar este documento como spec de referencia para el backend de analytics
   - Pendiente de Ana: Excel beneficiarios y voluntarios (seguimiento viernes 11-jul-2026)
+
+---
+
+## 2026-07-11 — Claude — Sprint 3b: Expansión schema Beneficiarios + nueva tabla Ayudas
+
+- **Task:** Analizar 3 archivos entregados por Ana e incorporar su estructura al schema de la DB.
+- **Archivos analizados:**
+  - `AYUDAS Junio.xlsx` — 4,160 solicitudes de ayuda (2018–2026), 7 columnas, 16 tipos de solicitud
+  - `Datos Personales Junio.xlsx` — 998 beneficiarios (niños con cardiopatías), 26 columnas
+  - `Encuesta caracterización de las familias 2025.docx` — formulario digital con secciones: salud, familia, vivienda, economía
+- **Files Modified/Created:**
+  - `backend/prisma/schema.prisma` — modelo `Beneficiary` expandido: 18 campos originales → 58 campos. Agrupados en secciones: Identificación, Contacto, Salud, Familia (Madre + Padre + Hermanos + Cuidador), Vivienda y Demografía, Economía, Meta. `birthDate` pasó a nullable. Nuevo modelo `Ayuda` con FK a Beneficiary.
+  - `backend/prisma/migrations/20260707000000_catchup_etl_and_providers/migration.sql` — migración catch-up creada y marcada como aplicada (resuelve drift de columnas aplicadas con psql en sprints anteriores en orders/products/providers)
+  - `backend/prisma/migrations/20260711181845_beneficiary_expansion_ayudas/migration.sql` — migración generada y aplicada automáticamente por Prisma
+- **Current Status:**
+  - ✅ `npx prisma migrate dev` → migración aplicada sin errores
+  - ✅ `npx prisma generate` → Prisma Client regenerado con los nuevos modelos
+  - ✅ Tabla `beneficiaries` tiene 58 columnas en DB (verificado con psql)
+  - ✅ Tabla `ayudas` creada con índices en `beneficiary_id` y `fecha`
+  - ✅ Historial de migraciones sincronizado (drift resuelto)
+- **Pending Tasks / Notes for next agent:**
+  - Próximo paso: ETL Python para cargar los dos Excel en la DB
+    - `Datos Personales Junio.xlsx` → tabla `beneficiaries`
+    - `AYUDAS Junio.xlsx` → tabla `ayudas` (link por cedula → doc_number)
+  - Pendiente: CRUD NestJS para Beneficiarios (BeneficiariesModule) con los nuevos campos
+  - Pendiente: CRUD NestJS para Ayudas (AyudasModule)
+  - Pendiente: Pantallas Angular para Beneficiarios y Ayudas
+
+---
+
+## 2026-07-11 — Claude — Sprint 3b: ETL Beneficiarios y Ayudas
+
+- **Task:** Cargar datos históricos de beneficiarios y ayudas desde los dos Excel de Ana.
+- **Files Modified/Created:**
+  - `scripts/etl/migrate_beneficiarios.py` (NUEVO) — ETL idempotente en dos partes:
+    1. `Datos Personales Junio.xlsx` → tabla `beneficiaries` (998 registros, 26 campos, upsert por doc_number)
+    2. `AYUDAS Junio.xlsx` → tabla `ayudas` (4,160 registros, link por cédula → beneficiary.id)
+    - Flags: `--force-ayudas` (reimporta ayudas), `--only-ayudas` (solo ayudas)
+    - Crea beneficiarios mínimos para cédulas que aparecen en ayudas pero no en datos personales
+- **Resultados de la carga:**
+  - Beneficiarios en DB: 1,002 (998 del Excel + 4 mínimos solo en ayudas)
+  - Fallecidos: 140
+  - Ayudas en DB: 4,160 | Resueltas: 4,154 | Pendientes: 6
+  - Valor total ayudas: $231.4M COP
+  - Top solicitudes: Ropa y Juguetes (1,375), Recreación (985), Pañales (578), Transporte (265), Alimentación (258)
+- **Current Status:**
+  - ✅ ETL completo sin errores
+  - ✅ Idempotente: re-ejecución sin --force-ayudas detecta tabla ya cargada y la salta
+- **Pending Tasks / Notes for next agent:**
+  - Próximo paso: BeneficiariesModule + AyudasModule en NestJS (CRUD + endpoints)
+  - Pantallas Angular: listado de beneficiarios con búsqueda, detalle, y listado de ayudas
+  - Los 4 beneficiarios "mínimos" (solo en ayudas) tienen first_name='Beneficiario', last_name='(cedula)' — deberían completarse manualmente o con un nuevo Excel
+
+---
+
+## 2026-07-11 — Claude — Sprint 3b: BeneficiariesModule + AyudasModule NestJS
+
+- **Task:** Crear los módulos NestJS para beneficiarios y ayudas con CRUD completo y endpoints de estadísticas.
+- **Files Modified/Created:**
+  - `backend/src/beneficiaries/beneficiaries.module.ts` (NUEVO)
+  - `backend/src/beneficiaries/beneficiaries.controller.ts` (NUEVO) — GET/POST/PUT/DELETE + GET /stats
+  - `backend/src/beneficiaries/beneficiaries.service.ts` (NUEVO) — findAll (búsqueda multi-campo), findOne (con últimas 10 ayudas), create, update, remove (soft), getStats
+  - `backend/src/beneficiaries/dto/create-beneficiary.dto.ts` (NUEVO) — 40+ campos con validación
+  - `backend/src/beneficiaries/dto/update-beneficiary.dto.ts` (NUEVO)
+  - `backend/src/ayudas/ayudas.module.ts` (NUEVO)
+  - `backend/src/ayudas/ayudas.controller.ts` (NUEVO) — GET/POST/PUT/DELETE + GET /stats + GET /beneficiary/:id
+  - `backend/src/ayudas/ayudas.service.ts` (NUEVO) — findAll (filtros por beneficiaryId/tipo/estado), findOne, findByBeneficiary, create, update, remove (hard delete), getStats
+  - `backend/src/ayudas/dto/create-ayuda.dto.ts` (NUEVO)
+  - `backend/src/ayudas/dto/update-ayuda.dto.ts` (NUEVO)
+  - `backend/src/app.module.ts` — imports: BeneficiariesModule, AyudasModule agregados
+- **Endpoints disponibles:**
+  - GET /api/beneficiaries?page&limit&search&status — 1,002 registros, búsqueda en nombre/doc/ciudad/eps/diagnóstico/padres
+  - GET /api/beneficiaries/stats — total/activos/fallecidos/sinEps/porGenero/topEps/topDiag
+  - GET /api/beneficiaries/:id — detalle + últimas 10 ayudas
+  - POST/PUT/DELETE /api/beneficiaries
+  - GET /api/ayudas?page&limit&beneficiaryId&tipoSolicitud&estado
+  - GET /api/ayudas/stats — total=4,160 / resueltas=4,154 / pendientes=6 / totalValor=$231.4M COP
+  - GET /api/ayudas/beneficiary/:beneficiaryId — historial completo con total acumulado
+  - POST/PUT/DELETE /api/ayudas
+- **Current Status:**
+  - ✅ `npx tsc --noEmit` → 0 errores
+  - ✅ Servidor levantado y endpoints verificados con curl
+  - ✅ Permisos RBAC: beneficiarios:read / beneficiarios:write (ya existían en seed)
+- **Pending Tasks / Notes for next agent:**
+  - Siguiente: pantallas Angular para Beneficiarios (listado + detalle) y Ayudas
+  - La búsqueda `?search=Cardio` devuelve 128 resultados — indexar `diagnostico` si la búsqueda es lenta en prod
+
+---
+
+## 2026-07-11 — Claude — Sprint 3b: Pantallas Angular Beneficiarios
+
+- **Task:** Crear pantallas Angular para el módulo de beneficiarios (listado + detalle con historial de ayudas).
+- **Files Modified/Created:**
+  - `frontend/src/app/core/services/beneficiaries.service.ts` (NUEVO) — interfaces Beneficiary, BeneficiaryDetail, AyudaSummary, BeneficiaryStats + métodos getAll/getOne/getStats/create/update/deactivate
+  - `frontend/src/app/features/beneficiaries/beneficiaries-list.component.ts` (NUEVO) — signals: beneficiaries, total, page, search, statusFilter, stats. Efectos reactivos de carga.
+  - `frontend/src/app/features/beneficiaries/beneficiaries-list.component.html` (NUEVO) — 4 stat cards (total/activos/fallecidos/sinEps), búsqueda multi-campo, filtro por estado, tabla paginada con edad calculada, badge de estado, conteo de ayudas, link al detalle.
+  - `frontend/src/app/features/beneficiaries/beneficiary-detail.component.ts` (NUEVO) — carga por ID, getter `b` para resolver scope en template.
+  - `frontend/src/app/features/beneficiaries/beneficiary-detail.component.html` (NUEVO) — header con nombre+estado, secciones: Salud (EPS/régimen/sisbén/diagnóstico), Contacto, Familia (madre+padre+cuidador), Historial de Ayudas (últimas 10 con total acumulado).
+  - `frontend/src/app/app.routes.ts` — rutas /beneficiaries y /beneficiaries/:id agregadas con permissionGuard
+  - `frontend/src/app/shared/layout/shell/shell.component.html` — sección "Atención Familias" con link a /beneficiaries en sidebar
+- **Current Status:**
+  - ✅ `npm run build --configuration=development` → 0 errores
+  - ✅ Rutas protegidas con permiso beneficiarios:read
+  - ✅ Sidebar muestra la sección solo si el usuario tiene el permiso
+- **Pending Tasks / Notes for next agent:**
+  - Sprint 3b completo: schema + migración + ETL + backend + frontend ✅
+  - Próximos sprints pendientes del cliente: Sprint 5 (Shopify) y Sprint 6 (Wompi/PayU)
+  - Pendiente menor: formulario de creación/edición de beneficiario (actualmente solo se pueden consultar)
+  - Pendiente menor: pantalla de Ayudas propia (actualmente solo visible en el detalle del beneficiario)

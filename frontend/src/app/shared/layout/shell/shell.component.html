@@ -75,6 +75,20 @@
         </a>
       }
 
+      <!-- Atención Familias -->
+      @if (auth.hasPermission('beneficiarios:read')) {
+        <div class="pt-4 pb-1.5 px-3">
+          <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Atención Familias</span>
+        </div>
+        <a routerLink="/beneficiaries" routerLinkActive="bg-brand-600 text-white"
+           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors group">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 flex-shrink-0">
+            <path d="M9.653 16.915l-.005-.003-.019-.01a20.759 20.759 0 01-1.162-.682 22.045 22.045 0 01-2.582-2.025C4.363 12.476 2.5 10.43 2.5 7.5a4.5 4.5 0 018.29-2.396A4.5 4.5 0 0117.5 7.5c0 2.93-1.863 4.976-3.385 6.195a22.045 22.045 0 01-2.582 2.025 20.759 20.759 0 01-1.162.682l-.019.01-.005.003h-.001l-.003.001-.002.001z" />
+          </svg>
+          <span>Beneficiarios</span>
+        </a>
+      }
+
       <!-- Ventas Section -->
       @if (auth.hasPermission('ventas_donaciones:read')) {
         <div class="pt-4 pb-1.5 px-3">
