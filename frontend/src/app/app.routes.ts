@@ -65,5 +65,9 @@ export const routes: Routes = [
     path: 'proveedores/registro',
     loadComponent: () => import('./features/providers/provider-register.component').then(m => m.ProviderRegisterComponent),
   },
+  {
+    path: 'familias/caracterizacion',
+    loadComponent: () => import('./features/beneficiaries/family-characterization.component').then(m => m.FamilyCharacterizationComponent),
+  },
   { path: '**', redirectTo: 'dashboard' },
 ];

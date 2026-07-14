@@ -63,4 +63,13 @@ export class OrdersController {
   updateStatus(@Param('id') id: string, @Body() dto: UpdateOrderDto) {
     return this.ordersService.updateStatus(id, dto);
   }
+
+  @Put(':id/payment-status')
+  @RequirePermission('ventas_donaciones:write')
+  updatePaymentStatus(
+    @Param('id') id: string,
+    @Body('paymentStatus') paymentStatus: string,
+  ) {
+    return this.ordersService.updatePaymentStatus(id, paymentStatus);
+  }
 }

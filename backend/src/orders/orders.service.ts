@@ -108,6 +108,18 @@ export class OrdersService {
     });
   }
 
+  async updatePaymentStatus(id: string, paymentStatus: string) {
+    await this.findOne(id);
+    if (!['Pendiente', 'Pagado', 'Cancelado'].includes(paymentStatus)) {
+      throw new BadRequestException('Estado de pago no válido');
+    }
+    return this.prisma.order.update({
+      where: { id },
+      data: { paymentStatus },
+      include: { client: { select: { name: true } } },
+    });
+  }
+
   // ── WORLD OFFICE EXPORT ──────────────────────────────────
   async exportToExcel(from?: string, to?: string) {
     const where: any = { status: { not: 'Cancelado' } };

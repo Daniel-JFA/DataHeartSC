@@ -12,6 +12,7 @@ import { DonationsModule } from './donations/donations.module';
 import { ProvidersModule } from './providers/providers.module';
 import { BeneficiariesModule } from './beneficiaries/beneficiaries.module';
 import { AyudasModule } from './ayudas/ayudas.module';
+import { WebhooksModule } from './webhooks/webhooks.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { AyudasModule } from './ayudas/ayudas.module';
     ProvidersModule,
     BeneficiariesModule,
     AyudasModule,
+    WebhooksModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,0 +1,728 @@
+<!-- ════════════════════════════════════════════════════════════════
+     Encuesta de Caracterización de Familias (Wizard 5 pasos)
+     Fundación Infantil Santiago Corazón
+     ════════════════════════════════════════════════════════════════ -->
+
+<div class="min-h-screen bg-slate-50 flex flex-col">
+
+  <!-- ── Header ─────────────────────────────────────────────────── -->
+  <header class="bg-white border-b border-slate-200 shadow-sm">
+    <div class="max-w-4xl mx-auto px-6 py-4 flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl bg-rose-600 flex items-center justify-center flex-shrink-0">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 text-white">
+          <path d="M9.653 16.915l-.005-.003-.019-.01a20.759 20.759 0 01-1.162-.682 22.045 22.045 0 01-2.582-2.025C4.363 12.476 2.5 10.43 2.5 7.5a4.5 4.5 0 018.29-2.396A4.5 4.5 0 0117.5 7.5c0 2.93-1.863 4.976-3.385 6.195a22.045 22.045 0 01-2.582 2.025 20.759 20.759 0 01-1.162.682l-.019.01-.005.003h-.001l-.003.001-.002.001z" />
+        </svg>
+      </div>
+      <div>
+        <p class="text-xs text-slate-500 leading-none">Fundación Infantil</p>
+        <h1 class="text-sm font-bold text-slate-900 leading-tight">Santiago Corazón</h1>
+      </div>
+      <div class="ml-auto text-right hidden sm:block">
+        <p class="text-xs text-slate-400">Caracterización Social</p>
+        <p class="text-xs font-medium text-slate-600">Encuesta de Familias 2025</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── Contenido central ─────────────────────────────────────── -->
+  <main class="flex-1 flex items-start justify-center px-4 py-10">
+    <div class="w-full max-w-4xl">
+
+      <!-- ════════════ ESTADO: FORMULARIO ════════════ -->
+      @if (step() === 'form') {
+
+        <div class="mb-8 text-center">
+          <h2 class="text-2xl font-bold text-slate-900">Encuesta de Caracterización de Familias</h2>
+          <p class="text-sm text-slate-500 mt-1.5 max-w-xl mx-auto">
+            Por favor diligencie todos los campos requeridos. Esta información es fundamental para poder brindarles el mejor apoyo y seguimiento en la fundación.
+          </p>
+        </div>
+
+        <!-- ── Progreso en dots ───────────────────────── -->
+        <div class="flex flex-col items-center gap-3 mb-8">
+
+          <!-- Dots de pasos -->
+          <div class="flex items-center gap-2">
+            @for (n of [1, 2, 3, 4, 5]; track n) {
+              @if (currentStep() > n) {
+                <!-- Completado -->
+                <div class="w-7 h-7 rounded-full bg-rose-600 flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3 h-3 text-white">
+                    <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
+                  </svg>
+                </div>
+              } @else if (currentStep() === n) {
+                <!-- Actual -->
+                <div class="w-7 h-7 rounded-full ring-2 ring-rose-600 bg-white flex items-center justify-center">
+                  <span class="text-xs font-bold text-rose-600">{{ n }}</span>
+                </div>
+              } @else {
+                <!-- Pendiente -->
+                <div class="w-7 h-7 rounded-full bg-slate-200 flex items-center justify-center">
+                  <span class="text-xs font-medium text-slate-400">{{ n }}</span>
+                </div>
+              }
+            }
+          </div>
+
+          <!-- Etiqueta del paso actual -->
+          <p class="text-sm font-semibold text-slate-700">{{
+            ['', 'Datos del Niño(a)', 'Información de Salud', 'Información Familiar', 'Vivienda y Cuidador', 'Economía y Tratamiento de Datos'][currentStep()]
+          }}</p>
+
+          <!-- Error de paso -->
+          @if (stepErrors()) {
+            <div class="flex items-center gap-2 bg-red-50 border border-red-200 rounded-lg px-4 py-2.5 max-w-md w-full">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-red-500 flex-shrink-0">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
+              </svg>
+              <p class="text-sm text-red-700">{{ stepErrors() }}</p>
+            </div>
+          }
+        </div>
+
+        <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-6" novalidate>
+
+          <!-- ════════════════════════════════════════
+               PASO 1 — Datos del Niño(a)
+               ════════════════════════════════════════ -->
+          @if (currentStep() === 1) {
+
+            <!-- ══ Identificación del Niño ══ -->
+            <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+              <div class="px-5 py-3.5 border-b border-slate-100 bg-slate-50">
+                <h3 class="text-xs font-semibold text-slate-700 uppercase tracking-wider">1. Información del Niño(a)</h3>
+              </div>
+              <div class="px-5 py-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Nombre Completo *</label>
+                  <input type="text" formControlName="firstName" placeholder="Nombres"
+                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Apellidos Completo *</label>
+                  <input type="text" formControlName="lastName" placeholder="Apellidos"
+                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
+                </div>
+
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Tipo de Documento *</label>
+                  <select formControlName="docType"
+                          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500 bg-white">
+                    @for (item of DOC_TYPES; track item.value) {
+                      <option [value]="item.value">{{ item.label }}</option>
+                    }
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">N° Documento de Identidad *</label>
+                  <input type="text" formControlName="docNumber" placeholder="Número de identificación"
+                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
+                </div>
+
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Fecha de Nacimiento *</label>
+                  <input type="date" formControlName="birthDate"
+                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Género del Niño(a) *</label>
+                  <select formControlName="gender"
+                          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500 bg-white">
+                    @for (item of GENDERS; track item.value) {
+                      <option [value]="item.value">{{ item.label }}</option>
+                    }
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Nacionalidad *</label>
+                  <input type="text" formControlName="nationality"
+                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">¿Son desplazados? *</label>
+                  <select formControlName="isDisplaced"
+                          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500 bg-white">
+                    <option value="NO">No</option>
+                    <option value="SI">Sí</option>
+                  </select>
+                </div>
+              </div>
+            </section>
+
+            <!-- ══ Ubicación Residencia ══ -->
+            <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+              <div class="px-5 py-3.5 border-b border-slate-100 bg-slate-50">
+                <h3 class="text-xs font-semibold text-slate-700 uppercase tracking-wider">2. Dirección de Residencia</h3>
+              </div>
+              <div class="px-5 py-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="sm:col-span-2">
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Dirección de Residencia *</label>
+                  <input type="text" formControlName="address" placeholder="Ej: Calle 45 # 12-34 Apto 301"
+                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Barrio *</label>
+                  <input type="text" formControlName="neighborhood" placeholder="Nombre del barrio"
+                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Ciudad / Municipio *</label>
+                  <input type="text" formControlName="city" placeholder="Ej: Medellín"
+                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Departamento *</label>
+                  <input type="text" formControlName="department" placeholder="Ej: Antioquia"
+                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
+                </div>
+              </div>
+            </section>
+          }
+
+          <!-- ════════════════════════════════════════
+               PASO 2 — Información de Salud
+               ════════════════════════════════════════ -->
+          @if (currentStep() === 2) {
+
+            <!-- ══ EPS y Sisbén ══ -->
+            <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+              <div class="px-5 py-3.5 border-b border-slate-100 bg-slate-50">
+                <h3 class="text-xs font-semibold text-slate-700 uppercase tracking-wider">3. EPS y Sisbén</h3>
+              </div>
+              <div class="px-5 py-5 space-y-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-2">¿El niño tiene EPS? *</label>
+                  <div class="flex gap-4">
+                    <button type="button" (click)="setEpsOption('SI')"
+                            [class]="hasEpsOption() === 'SI' ? 'bg-rose-50 border-rose-500 text-rose-700' : 'bg-white border-slate-300 text-slate-700'"
+                            class="px-4 py-2 border text-sm font-semibold rounded-lg flex-1 transition-all">
+                      Sí
+                    </button>
+                    <button type="button" (click)="setEpsOption('NO')"
+                            [class]="hasEpsOption() === 'NO' ? 'bg-rose-50 border-rose-500 text-rose-700' : 'bg-white border-slate-300 text-slate-700'"
+                            class="px-4 py-2 border text-sm font-semibold rounded-lg flex-1 transition-all">
+                      No
+                    </button>
+                  </div>
+                </div>
+
+                @if (hasEpsOption() === 'SI') {
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                    <div>
+                      <label class="block text-xs font-medium text-slate-700 mb-1">Nombre de la EPS a la que está vinculado *</label>
+                      <input type="text" formControlName="eps" placeholder="Ej: SURA, Savia Salud, etc."
+                             class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
+                    </div>
+                    <div>
+                      <label class="block text-xs font-medium text-slate-700 mb-1">Tipo de Afiliación *</label>
+                      <select formControlName="regimen"
+                              class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500 bg-white">
+                        <option value="">Seleccione...</option>
+                        @for (item of REGIMENES; track item.value) {
+                          <option [value]="item.value">{{ item.label }}</option>
+                        }
+                      </select>
+                    </div>
+                  </div>
+                } @else {
+                  <div class="pt-2">
+                    <label class="block text-xs font-medium text-slate-700 mb-1">¿Por qué motivo no tiene EPS? *</label>
+                    <input type="text" formControlName="epsNoReason" placeholder="Explique brevemente"
+                           class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
+                  </div>
+                }
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">¿Se encuentra registrado(a) en el Sisbén? *</label>
+                    <select formControlName="sisbenGroup"
+                            class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500 bg-white">
+                      @for (item of SISBEN_GROUPS; track item.value) {
+                        <option [value]="item.value">{{ item.label }}</option>
+                      }
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- ══ Cardiopatía y Clínica ══ -->
+            <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+              <div class="px-5 py-3.5 border-b border-slate-100 bg-slate-50">
+                <h3 class="text-xs font-semibold text-slate-700 uppercase tracking-wider">4. Diagnóstico Clínico</h3>
+              </div>
+              <div class="px-5 py-5 space-y-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">¿Qué cardiopatía tiene el Niño(a)? *</label>
+                  <input type="text" formControlName="diagnostico" placeholder="Ej: Tetralogía de Fallot, CIA, CIV, etc."
+                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
+                </div>
+
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-2">¿El niño tiene otro diagnóstico, discapacidad o limitaciones para desplazarse? *</label>
+                  <select formControlName="hasOtherDiagnosis"
+                          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500 bg-white">
+                    <option value="NO">No</option>
+                    <option value="SI">Sí</option>
+                  </select>
+                </div>
+
+                @if (form.value.hasOtherDiagnosis === 'SI') {
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">¿Cuál? *</label>
+                    <input type="text" formControlName="otherDiagnosis" placeholder="Especifique el otro diagnóstico o limitación"
+                           class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
+                  </div>
+                }
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">¿Ciudad dónde ha sido tratado el Niño(a)? *</label>
+                    <input type="text" formControlName="tratadoEn" placeholder="Ej: Medellín"
+                           class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">¿Clínica u hospital dónde ha sido tratado?</label>
+                    <input type="text" formControlName="clinicaHospital" placeholder="Ej: Hospital San Vicente, Cardio VID"
+                           class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
+                  </div>
+                </div>
+              </div>
+            </section>
+          }
+
+          <!-- ════════════════════════════════════════
+               PASO 3 — Información Familiar
+               ════════════════════════════════════════ -->
+          @if (currentStep() === 3) {
+
+            <!-- ══ Datos de la Madre ══ -->
+            <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+              <div class="px-5 py-3.5 border-b border-slate-100 bg-slate-50">
+                <h3 class="text-xs font-semibold text-slate-700 uppercase tracking-wider">5. Información de la Madre</h3>
+              </div>
+              <div class="px-5 py-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="sm:col-span-2">
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Nombre y Apellidos de la Mamá *</label>
+                  <input type="text" formControlName="motherName" placeholder="Nombre completo"
+                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Número de Cédula</label>
+                  <input type="text" formControlName="motherDocNumber" placeholder="Número de cédula"
+                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Número de Contacto *</label>
+                  <input type="text" formControlName="motherPhone" placeholder="Teléfono"
+                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
+                </div>
+
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Nivel de Escolaridad</label>
+                  <select formControlName="motherEducation"
+                          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500 bg-white">
+                    @for (item of ESCOLARIDAD; track item.value) {
+                      <option [value]="item.value">{{ item.label }}</option>
+                    }
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">¿Profesión?</label>
+                  <input type="text" formControlName="motherProfession" placeholder="Escriba su profesión"
+                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
+                </div>
+
+                <div class="sm:col-span-2">
+                  <label class="block text-xs font-medium text-slate-700 mb-1">¿En qué se desempeña la Mamá? (Ocupación) *</label>
+                  <input type="text" formControlName="motherOccupation" placeholder="Ej: Ama de casa, Vendedora independiente, etc."
+                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
+                </div>
+
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">¿Vive con el niño? *</label>
+                  <select formControlName="motherLivesWithChild"
+                          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500 bg-white">
+                    <option value="SI">Sí</option>
+                    <option value="NO">No</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">¿Responde afectiva y económicamente? *</label>
+                  <select formControlName="motherRespondsEcon"
+                          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500 bg-white">
+                    <option value="SI">Sí</option>
+                    <option value="NO">No</option>
+                  </select>
+                </div>
+              </div>
+            </section>
+
+            <!-- ══ Datos del Padre ══ -->
+            <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+              <div class="px-5 py-3.5 border-b border-slate-100 bg-slate-50">
+                <h3 class="text-xs font-semibold text-slate-700 uppercase tracking-wider">6. Información del Padre</h3>
+              </div>
+              <div class="px-5 py-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="sm:col-span-2">
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Nombres y Apellidos del Papá *</label>
+                  <input type="text" formControlName="fatherName" placeholder="Nombre completo"
+                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Número de Cédula</label>
+                  <input type="text" formControlName="fatherDocNumber" placeholder="Número de cédula"
+                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Número de Contacto</label>
+                  <input type="text" formControlName="fatherPhone" placeholder="Teléfono"
+                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
+                </div>
+
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Nivel de Escolaridad</label>
+                  <select formControlName="fatherEducation"
+                          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500 bg-white">
+                    @for (item of ESCOLARIDAD; track item.value) {
+                      <option [value]="item.value">{{ item.label }}</option>
+                    }
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">¿Profesión?</label>
+                  <input type="text" formControlName="fatherProfession" placeholder="Escriba su profesión"
+                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
+                </div>
+
+                <div class="sm:col-span-2">
+                  <label class="block text-xs font-medium text-slate-700 mb-1">¿En qué se desempeña el Papá? (Ocupación) *</label>
+                  <input type="text" formControlName="fatherOccupation" placeholder="Ej: Constructor, Empleado, Desempleado, etc."
+                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
+                </div>
+
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">¿Vive con el niño? *</label>
+                  <select formControlName="fatherLivesWithChild"
+                          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500 bg-white">
+                    <option value="SI">Sí</option>
+                    <option value="NO">No</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">¿Responde afectiva y económicamente? *</label>
+                  <select formControlName="fatherRespondsEcon"
+                          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500 bg-white">
+                    <option value="SI">Sí</option>
+                    <option value="NO">No</option>
+                  </select>
+                </div>
+              </div>
+            </section>
+          }
+
+          <!-- ════════════════════════════════════════
+               PASO 4 — Hermanos, Cuidador y Vivienda
+               ════════════════════════════════════════ -->
+          @if (currentStep() === 4) {
+
+            <!-- ══ Cuidador Principal ══ -->
+            <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+              <div class="px-5 py-3.5 border-b border-slate-100 bg-slate-50">
+                <h3 class="text-xs font-semibold text-slate-700 uppercase tracking-wider">7. Cuidador Principal</h3>
+              </div>
+              <div class="px-5 py-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="sm:col-span-3">
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Nombre y Apellidos del Cuidador *</label>
+                  <input type="text" formControlName="caregiverName" placeholder="Nombre completo"
+                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
+                </div>
+                <div class="sm:col-span-2">
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Parentesco con el niño(a) *</label>
+                  <input type="text" formControlName="caregiverRelationship" placeholder="Ej: Madre, Abuela, Tía..."
+                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Número de Contacto *</label>
+                  <input type="text" formControlName="caregiverPhone" placeholder="Teléfono del cuidador"
+                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
+                </div>
+              </div>
+            </section>
+
+            <!-- ══ Hermanos del niño(a) ══ -->
+            <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+              <div class="px-5 py-3.5 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
+                <h3 class="text-xs font-semibold text-slate-700 uppercase tracking-wider">8. Hermanos</h3>
+              </div>
+              <div class="px-5 py-5 space-y-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-2">¿El niño tiene hermanos? *</label>
+                  <div class="flex gap-4">
+                    <button type="button" (click)="setSiblingsOption('SI')"
+                            [class]="hasSiblingsOption() === 'SI' ? 'bg-rose-50 border-rose-500 text-rose-700' : 'bg-white border-slate-300 text-slate-700'"
+                            class="px-4 py-2 border text-sm font-semibold rounded-lg flex-1 transition-all">
+                      Sí
+                    </button>
+                    <button type="button" (click)="setSiblingsOption('NO')"
+                            [class]="hasSiblingsOption() === 'NO' ? 'bg-rose-50 border-rose-500 text-rose-700' : 'bg-white border-slate-300 text-slate-700'"
+                            class="px-4 py-2 border text-sm font-semibold rounded-lg flex-1 transition-all">
+                      No
+                    </button>
+                  </div>
+                </div>
+
+                @if (hasSiblingsOption() === 'SI') {
+                  <div class="space-y-3 pt-2">
+                    <div class="flex items-center justify-between">
+                      <span class="text-xs font-medium text-slate-500">Lista de Hermanos</span>
+                      <button type="button" (click)="addSibling()"
+                              class="text-xs bg-rose-600 hover:bg-rose-700 text-white font-semibold px-2.5 py-1 rounded-md transition-all">
+                        + Agregar Hermano
+                      </button>
+                    </div>
+
+                    @for (sib of siblingsList(); track $index) {
+                      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-slate-50 p-3 rounded-lg border border-slate-200 relative">
+                        <div>
+                          <label class="block text-xs font-medium text-slate-700 mb-1">Edad del hermano *</label>
+                          <input type="number" [value]="sib.age" (input)="updateSiblingAge($index, $event)" min="0" max="99"
+                                 class="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-rose-500 focus:outline-none">
+                        </div>
+                        <div>
+                          <label class="block text-xs font-medium text-slate-700 mb-1">¿Convive con el niño? *</label>
+                          <select (change)="updateSiblingLivesWith($index, $event)"
+                                  class="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-rose-500 focus:outline-none bg-white">
+                            <option value="SI">Sí</option>
+                            <option value="NO">No</option>
+                          </select>
+                        </div>
+                        <div class="flex items-end justify-end">
+                          <button type="button" (click)="removeSibling($index)"
+                                  class="text-xs bg-red-100 hover:bg-red-200 text-red-700 font-semibold px-2.5 py-1.5 rounded-md transition-all w-full sm:w-auto">
+                            Eliminar
+                          </button>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            </section>
+
+            <!-- ══ Datos de Vivienda y Zona ══ -->
+            <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+              <div class="px-5 py-3.5 border-b border-slate-100 bg-slate-50">
+                <h3 class="text-xs font-semibold text-slate-700 uppercase tracking-wider">9. Datos Demográficos y Vivienda</h3>
+              </div>
+              <div class="px-5 py-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Zona en la que viven *</label>
+                  <select formControlName="zone"
+                          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500 bg-white">
+                    @for (item of ZONAS; track item.value) {
+                      <option [value]="item.value">{{ item.label }}</option>
+                    }
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">La vivienda en la que viven es *</label>
+                  <select formControlName="housingType"
+                          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500 bg-white">
+                    @for (item of TIPOS_VIVIENDA; track item.value) {
+                      <option [value]="item.value">{{ item.label }}</option>
+                    }
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Estrato de la vivienda *</label>
+                  <select formControlName="housingStrata"
+                          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500 bg-white">
+                    @for (item of [1, 2, 3, 4, 5, 6]; track item) {
+                      <option [value]="item">Estrato {{ item }}</option>
+                    }
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">¿El transporte público llega cerca? *</label>
+                  <select formControlName="publicTransportNearby"
+                          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500 bg-white">
+                    <option value="SI">Sí</option>
+                    <option value="NO">No</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">¿Cuántas personas habitan la vivienda? *</label>
+                  <input type="number" formControlName="numPeopleInHome" min="1" max="50"
+                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
+                </div>
+
+                <div class="sm:col-span-2 pt-2">
+                  <label class="block text-xs font-medium text-slate-700 mb-2">Servicios públicos con los que cuenta la vivienda:</label>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                    @for (serv of SERVICIOS_PUBLICOS; track serv.value) {
+                      <label class="flex items-center gap-2 text-sm text-slate-700 font-medium cursor-pointer">
+                        <input type="checkbox" [value]="serv.value" [checked]="isServicioChecked(serv.value)" (change)="toggleServicio(serv.value, $event)"
+                               class="rounded border-slate-300 text-rose-600 focus:ring-rose-500 w-4 h-4">
+                        <span>{{ serv.label }}</span>
+                      </label>
+                    }
+                  </div>
+                </div>
+              </div>
+            </section>
+          }
+
+          <!-- ════════════════════════════════════════
+               PASO 5 — Economía y finalización
+               ════════════════════════════════════════ -->
+          @if (currentStep() === 5) {
+
+            <!-- ══ Economía Familiar ══ -->
+            <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+              <div class="px-5 py-3.5 border-b border-slate-100 bg-slate-50">
+                <h3 class="text-xs font-semibold text-slate-700 uppercase tracking-wider">10. Economía Familiar</h3>
+              </div>
+              <div class="px-5 py-5 space-y-4 grid grid-cols-1 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">¿Cuál es la fuente principal de los ingresos económicos familiares? *</label>
+                  <input type="text" formControlName="incomeSource" placeholder="Ej: Salario papá, trabajo independiente mamá..."
+                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
+                </div>
+
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-2">¿Reciben subsidio por parte del gobierno? *</label>
+                  <div class="flex gap-4">
+                    <button type="button" (click)="setGovSubsidyOption('SI')"
+                            [class]="receivesGovSubsidyOption() === 'SI' ? 'bg-rose-50 border-rose-500 text-rose-700' : 'bg-white border-slate-300 text-slate-700'"
+                            class="px-4 py-2 border text-sm font-semibold rounded-lg flex-1 transition-all">
+                      Sí
+                    </button>
+                    <button type="button" (click)="setGovSubsidyOption('NO')"
+                            [class]="receivesGovSubsidyOption() === 'NO' ? 'bg-rose-50 border-rose-500 text-rose-700' : 'bg-white border-slate-300 text-slate-700'"
+                            class="px-4 py-2 border text-sm font-semibold rounded-lg flex-1 transition-all">
+                      No
+                    </button>
+                  </div>
+                </div>
+
+                @if (receivesGovSubsidyOption() === 'SI') {
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">¿Cuál o cuáles subsidios reciben? *</label>
+                    <input type="text" formControlName="govSubsidyType" placeholder="Ej: Familias en Acción, Ingreso Solidario"
+                           class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
+                  </div>
+                }
+
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">¿Cómo se enteró de la Fundación Santiago Corazón? *</label>
+                  <input type="text" formControlName="comoSeEntero" placeholder="Ej: Por la clínica Cardio VID, recomendación médica..."
+                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
+                </div>
+              </div>
+            </section>
+
+            <!-- ══ Tratamiento de Datos ══ -->
+            <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+              <div class="px-5 py-3.5 border-b border-slate-100 bg-slate-50">
+                <h3 class="text-xs font-semibold text-slate-700 uppercase tracking-wider">11. Autorización de Datos</h3>
+              </div>
+              <div class="px-5 py-5 space-y-4">
+                <div class="bg-rose-50 border border-rose-200 rounded-lg p-4 text-xs text-rose-950 space-y-2">
+                  <p class="font-bold">Autorización para el Tratamiento de Datos Personales:</p>
+                  <p class="leading-relaxed">
+                    Al diligenciar este formulario, usted autoriza a la **Fundación Infantil Santiago Corazón** a tratar de manera segura, confidencial y de acuerdo con la Ley 1581 de 2012 (Habeas Data), toda la información personal y sensible suministrada. Estos datos serán utilizados única y exclusivamente para los programas de apoyo médico, social, patrocinio de cirugías, ayudas humanitarias y comunicación directa entre la fundación y las familias beneficiadas.
+                  </p>
+                </div>
+
+                <label class="flex items-start gap-2.5 cursor-pointer">
+                  <input type="checkbox" formControlName="aceptaTratamientoDatos"
+                         class="rounded border-slate-300 text-rose-600 focus:ring-rose-500 w-4 h-4 mt-0.5">
+                  <span class="text-xs text-slate-600 leading-tight">
+                    Acepto de forma libre, voluntaria y expresa la autorización para el tratamiento de mis datos personales y los de mi hijo(a) menor de edad. *
+                  </span>
+                </label>
+              </div>
+            </section>
+          }
+
+          <!-- ── Botones navegación del wizard ───────────────────────── -->
+          <div class="flex items-center justify-between gap-4 pt-4 border-t border-slate-200">
+            @if (currentStep() > 1) {
+              <button type="button" (click)="prev()"
+                      class="px-5 py-2.5 rounded-lg border border-slate-300 text-slate-700 text-sm font-semibold hover:bg-slate-50 hover:border-slate-400 focus:outline-none transition-all">
+                Atrás
+              </button>
+            } @else {
+              <div></div>
+            }
+
+            @if (currentStep() < totalSteps) {
+              <button type="button" (click)="next()"
+                      class="px-6 py-2.5 bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white text-sm font-semibold rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 transition-all">
+                Siguiente
+              </button>
+            } @else {
+              <button type="submit" [disabled]="loading()"
+                      class="px-8 py-2.5 bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white text-sm font-bold rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+                @if (loading()) { Enviando... } @else { Finalizar y Enviar }
+              </button>
+            }
+          </div>
+        </form>
+
+      }
+
+      <!-- ════════════ ESTADO: ÉXITO ════════════ -->
+      @if (step() === 'success') {
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xl p-8 text-center max-w-xl mx-auto py-12">
+          <div class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-5 text-green-600">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-8 h-8">
+              <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.74-5.24z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          <h2 class="text-2xl font-bold text-slate-900 mb-3">¡Registro Recibido con Éxito!</h2>
+          <p class="text-sm text-slate-500 leading-relaxed mb-6">
+            La encuesta de caracterización de su familia ha sido enviada correctamente al sistema centralizado de la **Fundación Infantil Santiago Corazón**. 
+            El equipo de trabajo social revisará los datos cargados y se pondrá en contacto con ustedes. 
+          </p>
+          <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl text-xs text-slate-600 text-left space-y-1 max-w-md mx-auto">
+            <p><strong class="text-slate-800">¿Qué sigue ahora?</strong></p>
+            <p>1. Su información ingresa al módulo de beneficiarios.</p>
+            <p>2. Se asocia su caso para la planeación de ayudas (transporte, medicamentos, copagos, etc.).</p>
+            <p>3. Recibirán notificaciones oficiales si se requiere validar algún dato familiar.</p>
+          </div>
+        </div>
+      }
+
+      <!-- ════════════ ESTADO: ERROR ════════════ -->
+      @if (step() === 'error') {
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xl p-8 text-center max-w-xl mx-auto py-12">
+          <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-5 text-red-600">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-8 h-8">
+              <path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm-1.72 6.97a.75.75 0 10-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 101.06 1.06L12 13.06l1.72 1.72a.75.75 0 101.06-1.06L13.06 12l1.72-1.72a.75.75 0 10-1.06-1.06L12 10.94l-1.72-1.72z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          <h2 class="text-2xl font-bold text-slate-900 mb-3">Error al Enviar</h2>
+          <p class="text-sm text-slate-600 mb-6 leading-relaxed">
+            No pudimos procesar el envío de su encuesta en este momento.
+          </p>
+          @if (errorMsg()) {
+            <div class="bg-red-50 border border-red-200 rounded-lg p-3.5 mb-6 text-sm text-red-700 max-w-md mx-auto">
+              {{ errorMsg() }}
+            </div>
+          }
+          <button (click)="retry()"
+                  class="px-6 py-2.5 bg-rose-600 hover:bg-rose-700 text-white text-sm font-semibold rounded-lg focus:outline-none transition-all">
+            Intentar de Nuevo
+          </button>
+        </div>
+      }
+
+    </div>
+  </main>
+</div>

@@ -58,10 +58,17 @@ Thumbs.db
 .angular/
 .sass-cache/
 
-# Archivos de datos sensibles (ETL sources, documentos internos)
-data/*.xlsx
-data/*.xls
-data/*.csv
+# Archivos de datos sensibles (ETL sources, documentos internos, respaldos)
+data/
+*.xlsx
+*.xls
+*.csv
+*.docx
+*.dump
 docs/contratos/
 backend/uploads/
 memory/
+
+# Configuraciones locales de herramientas de IA
+.continue/
+graphify-out/

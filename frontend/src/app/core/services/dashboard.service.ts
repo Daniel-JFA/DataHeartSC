@@ -12,9 +12,14 @@ export interface DashboardStats {
     totalOrders: number;
     totalRevenue: number;
     paidRevenue: number;
+    totalDonations: number;
+    totalDonationsAmount: number;
   };
   ordersByStatus: Array<{ status: string; count: number }>;
   revenueByDay: Array<{ date: string; total: number }>;
+  donationsByDay: Array<{ date: string; total: number }>;
+  topCategories: Array<{ category: string; total: number }>;
+  donationsByGateway: Array<{ gateway: string; amount: number }>;
   recentOrders: Array<{
     id: string;
     orderDate: string;
