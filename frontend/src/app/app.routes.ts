@@ -9,6 +9,14 @@ export const routes: Routes = [
     loadComponent: () => import('./features/auth/login/login.component').then(m => m.LoginComponent),
   },
   {
+    path: 'proveedores/registro',
+    loadComponent: () => import('./features/providers/provider-register.component').then(m => m.ProviderRegisterComponent),
+  },
+  {
+    path: 'familias/caracterizacion',
+    loadComponent: () => import('./features/beneficiaries/family-characterization.component').then(m => m.FamilyCharacterizationComponent),
+  },
+  {
     path: '',
     loadComponent: () => import('./shared/layout/shell/shell.component').then(m => m.ShellComponent),
     canActivate: [authGuard],
@@ -60,14 +68,6 @@ export const routes: Routes = [
         data: { permission: 'beneficiarios:read' },
       },
     ],
-  },
-  {
-    path: 'proveedores/registro',
-    loadComponent: () => import('./features/providers/provider-register.component').then(m => m.ProviderRegisterComponent),
-  },
-  {
-    path: 'familias/caracterizacion',
-    loadComponent: () => import('./features/beneficiaries/family-characterization.component').then(m => m.FamilyCharacterizationComponent),
   },
   { path: '**', redirectTo: 'dashboard' },
 ];
