@@ -898,3 +898,32 @@ Before starting any work, read the last 15-20 lines to understand the latest cha
   - Próximos sprints pendientes del cliente: Sprint 5 (Shopify) y Sprint 6 (Wompi/PayU)
   - Pendiente menor: formulario de creación/edición de beneficiario (actualmente solo se pueden consultar)
   - Pendiente menor: pantalla de Ayudas propia (actualmente solo visible en el detalle del beneficiario)
+
+---
+
+## 2026-07-14 — Antigravity (AGY) — Sprint 4/5: Caracterización, Shopify Webhooks, Dashboard Premium y Limpieza de Git
+
+- **Task:** Crear formulario público de caracterización de familias, receptor y verificador de webhooks de Shopify con actualización automática de pagos, rediseñar el Dashboard con gráficas premium comparativas e independientes para Ventas y Donaciones, y reestructurar el repositorio ignorando archivos de datos locales.
+- **Files Modified/Created:**
+  - `backend/src/webhooks/webhooks.controller.ts` (NUEVO) — firma HMAC SHA256, idempotencia por ID de orden de Shopify, creación automática de clientes (`ClientDonor`), registro de órdenes e ítems con descuento de inventario, actualización de cobro automática a `paymentStatus: 'Pagado'`.
+  - `backend/src/webhooks/webhooks.module.ts` (NUEVO)
+  - `backend/src/main.ts` (modificado) — habilitación de `rawBody: true` en la inicialización de NestJS Express.
+  - `backend/src/app.module.ts` (modificado) — registro global del módulo `WebhooksModule`.
+  - `backend/src/dashboard/dashboard.service.ts` (modificado) — agrega conteo y suma de donaciones aprobadas en KPIs, agrupamiento de donaciones diarias en los últimos 30 días, ventas por categoría (top 5) y donaciones por pasarela de pago.
+  - `backend/src/orders/orders.controller.ts` y `orders.service.ts` (modificado) — agrega endpoint de actualización de estado de pago administrativo (`PUT /api/orders/:id/payment-status`).
+  - `frontend/src/app/core/services/dashboard.service.ts` (modificado) — actualiza la interfaz `DashboardStats` para soportar las nuevas variables de donaciones, pasarelas y categorías.
+  - `frontend/src/app/features/dashboard/dashboard.component.ts` (modificado) — cambia gráfica a línea dual (Ventas en Índigo vs Donaciones en Rosa) y añade dos gráficas nuevas: Categorías (top 5 barra horizontal) y Pasarelas de Pago (dona con tooltips COP).
+  - `frontend/src/app/features/dashboard/dashboard.component.html` (modificado) — tarjetas de KPI separadas para Ventas y Donaciones, markup HTML y skeletons de carga para las 4 gráficas.
+  - `frontend/src/app/features/clients/clients-list.component.html` (modificado) — agrega columnas independientes para contar "Pedidos" (Índigo) y "Donaciones" (Rosa) en la lista de clientes/donantes.
+  - `frontend/src/app/app.routes.ts` (modificado) — registra ruta pública `/familias/caracterizacion` para el formulario de familias.
+  - `frontend/src/app/features/beneficiaries/family-characterization.component.ts` (NUEVO) — wizard de caracterización en 5 pasos reactivos con validaciones.
+  - `frontend/src/app/features/beneficiaries/family-characterization.component.html` (NUEVO) — vista del wizard con branding de marca y animaciones de pasos.
+  - `.gitignore` (modificado) — ignora de forma general `.continue/`, `graphify-out/`, y todos los archivos `.xlsx`, `.xls`, `.docx`, `.dump` de cualquier carpeta.
+  - `/home/djfa/.gemini/antigravity-cli/brain/.../informe_avance_2026_07_14.md` (creado) — informe técnico detallado para reunión directiva de avance.
+- **Current Status:**
+  - ✅ Servidor local del backend y frontend compilando y recargando automáticamente con **0 errores**.
+  - ✅ Cambios confirmados y subidos limpiamente a la rama `main` de GitHub.
+- **Pending Tasks / Notes for next agent:**
+  - Restaurar el respaldo local `data/dataheart_backup.dump` en la base de datos de producción (`sc.danielflorez.dev`) usando la guía descrita en el informe de avance.
+  - Ejecutar el despliegue del código nuevo en producción (git pull + build del frontend/backend en el servidor).
+
