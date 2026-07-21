@@ -74,6 +74,10 @@ export const routes: Routes = [
         data: { permission: 'proveedores:read' },
       },
       {
+        path: 'shopify-test',
+        loadComponent: () => import('./features/webhooks/shopify-test.component').then(m => m.ShopifyTestComponent),
+      },
+      {
         path: 'historial-ayudas',
         loadComponent: () => import('./features/labor-social/historial-ayudas.component').then(m => m.HistorialAyudasComponent),
         canActivate: [permissionGuard],
