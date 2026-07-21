@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 # deploy_to_server.sh
-# Ejecuta este script desde tu terminal local para automatizar el despliegue y restauración.
+# Despliegue seguro a producción — NUNCA toca los datos de la base de datos.
+# Solo aplica migraciones de esquema (npx prisma migrate deploy).
+#
+# Uso:
+#   bash scripts/deploy_to_server.sh          # solo código + migraciones
+#   bash scripts/deploy_to_server.sh --seed   # + re-aplica seed de roles/permisos
 
 set -euo pipefail
 
@@ -9,49 +14,95 @@ BOLD='\033[1m'
 GREEN='\033[32m'
 YELLOW='\033[33m'
 CYAN='\033[36m'
+RED='\033[31m'
+
+RUN_SEED=false
+[[ "${1:-}" == "--seed" ]] && RUN_SEED=true
 
 echo -e "\n${BOLD}${CYAN}==========================================================${RESET}"
-echo -e "${BOLD}${CYAN}Desplegando DataHeartSC y restaurando Base de Datos...${RESET}"
-echo -e "${BOLD}${CYAN}==========================================================${RESET}\n"
+echo -e "${BOLD}${CYAN}  DataHeartSC — Despliegue a producción${RESET}"
+echo -e "${BOLD}${CYAN}==========================================================${RESET}"
+echo -e "  ${YELLOW}IMPORTANTE: Los datos de producción NO serán modificados.${RESET}"
+echo -e "  Solo se actualizará el código y se aplicarán migraciones de esquema.\n"
 
-# 1. Copiar base de datos por SCP al servidor
-echo -e "${YELLOW}1. Subiendo base de datos histórica (dataheart_backup.dump) al servidor...${RESET}"
-scp data/dataheart_backup.dump prod:/tmp/dataheart_backup.dump
+# ── 1. Backup automático de producción ────────────────────────
+echo -e "${YELLOW}1. Creando backup de la base de datos de producción...${RESET}"
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+ssh prod "
+  BACKUP_DIR=/opt/dataheart/backups
+  mkdir -p \$BACKUP_DIR
 
-# 2. Conectarse al servidor por SSH y ejecutar actualización + restauración
-echo -e "\n${YELLOW}2. Conectando al servidor por SSH para actualizar código y restaurar DB...${RESET}"
-ssh prod << 'EOF'
+  docker exec dataheart_postgres pg_dump \
+    -U dataheart -d dataheart_sc -Fc \
+    -f /tmp/dataheart_backup_${TIMESTAMP}.dump
+
+  docker cp dataheart_postgres:/tmp/dataheart_backup_${TIMESTAMP}.dump \
+    \$BACKUP_DIR/dataheart_backup_${TIMESTAMP}.dump
+
+  docker exec dataheart_postgres rm /tmp/dataheart_backup_${TIMESTAMP}.dump
+
+  # Conservar solo los últimos 7 backups
+  ls -t \$BACKUP_DIR/dataheart_backup_*.dump 2>/dev/null | tail -n +8 | xargs rm -f
+
+  echo '  Backup guardado en: '\$BACKUP_DIR/dataheart_backup_${TIMESTAMP}.dump
+"
+echo -e "${GREEN}  ✓ Backup creado en servidor: /opt/dataheart/backups/dataheart_backup_${TIMESTAMP}.dump${RESET}"
+
+# ── 2. Actualizar código y aplicar migraciones ─────────────────
+echo -e "\n${YELLOW}2. Actualizando código y compilando en el servidor...${RESET}"
+ssh prod << ENDSSH
   set -euo pipefail
-  
   cd /opt/dataheart
-  echo -e "\n--> 📥 Actualizando código desde GitHub (git pull)..."
+
+  echo "--> Actualizando código (git pull)..."
   git pull origin main
 
-  echo -e "\n--> ⚙️ Instalando dependencias y compilando el Backend..."
+  echo "--> Backend: instalando dependencias..."
   cd backend
   npm install
+
+  echo "--> Aplicando migraciones de esquema (los datos NO se tocan)..."
+  npx prisma migrate deploy
   npx prisma generate
+
+  echo "--> Compilando backend..."
   npm run build
-  
-  echo -e "\n--> 🔄 Reiniciando el proceso pm2 del backend..."
+
+  echo "--> Reiniciando proceso pm2..."
   pm2 restart dataheart-api || pm2 start dist/main.js --name "dataheart-api"
 
-  echo -e "\n--> ⚙️ Instalando dependencias y compilando el Frontend..."
+  echo "--> Frontend: instalando dependencias y compilando..."
   cd ../frontend
   npm install
   npm run build
+ENDSSH
 
-  echo -e "\n--> 🗄️ Copiando respaldo de DB al contenedor de Postgres..."
-  docker cp /tmp/dataheart_backup.dump dataheart_postgres:/tmp/dataheart_backup.dump
+# ── 3. Seed (opcional, solo con --seed) ───────────────────────
+if $RUN_SEED; then
+  echo -e "\n${YELLOW}3. Aplicando seed de roles y permisos (--seed activado)...${RESET}"
+  echo -e "   ${YELLOW}Nota: el seed es idempotente y NO borra usuarios ni datos operativos.${RESET}"
+  ssh prod "
+    cd /opt/dataheart/backend
+    npx ts-node --project tsconfig.json prisma/seed.ts
+  "
+  echo -e "${GREEN}  ✓ Seed de roles/permisos aplicado.${RESET}"
+fi
 
-  echo -e "\n--> 🗃️ Restaurando base de datos con pg_restore (limpiando tablas anteriores)..."
-  docker compose exec -T postgres pg_restore -U dataheart -d dataheart_sc -h localhost -p 5432 -v --clean --no-acl --no-owner /tmp/dataheart_backup.dump
-
-  echo -e "\n--> 🧹 Limpiando archivos temporales en el servidor..."
-  rm -f /tmp/dataheart_backup.dump
-  docker compose exec -T postgres rm -f /tmp/dataheart_backup.dump
-EOF
+# ── 4. Verificación final ──────────────────────────────────────
+echo -e "\n${YELLOW}4. Verificando estado del servidor...${RESET}"
+ssh prod "
+  pm2 list --no-color | grep -E 'dataheart|name'
+  echo ''
+  docker exec dataheart_postgres psql -U dataheart -d dataheart_sc -t -A -c \"
+    SELECT 'beneficiarios=' || COUNT(*) FROM beneficiaries
+    UNION ALL SELECT 'clientes=' || COUNT(*) FROM clients_donors
+    UNION ALL SELECT 'pedidos=' || COUNT(*) FROM orders
+    UNION ALL SELECT 'usuarios=' || COUNT(*) FROM users;
+  \" 2>/dev/null | sed 's/^/  /'
+"
 
 echo -e "\n${BOLD}${GREEN}==========================================================${RESET}"
-echo -e "${BOLD}${GREEN}¡Despliegue y restauración en el servidor completados!${RESET}"
-echo -e "${BOLD}${GREEN}==========================================================${RESET}\n"
+echo -e "${BOLD}${GREEN}  Despliegue completado. Los datos de producción están intactos.${RESET}"
+echo -e "${BOLD}${GREEN}==========================================================${RESET}"
+echo -e "  Backup de seguridad: /opt/dataheart/backups/dataheart_backup_${TIMESTAMP}.dump"
+echo -e "  Sitio: ${CYAN}https://sc.danielflorez.dev${RESET}\n"
