@@ -38,7 +38,7 @@ export class ClientsListComponent {
   });
 
   constructor() {
-    effect(() => { this.load(); });
+    effect(() => { this.load(); }, { allowSignalWrites: true });
   }
 
   load() {

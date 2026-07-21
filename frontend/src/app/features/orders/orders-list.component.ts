@@ -45,7 +45,7 @@ export class OrdersListComponent {
     this.route.queryParams.subscribe(p => {
       if (p['created']) this.createdId.set(p['created']);
     });
-    effect(() => { this.load(); });
+    effect(() => { this.load(); }, { allowSignalWrites: true });
   }
 
   load() {

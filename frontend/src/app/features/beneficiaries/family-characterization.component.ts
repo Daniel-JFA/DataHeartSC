@@ -231,7 +231,7 @@ export class FamilyCharacterizationComponent {
       } else {
         this.form.patchValue({ epsNoReason: '' });
       }
-    });
+    }, { allowSignalWrites: true });
 
     effect(() => {
       const hasSib = this.hasSiblingsOption();
@@ -239,14 +239,14 @@ export class FamilyCharacterizationComponent {
         this.siblingsList.set([]);
         this.form.patchValue({ numSiblings: 0 });
       }
-    });
+    }, { allowSignalWrites: true });
 
     effect(() => {
       const receivesSub = this.receivesGovSubsidyOption();
       if (receivesSub === 'NO') {
         this.form.patchValue({ govSubsidyType: '' });
       }
-    });
+    }, { allowSignalWrites: true });
   }
 
   setEpsOption(val: 'SI' | 'NO') {
