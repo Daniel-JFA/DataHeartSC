@@ -8,18 +8,14 @@
   <!-- ── Header ─────────────────────────────────────────────────── -->
   <header class="bg-white border-b border-slate-200 shadow-sm">
     <div class="max-w-4xl mx-auto px-6 py-4 flex items-center gap-3">
-      <div class="w-9 h-9 rounded-xl bg-rose-600 flex items-center justify-center flex-shrink-0">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 text-white">
-          <path d="M9.653 16.915l-.005-.003-.019-.01a20.759 20.759 0 01-1.162-.682 22.045 22.045 0 01-2.582-2.025C4.363 12.476 2.5 10.43 2.5 7.5a4.5 4.5 0 018.29-2.396A4.5 4.5 0 0117.5 7.5c0 2.93-1.863 4.976-3.385 6.195a22.045 22.045 0 01-2.582 2.025 20.759 20.759 0 01-1.162.682l-.019.01-.005.003h-.001l-.003.001-.002.001z" />
-        </svg>
-      </div>
+      <img src="SC.png" alt="Fundación Infantil Santiago Corazón"
+           class="w-auto h-12 object-contain flex-shrink-0" />
       <div>
         <p class="text-xs text-slate-500 leading-none">Fundación Infantil</p>
         <h1 class="text-sm font-bold text-slate-900 leading-tight">Santiago Corazón</h1>
       </div>
       <div class="ml-auto text-right hidden sm:block">
-        <p class="text-xs text-slate-400">Caracterización Social</p>
-        <p class="text-xs font-medium text-slate-600">Encuesta de Familias 2025</p>
+        <p class="text-xs font-medium text-slate-600">Encuesta de familias</p>
       </div>
     </div>
   </header>
@@ -46,21 +42,30 @@
             @for (n of [1, 2, 3, 4, 5]; track n) {
               @if (currentStep() > n) {
                 <!-- Completado -->
-                <div class="w-7 h-7 rounded-full bg-rose-600 flex items-center justify-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3 h-3 text-white">
+                <span class="relative inline-flex items-center justify-center w-8 h-8">
+                  <svg class="absolute inset-0 w-full h-full text-rose-600" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z"/>
+                  </svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="relative w-3 h-3 text-white">
                     <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
                   </svg>
-                </div>
+                </span>
               } @else if (currentStep() === n) {
                 <!-- Actual -->
-                <div class="w-7 h-7 rounded-full ring-2 ring-rose-600 bg-white flex items-center justify-center">
-                  <span class="text-xs font-bold text-rose-600">{{ n }}</span>
-                </div>
+                <span class="relative inline-flex items-center justify-center w-8 h-8">
+                  <svg class="absolute inset-0 w-full h-full text-rose-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+                  </svg>
+                  <span class="relative text-xs font-bold text-rose-600">{{ n }}</span>
+                </span>
               } @else {
                 <!-- Pendiente -->
-                <div class="w-7 h-7 rounded-full bg-slate-200 flex items-center justify-center">
-                  <span class="text-xs font-medium text-slate-400">{{ n }}</span>
-                </div>
+                <span class="relative inline-flex items-center justify-center w-8 h-8">
+                  <svg class="absolute inset-0 w-full h-full text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+                  </svg>
+                  <span class="relative text-xs font-medium text-slate-400">{{ n }}</span>
+                </span>
               }
             }
           </div>
@@ -116,14 +121,30 @@
                 </div>
                 <div>
                   <label class="block text-xs font-medium text-slate-700 mb-1">N° Documento de Identidad *</label>
-                  <input type="text" formControlName="docNumber" placeholder="Número de identificación"
-                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
+                  <div class="relative">
+                    <input type="text" formControlName="docNumber" placeholder="Número de identificación"
+                           (blur)="onDocNumberBlur()"
+                           class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500 pr-9">
+                    @if (lookupLoading()) {
+                      <div class="absolute right-2.5 top-1/2 -translate-y-1/2">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                             class="w-4 h-4 animate-pulse text-rose-500">
+                          <path d="M9.653 16.915l-.005-.003-.019-.01a20.759 20.759 0 01-1.162-.682 22.045 22.045 0 01-2.582-2.025C4.363 12.476 2.5 10.43 2.5 7.5a4.5 4.5 0 018.29-2.396A4.5 4.5 0 0117.5 7.5c0 2.93-1.863 4.976-3.385 6.195a22.045 22.045 0 01-2.582 2.025 20.759 20.759 0 01-1.162.682l-.019.01-.005.003h-.001l-.003.001-.002.001z"/>
+                        </svg>
+                      </div>
+                    }
+                  </div>
                 </div>
 
                 <div>
                   <label class="block text-xs font-medium text-slate-700 mb-1">Fecha de Nacimiento *</label>
                   <input type="date" formControlName="birthDate"
                          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
+                  @if (calcularEdad()) {
+                    <p class="mt-1 text-xs font-medium text-rose-600">
+                      Edad: {{ calcularEdad() }}
+                    </p>
+                  }
                 </div>
                 <div>
                   <label class="block text-xs font-medium text-slate-700 mb-1">Género del Niño(a) *</label>
@@ -168,17 +189,52 @@
                          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
                 </div>
                 <div>
-                  <label class="block text-xs font-medium text-slate-700 mb-1">Ciudad / Municipio *</label>
-                  <input type="text" formControlName="city" placeholder="Ej: Medellín"
-                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Departamento *</label>
+                  <select formControlName="department"
+                          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
+                    <option value="">— Seleccione —</option>
+                    @for (d of COLOMBIA_DEPTOS; track d.value) {
+                      <option [value]="d.value">{{ d.label }}</option>
+                    }
+                  </select>
                 </div>
                 <div>
-                  <label class="block text-xs font-medium text-slate-700 mb-1">Departamento *</label>
-                  <input type="text" formControlName="department" placeholder="Ej: Antioquia"
-                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Ciudad / Municipio *</label>
+                  <select formControlName="city"
+                          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
+                          [disabled]="ciudadesResidencia().length === 0">
+                    <option value="">— Seleccione departamento primero —</option>
+                    @for (c of ciudadesResidencia(); track c) {
+                      <option [value]="c">{{ c }}</option>
+                    }
+                  </select>
                 </div>
               </div>
             </section>
+
+            <!-- ── Banner: niño encontrado en el sistema ── -->
+            @if (existingBeneficiary()) {
+              <div class="rounded-xl border border-emerald-300 bg-emerald-50 px-5 py-4 flex items-start gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                     class="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd"/>
+                </svg>
+                <div>
+                  <p class="text-sm font-semibold text-emerald-800">
+                    ¡Encontramos a {{ existingBeneficiary().firstName }} {{ existingBeneficiary().lastName }} en nuestro sistema!
+                  </p>
+                  <p class="text-xs text-emerald-700 mt-0.5">
+                    Ya cargamos la información que tenemos. Revisa y actualiza lo que haya cambiado, luego envía el formulario.
+                  </p>
+                  @if (existingBeneficiary().ayudas?.length > 0) {
+                    <p class="text-xs text-emerald-600 mt-1 font-medium">
+                      Este niño tiene {{ existingBeneficiary().ayudas.length }} ayuda(s) registrada(s) en el sistema.
+                    </p>
+                  }
+                </div>
+              </div>
+            }
+
           }
 
           <!-- ════════════════════════════════════════
@@ -315,7 +371,7 @@
                          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
                 </div>
                 <div>
-                  <label class="block text-xs font-medium text-slate-700 mb-1">Número de Contacto *</label>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Número Celular de Contacto *</label>
                   <input type="text" formControlName="motherPhone" placeholder="Teléfono"
                          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
                 </div>
@@ -377,7 +433,7 @@
                          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
                 </div>
                 <div>
-                  <label class="block text-xs font-medium text-slate-700 mb-1">Número de Contacto</label>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Número Celular de Contacto</label>
                   <input type="text" formControlName="fatherPhone" placeholder="Teléfono"
                          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
                 </div>
@@ -445,7 +501,7 @@
                          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
                 </div>
                 <div>
-                  <label class="block text-xs font-medium text-slate-700 mb-1">Número de Contacto *</label>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Número Celular de Contacto *</label>
                   <input type="text" formControlName="caregiverPhone" placeholder="Teléfono del cuidador"
                          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
                 </div>
@@ -668,8 +724,16 @@
               </button>
             } @else {
               <button type="submit" [disabled]="loading()"
-                      class="px-8 py-2.5 bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white text-sm font-bold rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
-                @if (loading()) { Enviando... } @else { Finalizar y Enviar }
+                      class="flex items-center gap-2 px-8 py-2.5 bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white text-sm font-bold rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+                @if (loading()) {
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                       class="w-4 h-4 animate-pulse">
+                    <path d="M9.653 16.915l-.005-.003-.019-.01a20.759 20.759 0 01-1.162-.682 22.045 22.045 0 01-2.582-2.025C4.363 12.476 2.5 10.43 2.5 7.5a4.5 4.5 0 018.29-2.396A4.5 4.5 0 0117.5 7.5c0 2.93-1.863 4.976-3.385 6.195a22.045 22.045 0 01-2.582 2.025 20.759 20.759 0 01-1.162.682l-.019.01-.005.003h-.001l-.003.001-.002.001z"/>
+                  </svg>
+                  Enviando...
+                } @else {
+                  Finalizar y Enviar
+                }
               </button>
             }
           </div>
@@ -685,10 +749,17 @@
               <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.74-5.24z" clip-rule="evenodd" />
             </svg>
           </div>
-          <h2 class="text-2xl font-bold text-slate-900 mb-3">¡Registro Recibido con Éxito!</h2>
+          <h2 class="text-2xl font-bold text-slate-900 mb-3">
+            @if (isUpdateMode()) { ¡Información Actualizada con Éxito! } @else { ¡Registro Recibido con Éxito! }
+          </h2>
           <p class="text-sm text-slate-500 leading-relaxed mb-6">
-            La encuesta de caracterización de su familia ha sido enviada correctamente al sistema centralizado de la **Fundación Infantil Santiago Corazón**. 
-            El equipo de trabajo social revisará los datos cargados y se pondrá en contacto con ustedes. 
+            @if (isUpdateMode()) {
+              La información de <strong>{{ existingBeneficiary()?.firstName }} {{ existingBeneficiary()?.lastName }}</strong>
+              ha sido actualizada en el sistema de la Fundación Infantil Santiago Corazón.
+            } @else {
+              La encuesta de caracterización de su familia ha sido enviada correctamente al sistema centralizado de la Fundación Infantil Santiago Corazón.
+              El equipo de trabajo social revisará los datos cargados y se pondrá en contacto con ustedes.
+            }
           </p>
           <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl text-xs text-slate-600 text-left space-y-1 max-w-md mx-auto">
             <p><strong class="text-slate-800">¿Qué sigue ahora?</strong></p>

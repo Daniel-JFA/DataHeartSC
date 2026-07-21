@@ -927,3 +927,91 @@ Before starting any work, read the last 15-20 lines to understand the latest cha
   - Restaurar el respaldo local `data/dataheart_backup.dump` en la base de datos de producción (`sc.danielflorez.dev`) usando la guía descrita en el informe de avance.
   - Ejecutar el despliegue del código nuevo en producción (git pull + build del frontend/backend en el servidor).
 
+
+---
+
+## 2026-07-17 — Claude — Mejoras UX formulario de proveedores (SAGRILAFT)
+
+- **Task:** Aplicar 4 mejoras solicitadas por el cliente al formulario de registro de proveedores.
+- **Files Modified:**
+  - `frontend/src/app/features/providers/provider-register.component.ts` — lista de departamentos/ciudades de Colombia (32 deptos + principales ciudades), lista de bancos colombianos, señales reactivas `deptoNatural/deptoEmpresa/deptoRepLegal` con computed `ciudadesNatural/ciudadesEmpresa/ciudadesRepLegal`, `usarDatosNatural` signal, método `copiarDatosNatural()`, campo `nombreBanco` en el formulario, `cedulaCC` en archivos, suscripciones a `valueChanges` de departamentos en constructor.
+  - `frontend/src/app/features/providers/provider-register.component.html` — (1) Departamento y ciudad convertidos a `<select>` cascading en los 3 lugares: persona natural, empresa jurídica y representante legal. (2) Checkbox "Usar mis datos de persona natural" en header de sección facturación (solo visible en modo NATURAL). (3) Campo select "Nombre del banco" antes de tipo de cuenta. (4) Upload de cédula de ciudadanía en documentos requeridos (label dinámico: "Cédula de ciudadanía" para PN, "Cédula del representante legal" para PJ).
+- **Current Status:**
+  - ✅ `npm run build --configuration=development` → 0 errores
+- **Pending Tasks / Notes for next agent:**
+  - Pendiente despliegue en producción (sc.danielflorez.dev)
+  - Pendiente backend: procesar el nuevo campo `cedulaCC` (archivo) y `nombreBanco` en `providers.controller.ts`
+
+---
+
+## 2026-07-17 — Claude — Lookup automático y modo actualización en formulario de beneficiarios
+
+- **Task:** (1) Al ingresar el número de identidad de un niño ya existente, pre-rellenar todo el formulario con la info que hay en BD y permitir actualizarla. (2) Quitar límite de 10 ayudas en el histórico del detalle.
+- **Files Modified:**
+  - `backend/src/beneficiaries/beneficiaries.controller.ts` — nuevo endpoint público `GET /beneficiaries/public-lookup?docNumber=` y nuevo endpoint `PUT /beneficiaries/public-update/:id` (ambos sin JWT).
+  - `backend/src/beneficiaries/beneficiaries.service.ts` — nuevo método `findByDocNumber()` con select completo de todos los campos del beneficiario + sus ayudas. También se eliminó `take: 10` de `findOne()` para mostrar histórico completo de ayudas.
+  - `frontend/src/app/features/beneficiaries/family-characterization.component.ts` — señales `lookupLoading`, `existingBeneficiary`, `isUpdateMode`; métodos `onDocNumberBlur()` y `prefillForm()`; `submit()` usa PUT si ya existe el registro.
+  - `frontend/src/app/features/beneficiaries/family-characterization.component.html` — spinner inline en el campo docNumber, banner verde "encontramos al niño" con cantidad de ayudas previas, mensaje de éxito dinámico (creación vs actualización).
+- **Current Status:**
+  - ✅ Frontend build 0 errores
+  - ✅ Backend build 0 errores
+- **Pending Tasks / Notes for next agent:**
+  - Pendiente despliegue en producción (sc.danielflorez.dev)
+
+---
+
+## 2026-07-17 — Claude — Actualización matriz de roles v2 (Jul 2026)
+
+- **Task:** Actualizar roles y permisos según nueva matriz de accesos entregada por la directiva.
+- **Files Modified:**
+  - `backend/prisma/seed.ts` — (1) Actualización de descripciones de roles con nombres reales. (2) Tabla de mapeo ROLE_PERMISSIONS actualizada: único cambio real fue LIDER_CLIENTES_BENEFACTORES (Paula): pierde voluntarios:read+write, gana beneficiarios:read+write. (3) Seed ahora hace deleteMany antes de recrear permisos por rol → garantiza que permisos ELIMINADOS de la matriz realmente desaparezcan de la BD (antes solo hacía upsert).
+- **Seed ejecutado exitosamente en DB local:** 69 mappings rol→permiso re-creados
+- **Pending Tasks / Notes for next agent:**
+  - Ejecutar este mismo seed en producción: `cd backend && npx ts-node --project tsconfig.json prisma/seed.ts`
+  - Pendiente despliegue general en sc.danielflorez.dev
+
+---
+
+## 2026-07-17 — Claude — Dashboard ayudas charts + sidebar líneas + fixes varios
+
+- **Task:** Múltiples mejoras en UI/UX: (1) imágenes PNG en formularios, (2) indicadores de pasos en corazones, (3) fix race condition en búsqueda de beneficiarios, (4) mostrar justificación en detalle de ayudas, (5) gráficas de ayudas en dashboard, (6) 3 nuevos módulos en sidebar.
+- **Files Modified:**
+  - `frontend/public/SC.png` — imagen copiada a directorio público (Angular sirve desde `public/`, no `src/assets/`)
+  - `frontend/src/app/features/beneficiaries/family-characterization.component.html` — PNG, corazones rose-600 como step indicators
+  - `frontend/src/app/features/providers/provider-register.component.html` — PNG, corazones rose-600 (igualados con family-characterization)
+  - `frontend/src/app/features/beneficiaries/beneficiaries-list.component.ts` — Fix race condition: reemplazado `effect()` por `Subject + debounceTime(300) + switchMap` para cancelar requests stale
+  - `frontend/src/app/features/beneficiaries/beneficiary-detail.component.html` — Columna Justificación en tabla de ayudas, header con conteo y total
+  - `frontend/src/app/core/services/beneficiaries.service.ts` — `justificacion?: string` en interfaz `AyudaSummary`
+  - `backend/src/beneficiaries/beneficiaries.service.ts` — `justificacion: true` en select de ayudas en `findOne()`
+  - `backend/src/dashboard/dashboard.service.ts` — Queries para totalAyudas, totalAyudasValor, ayudasPorTipo (groupBy tipoSolicitud), ayudasPorMes (últimos 12 meses)
+  - `frontend/src/app/core/services/dashboard.service.ts` — Interfaz `DashboardStats` actualizada con totalAyudas, totalAyudasValor, ayudasPorTipo, ayudasPorMes
+  - `frontend/src/app/features/dashboard/dashboard.component.ts` — Dos nuevos charts: horizontal bar (ayudasPorTipo) y dual-axis line (ayudasPorMes); fix TS2769 null check en tooltip
+  - `frontend/src/app/features/dashboard/dashboard.component.html` — 2 KPI cards (Total Ayudas, Valor en Ayudas) + 2 canvas charts (ayudasTipoChart, ayudasMesChart)
+  - `frontend/src/app/shared/layout/shell/shell.component.html` — Sección "Líneas Estratégicas" con 3 links: /linea-financiera, /linea-labor-social, /linea-comunicaciones
+- **Current Status:**
+  - ✅ Frontend build 0 errores
+- **Pending Tasks / Notes for next agent:**
+  - Las 3 rutas de Líneas Estratégicas son stubs — crear componentes y rutas en `app.routes.ts`
+  - Pendiente despliegue en producción (sc.danielflorez.dev)
+
+---
+
+## 2026-07-21 — Claude — Rutas y componentes stub para sidebar completo
+
+- **Task:** Crear componentes y rutas faltantes para todas las entradas del sidebar que apuntaban a rutas inexistentes (causaban 404/redirect al dashboard).
+- **Files Modified:**
+  - `frontend/src/app/app.routes.ts` — 8 nuevas rutas bajo el shell protegido: `providers`, `historial-ayudas`, `sala-ludica`, `voluntarios`, `historial-apoyos-voluntarios`, `segmentacion`, `listas-difusion`, `mailing-masivo`
+  - `frontend/src/app/features/providers/providers-list.component.ts` — nuevo stub con botón de acceso rápido a `/proveedores/registro`
+  - `frontend/src/app/features/labor-social/historial-ayudas.component.ts` — stub
+  - `frontend/src/app/features/labor-social/sala-ludica.component.ts` — stub
+  - `frontend/src/app/features/labor-social/voluntarios.component.ts` — stub
+  - `frontend/src/app/features/labor-social/historial-apoyos-voluntarios.component.ts` — stub
+  - `frontend/src/app/features/comunicaciones/segmentacion.component.ts` — stub
+  - `frontend/src/app/features/comunicaciones/listas-difusion.component.ts` — stub
+  - `frontend/src/app/features/comunicaciones/mailing-masivo.component.ts` — stub
+- **Current Status:**
+  - ✅ Frontend build 0 errores (3.153 s)
+  - Todos los links del sidebar ya navegan correctamente sin redirigir al dashboard
+- **Pending Tasks / Notes for next agent:**
+  - Implementar contenido real en cada módulo stub según prioridad de la fundación
+  - Pendiente despliegue en producción (sc.danielflorez.dev)

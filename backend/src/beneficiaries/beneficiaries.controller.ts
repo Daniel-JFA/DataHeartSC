@@ -14,11 +14,22 @@ import { RequirePermission } from '../auth/require-permission.decorator';
 export class BeneficiariesController {
   constructor(private beneficiariesService: BeneficiariesService) {}
 
+  /** Lookup público por número de documento — sin autenticación */
+  @Get('public-lookup')
+  publicLookup(@Query('docNumber') docNumber: string) {
+    return this.beneficiariesService.findByDocNumber(docNumber);
+  }
+
   /** Registro público — sin autenticación */
   @Post('public-register')
   publicRegister(@Body() dto: CreateBeneficiaryDto) {
-    // Registra al beneficiario directamente como "Activo" por defecto (se mapea en el servicio)
     return this.beneficiariesService.create(dto);
+  }
+
+  /** Actualización pública (formulario de caracterización) — sin autenticación */
+  @Put('public-update/:id')
+  publicUpdate(@Param('id') id: string, @Body() dto: UpdateBeneficiaryDto) {
+    return this.beneficiariesService.update(id, dto);
   }
 
   @Get('stats')

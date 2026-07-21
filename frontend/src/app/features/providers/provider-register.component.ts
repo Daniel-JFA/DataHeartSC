@@ -1,9 +1,52 @@
-import { Component, inject, signal, effect } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 
 type Step = 'form' | 'success' | 'error';
+
+const COLOMBIA_DEPTOS: { value: string; label: string; ciudades: string[] }[] = [
+  { value: 'AMAZONAS', label: 'Amazonas', ciudades: ['Leticia', 'Puerto Nariño'] },
+  { value: 'ANTIOQUIA', label: 'Antioquia', ciudades: ['Medellín', 'Bello', 'Itagüí', 'Envigado', 'Sabaneta', 'Rionegro', 'Apartadó', 'Turbo', 'Caucasia', 'La Ceja', 'Caldas', 'Copacabana', 'Girardota', 'Barbosa'] },
+  { value: 'ARAUCA', label: 'Arauca', ciudades: ['Arauca', 'Saravena', 'Tame', 'Arauquita'] },
+  { value: 'ATLANTICO', label: 'Atlántico', ciudades: ['Barranquilla', 'Soledad', 'Malambo', 'Sabanalarga', 'Baranoa'] },
+  { value: 'BOGOTA', label: 'Bogotá D.C.', ciudades: ['Bogotá'] },
+  { value: 'BOLIVAR', label: 'Bolívar', ciudades: ['Cartagena', 'Magangué', 'Mompox', 'El Carmen de Bolívar'] },
+  { value: 'BOYACA', label: 'Boyacá', ciudades: ['Tunja', 'Duitama', 'Sogamoso', 'Chiquinquirá', 'Paipa'] },
+  { value: 'CALDAS', label: 'Caldas', ciudades: ['Manizales', 'Villamaría', 'La Dorada', 'Chinchiná', 'Riosucio'] },
+  { value: 'CAQUETA', label: 'Caquetá', ciudades: ['Florencia', 'San Vicente del Caguán', 'Puerto Rico', 'El Paujil'] },
+  { value: 'CASANARE', label: 'Casanare', ciudades: ['Yopal', 'Aguazul', 'Villanueva', 'Tauramena', 'Monterrey'] },
+  { value: 'CAUCA', label: 'Cauca', ciudades: ['Popayán', 'Santander de Quilichao', 'Puerto Tejada', 'Corinto', 'Miranda'] },
+  { value: 'CESAR', label: 'Cesar', ciudades: ['Valledupar', 'Aguachica', 'Agustín Codazzi', 'La Paz'] },
+  { value: 'CHOCO', label: 'Chocó', ciudades: ['Quibdó', 'Istmina', 'Condoto', 'Riosucio'] },
+  { value: 'CORDOBA', label: 'Córdoba', ciudades: ['Montería', 'Lorica', 'Sahagún', 'Cereté', 'Planeta Rica'] },
+  { value: 'CUNDINAMARCA', label: 'Cundinamarca', ciudades: ['Soacha', 'Facatativá', 'Zipaquirá', 'Chía', 'Fusagasugá', 'Girardot', 'Madrid', 'Mosquera', 'Cajicá', 'Tocancipá'] },
+  { value: 'GUAINIA', label: 'Guainía', ciudades: ['Inírida'] },
+  { value: 'GUAVIARE', label: 'Guaviare', ciudades: ['San José del Guaviare', 'El Retorno', 'Calamar'] },
+  { value: 'HUILA', label: 'Huila', ciudades: ['Neiva', 'Pitalito', 'Garzón', 'La Plata', 'Campoalegre'] },
+  { value: 'LA_GUAJIRA', label: 'La Guajira', ciudades: ['Riohacha', 'Maicao', 'Uribia', 'Manaure'] },
+  { value: 'MAGDALENA', label: 'Magdalena', ciudades: ['Santa Marta', 'Ciénaga', 'Fundación', 'Plato', 'El Banco'] },
+  { value: 'META', label: 'Meta', ciudades: ['Villavicencio', 'Acacías', 'Granada', 'La Macarena', 'Puerto López'] },
+  { value: 'NARINO', label: 'Nariño', ciudades: ['Pasto', 'Tumaco', 'Ipiales', 'La Unión', 'Samaniego'] },
+  { value: 'NORTE_SANTANDER', label: 'Norte de Santander', ciudades: ['Cúcuta', 'Ocaña', 'Pamplona', 'Tibú', 'Villa del Rosario'] },
+  { value: 'PUTUMAYO', label: 'Putumayo', ciudades: ['Mocoa', 'Puerto Asís', 'Orito', 'Valle del Guamuez'] },
+  { value: 'QUINDIO', label: 'Quindío', ciudades: ['Armenia', 'Calarcá', 'Montenegro', 'Quimbaya', 'La Tebaida'] },
+  { value: 'RISARALDA', label: 'Risaralda', ciudades: ['Pereira', 'Dosquebradas', 'Santa Rosa de Cabal', 'La Virginia'] },
+  { value: 'SAN_ANDRES', label: 'San Andrés y Providencia', ciudades: ['San Andrés', 'Providencia'] },
+  { value: 'SANTANDER', label: 'Santander', ciudades: ['Bucaramanga', 'Floridablanca', 'Girón', 'Piedecuesta', 'Barrancabermeja', 'Socorro'] },
+  { value: 'SUCRE', label: 'Sucre', ciudades: ['Sincelejo', 'Corozal', 'Sampués', 'Toluviejo'] },
+  { value: 'TOLIMA', label: 'Tolima', ciudades: ['Ibagué', 'Espinal', 'Melgar', 'Honda', 'Chaparral'] },
+  { value: 'VALLE_CAUCA', label: 'Valle del Cauca', ciudades: ['Cali', 'Buenaventura', 'Palmira', 'Tuluá', 'Buga', 'Cartago', 'Yumbo', 'Jamundí', 'Florida', 'Candelaria'] },
+  { value: 'VAUPES', label: 'Vaupés', ciudades: ['Mitú'] },
+  { value: 'VICHADA', label: 'Vichada', ciudades: ['Puerto Carreño', 'La Primavera'] },
+];
+
+const BANCOS_COLOMBIA = [
+  'Bancolombia', 'Banco de Bogotá', 'Davivienda', 'BBVA Colombia', 'Banco Popular',
+  'Banco de Occidente', 'Banco AV Villas', 'Banco Caja Social', 'Banco Agrario de Colombia',
+  'Banco Falabella', 'Banco Pichincha', 'Nequi', 'Daviplata', 'Bancamía',
+  'Banco W', 'Itaú', 'Scotiabank Colpatria', 'Banco Cooperativo Coopcentral', 'Otro',
+];
 
 const ACTIVIDADES = [
   { value: 'COMERCIAL',     label: 'Comercial' },
@@ -50,20 +93,36 @@ export class ProviderRegisterComponent {
   actividadTipoSelected = signal<string[]>([]);
   formaPagoSelected     = signal<string[]>([]);
 
-  readonly ACTIVIDADES = ACTIVIDADES;
-  readonly FORMAS_PAGO = FORMAS_PAGO;
+  readonly ACTIVIDADES      = ACTIVIDADES;
+  readonly FORMAS_PAGO      = FORMAS_PAGO;
+  readonly COLOMBIA_DEPTOS  = COLOMBIA_DEPTOS;
+  readonly BANCOS_COLOMBIA  = BANCOS_COLOMBIA;
+
+  // Departamento seleccionado por sección → para filtrar ciudades
+  deptoNatural  = signal('');
+  deptoEmpresa  = signal('');
+  deptoRepLegal = signal('');
+
+  ciudadesNatural  = computed(() => COLOMBIA_DEPTOS.find(d => d.value === this.deptoNatural())?.ciudades  ?? []);
+  ciudadesEmpresa  = computed(() => COLOMBIA_DEPTOS.find(d => d.value === this.deptoEmpresa())?.ciudades  ?? []);
+  ciudadesRepLegal = computed(() => COLOMBIA_DEPTOS.find(d => d.value === this.deptoRepLegal())?.ciudades ?? []);
+
+  // Checkbox: copiar datos de persona natural en facturación
+  usarDatosNatural = signal(false);
 
   // Archivos seleccionados
   files: Record<string, File | null> = {
     rut:            null,
     camaraComercio: null,
     certBancaria:   null,
+    cedulaCC:       null,
   };
 
   fileNames: Record<string, string> = {
     rut:            '',
     camaraComercio: '',
     certBancaria:   '',
+    cedulaCC:       '',
   };
 
   form = this.fb.group({
@@ -121,6 +180,7 @@ export class ProviderRegisterComponent {
     codigoCIIU:                 [''],
     descripcionActividad:       [''],
     // Sección 6
+    nombreBanco:                [''],
     tipoCuenta:                 ['AHORROS'],
     numeroCuenta:               [''],
     diasPago:                   [''],
@@ -169,16 +229,22 @@ export class ProviderRegisterComponent {
   });
 
   constructor() {
-    // Sync naturaleza signal with form control
-    effect(() => {
-      const current = this.form.get('naturaleza')?.value as 'NATURAL' | 'JURIDICA';
-      if (current && current !== this.naturaleza()) {
-        // handled by valueChanges subscription below
-      }
-    });
-
     this.form.get('naturaleza')?.valueChanges.subscribe(v => {
       this.naturaleza.set((v as 'NATURAL' | 'JURIDICA') ?? 'NATURAL');
+    });
+
+    // Cascading departamento → ciudades
+    this.form.get('departamentoResidencia')?.valueChanges.subscribe(v => {
+      this.deptoNatural.set(v ?? '');
+      this.form.get('ciudadResidencia')?.setValue('');
+    });
+    this.form.get('department')?.valueChanges.subscribe(v => {
+      this.deptoEmpresa.set(v ?? '');
+      this.form.get('city')?.setValue('');
+    });
+    this.form.get('repDepartamento')?.valueChanges.subscribe(v => {
+      this.deptoRepLegal.set(v ?? '');
+      this.form.get('repCiudad')?.setValue('');
     });
   }
 
@@ -203,6 +269,20 @@ export class ProviderRegisterComponent {
 
   isActividadSelected(val: string): boolean {
     return this.actividadTipoSelected().includes(val);
+  }
+
+  copiarDatosNatural(checked: boolean) {
+    this.usarDatosNatural.set(checked);
+    if (!checked) return;
+    const v = this.form.value;
+    const nombre = [v.primerNombre, v.segundoNombre, v.primerApellido, v.segundoApellido]
+      .filter(Boolean).join(' ').replace(/\s+/g, ' ').trim();
+    this.form.patchValue({
+      factNombre:   nombre,
+      factCelular:  v.phone            ?? '',
+      factTelefono: v.telefonoDomicilio ?? '',
+      factEmail:    v.email            ?? '',
+    });
   }
 
   toggleFormaPago(val: string) {
@@ -393,6 +473,7 @@ export class ProviderRegisterComponent {
     fd.append('descripcionActividad', v.descripcionActividad ?? '');
     // Sección 6
     fd.append('formaPago',   JSON.stringify(this.formaPagoSelected()));
+    fd.append('nombreBanco', v.nombreBanco  ?? '');
     fd.append('tipoCuenta',  v.tipoCuenta  ?? '');
     fd.append('numeroCuenta', v.numeroCuenta ?? '');
     fd.append('diasPago',    v.diasPago    ?? '');
@@ -443,6 +524,7 @@ export class ProviderRegisterComponent {
     if (this.files['rut'])            fd.append('rut',            this.files['rut']!);
     if (this.files['camaraComercio']) fd.append('camaraComercio', this.files['camaraComercio']!);
     if (this.files['certBancaria'])   fd.append('certBancaria',   this.files['certBancaria']!);
+    if (this.files['cedulaCC'])       fd.append('cedulaCC',       this.files['cedulaCC']!);
 
     this.http.post(`${environment.apiUrl}/providers/register`, fd).subscribe({
       next:  () => { this.step.set('success'); this.loading.set(false); },

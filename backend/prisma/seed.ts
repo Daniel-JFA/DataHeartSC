@@ -24,35 +24,50 @@ const PERMISSIONS = [
   { keyName: 'dashboards:write',        name: 'Gestionar dashboards y reportes' },
 ];
 
-// ─── Roles reales de la Fundación (Matriz de Accesos) ────────────────────────
+// ─── Roles reales de la Fundación (Matriz de Accesos v2 — Jul 2026) ──────────
 const ROLES = [
-  { name: 'DIRECTORA',                  description: 'Directora de la fundación — solo lectura global' },
-  { name: 'LIDER_DATA_HEART',           description: 'Líder Data Heart — acceso total a todos los módulos' },
-  { name: 'ASISTENTE_CONTABLE',         description: 'Asistente Contable — finanzas, inventario y beneficiarios (lectura)' },
-  { name: 'CONTADORA',                  description: 'Contadora — finanzas e inventario únicamente' },
-  { name: 'LIDER_CLIENTES_BENEFACTORES',description: 'Líder Atención Clientes y Benefactores — ventas, facturación, voluntarios' },
-  { name: 'LIDER_ATENCION_FAMILIAS',    description: 'Líder Atención Familias — ventas, beneficiarios, inventario' },
-  { name: 'LIDER_COMUNICACIONES',       description: 'Líder Comunicaciones — segmentación CRM, lectura ventas y beneficiarios' },
+  { name: 'DIRECTORA',                  description: 'Luisa Fernanda Muriel — solo lectura global en todos los módulos' },
+  { name: 'LIDER_DATA_HEART',           description: 'Ana Maria Betancourt — acceso total a todos los módulos' },
+  { name: 'ASISTENTE_CONTABLE',         description: 'Alejandra Betancur — ventas, facturación, inventario (total) + beneficiarios y dashboards (lectura)' },
+  { name: 'CONTADORA',                  description: 'Doris Giraldo — ventas, facturación e inventario (acceso total)' },
+  { name: 'LIDER_CLIENTES_BENEFACTORES',description: 'Paula Gómez — ventas, facturación y beneficiarios (total) + dashboards (lectura)' },
+  { name: 'LIDER_ATENCION_FAMILIAS',    description: 'Marcela Gallego — ventas, inventario y beneficiarios (total) + dashboards (lectura)' },
+  { name: 'LIDER_COMUNICACIONES',       description: 'Megan David — segmentación CRM (total) + ventas, beneficiarios, voluntarios y dashboards (lectura)' },
   // Roles técnicos heredados (se conservan para compatibilidad con el admin inicial)
   { name: 'Admin',    description: 'Administrador del sistema' },
   { name: 'Operador', description: 'Personal operativo' },
   { name: 'Contador', description: 'Acceso contable y exportaciones' },
 ];
 
-// ─── Mapeo rol → permisos (según Matriz de Accesos - Roles.jpeg) ─────────────
+// ─── Mapeo rol → permisos (Matriz de Accesos v2 — Jul 2026) ─────────────────
+//
+// Módulo                    DIRECTORA  DATA_HEART  ASIST_CONT  CONTADORA  CLIENTES  FAMILIAS  COMUNICACIONES
+// Ventas y Donaciones       R          R+W         R+W         R+W        R+W       R+W       R
+// Facturación y Recibos     R          R+W         R+W         R+W        R+W       —         —
+// Proveedores e Inventario  R          R+W         R+W         R+W        —         R+W       —
+// Módulo Beneficiarios      R          R+W         R           —          R+W       R+W       R
+// Módulo Voluntarios        R          R+W         —           —          —         —         R
+// Dashboards y Reportes     R          R+W         R           —          R         R         R
+// Segmentación CRM          R          R+W         —           —          —         —         R+W
+//
 const ROLE_PERMISSIONS: Record<string, string[]> = {
   DIRECTORA: [
-    'ventas_donaciones:read', 'facturacion:read', 'segmentacion:read',
-    'beneficiarios:read', 'voluntarios:read', 'inventario:read', 'dashboards:read',
+    'ventas_donaciones:read',
+    'facturacion:read',
+    'inventario:read',
+    'beneficiarios:read',
+    'voluntarios:read',
+    'dashboards:read',
+    'segmentacion:read',
   ],
   LIDER_DATA_HEART: [
     'ventas_donaciones:read', 'ventas_donaciones:write',
     'facturacion:read',       'facturacion:write',
-    'segmentacion:read',      'segmentacion:write',
+    'inventario:read',        'inventario:write',
     'beneficiarios:read',     'beneficiarios:write',
     'voluntarios:read',       'voluntarios:write',
-    'inventario:read',        'inventario:write',
     'dashboards:read',        'dashboards:write',
+    'segmentacion:read',      'segmentacion:write',
   ],
   ASISTENTE_CONTABLE: [
     'ventas_donaciones:read', 'ventas_donaciones:write',
@@ -66,10 +81,11 @@ const ROLE_PERMISSIONS: Record<string, string[]> = {
     'facturacion:read',       'facturacion:write',
     'inventario:read',        'inventario:write',
   ],
+  // CAMBIO v2: Paula pierde Voluntarios, gana Beneficiarios (total)
   LIDER_CLIENTES_BENEFACTORES: [
     'ventas_donaciones:read', 'ventas_donaciones:write',
     'facturacion:read',       'facturacion:write',
-    'voluntarios:read',       'voluntarios:write',
+    'beneficiarios:read',     'beneficiarios:write',
     'dashboards:read',
   ],
   LIDER_ATENCION_FAMILIAS: [
@@ -85,15 +101,15 @@ const ROLE_PERMISSIONS: Record<string, string[]> = {
     'voluntarios:read',
     'dashboards:read',
   ],
-  // Admin heredado: acceso total (igual que LIDER_DATA_HEART)
+  // Admin heredado: acceso total
   Admin: [
     'ventas_donaciones:read', 'ventas_donaciones:write',
     'facturacion:read',       'facturacion:write',
-    'segmentacion:read',      'segmentacion:write',
+    'inventario:read',        'inventario:write',
     'beneficiarios:read',     'beneficiarios:write',
     'voluntarios:read',       'voluntarios:write',
-    'inventario:read',        'inventario:write',
     'dashboards:read',        'dashboards:write',
+    'segmentacion:read',      'segmentacion:write',
   ],
 };
 
@@ -135,23 +151,21 @@ async function main() {
   }
   console.log(`✅ ${ROLES.length} roles upsertados`);
 
-  // 3. Mapear rol → permisos (upsert en role_permissions)
+  // 3. Limpiar y re-crear mapeos rol → permisos (delete+create = idempotente real)
   let mappingCount = 0;
   for (const [roleName, permKeys] of Object.entries(ROLE_PERMISSIONS)) {
     const roleId = roleMap[roleName];
     if (!roleId) continue;
+    // Borra todos los permisos actuales del rol antes de re-asignar
+    await prisma.rolePermission.deleteMany({ where: { roleId } });
     for (const key of permKeys) {
       const permissionId = permMap[key];
       if (!permissionId) continue;
-      await prisma.rolePermission.upsert({
-        where: { roleId_permissionId: { roleId, permissionId } },
-        update: {},
-        create: { roleId, permissionId },
-      });
+      await prisma.rolePermission.create({ data: { roleId, permissionId } });
       mappingCount++;
     }
   }
-  console.log(`✅ ${mappingCount} mappings rol→permiso creados`);
+  console.log(`✅ ${mappingCount} mappings rol→permiso re-creados (matriz v2)`);
 
   // 4. Upsert usuarios reales (contraseña temporal: dataheart2026)
   for (const u of USERS) {

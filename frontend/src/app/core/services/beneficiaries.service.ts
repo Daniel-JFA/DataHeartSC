@@ -74,6 +74,7 @@ export interface AyudaSummary {
   fecha: string;
   tipoSolicitud: string;
   personasBeneficiadas: number;
+  justificacion?: string;
   valor: string;
   estado: string;
 }

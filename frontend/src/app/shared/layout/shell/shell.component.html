@@ -25,7 +25,7 @@
       @if (auth.hasPermission('dashboards:read')) {
         <a routerLink="/dashboard" routerLinkActive="bg-brand-600 text-white"
            [routerLinkActiveOptions]="{exact: true}"
-           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors group">
+           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 flex-shrink-0">
             <path fill-rule="evenodd" d="M9.293 2.293a1 1 0 011.414 0l7 7A1 1 0 0117 11h-1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-3a1 1 0 00-1-1H9a1 1 0 00-1 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-6H3a1 1 0 01-.707-1.707l7-7z" clip-rule="evenodd" />
           </svg>
@@ -33,75 +33,137 @@
         </a>
       }
 
-      <!-- CRM Section -->
-      @if (auth.hasPermission('segmentacion:read') || auth.hasPermission('ventas_donaciones:read')) {
-        <div class="pt-4 pb-1.5 px-3">
-          <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">CRM</span>
-        </div>
-      }
+      <!-- ── LÍNEA FINANCIERA ─────────────────────────────── -->
+      <div class="pt-5 pb-1.5 px-3">
+        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Línea Financiera</span>
+      </div>
 
       @if (auth.hasPermission('segmentacion:read')) {
         <a routerLink="/clients" routerLinkActive="bg-brand-600 text-white"
-           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors group">
+           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 flex-shrink-0">
             <path d="M7 8a3 3 0 100-6 3 3 0 000 6zM14.5 9a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM1.615 16.428a1.224 1.224 0 01-.569-1.175 6.002 6.002 0 0111.908 0c.058.467-.172.92-.57 1.174A9.953 9.953 0 017 18a9.953 9.953 0 01-5.385-1.572zM14.5 16h-.106c.07-.297.088-.611.048-.933a7.47 7.47 0 00-1.588-3.755 4.502 4.502 0 015.874 2.636.818.818 0 01-.36.98A7.465 7.465 0 0114.5 16z" />
           </svg>
-          <span>Clientes / Donantes</span>
+          <span>Clientes / Benefactores</span>
         </a>
       }
 
       @if (auth.hasPermission('ventas_donaciones:read')) {
         <a routerLink="/donations" routerLinkActive="bg-brand-600 text-white"
-           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors group">
+           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 flex-shrink-0">
             <path d="M9.653 16.915l-.005-.003-.019-.01a20.759 20.759 0 01-1.162-.682 22.045 22.045 0 01-2.582-2.025C4.363 12.476 2.5 10.43 2.5 7.5a4.5 4.5 0 018.29-2.396A4.5 4.5 0 0117.5 7.5c0 2.93-1.863 4.976-3.385 6.195a22.045 22.045 0 01-2.582 2.025 20.759 20.759 0 01-1.162.682l-.019.01-.005.003h-.001l-.003.001-.002.001z" />
           </svg>
-          <span>Donaciones</span>
+          <span>Historial Clientes / Benefactores</span>
         </a>
-      }
 
-      <!-- Inventario Section -->
-      @if (auth.hasPermission('inventario:read')) {
-        <div class="pt-4 pb-1.5 px-3">
-          <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Inventario</span>
-        </div>
-        <a routerLink="/products" routerLinkActive="bg-brand-600 text-white"
-           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors group">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 flex-shrink-0">
-            <path d="M12.232 4.232a2.5 2.5 0 013.536 3.536l-1.225 1.224a.75.75 0 001.061 1.06l1.224-1.224a4 4 0 00-5.656-5.656l-3 3a4 4 0 00.225 5.865.75.75 0 00.977-1.138 2.5 2.5 0 01-.142-3.667l3-3z" />
-            <path d="M11.603 7.963a.75.75 0 00-.977 1.138 2.5 2.5 0 01.142 3.667l-3 3a2.5 2.5 0 01-3.536-3.536l1.225-1.224a.75.75 0 00-1.061-1.06l-1.224 1.224a4 4 0 105.656 5.656l3-3a4 4 0 00-.225-5.865z" />
-          </svg>
-          <span>Productos</span>
-        </a>
-      }
-
-      <!-- Atención Familias -->
-      @if (auth.hasPermission('beneficiarios:read')) {
-        <div class="pt-4 pb-1.5 px-3">
-          <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Atención Familias</span>
-        </div>
-        <a routerLink="/beneficiaries" routerLinkActive="bg-brand-600 text-white"
-           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors group">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 flex-shrink-0">
-            <path d="M9.653 16.915l-.005-.003-.019-.01a20.759 20.759 0 01-1.162-.682 22.045 22.045 0 01-2.582-2.025C4.363 12.476 2.5 10.43 2.5 7.5a4.5 4.5 0 018.29-2.396A4.5 4.5 0 0117.5 7.5c0 2.93-1.863 4.976-3.385 6.195a22.045 22.045 0 01-2.582 2.025 20.759 20.759 0 01-1.162.682l-.019.01-.005.003h-.001l-.003.001-.002.001z" />
-          </svg>
-          <span>Beneficiarios</span>
-        </a>
-      }
-
-      <!-- Ventas Section -->
-      @if (auth.hasPermission('ventas_donaciones:read')) {
-        <div class="pt-4 pb-1.5 px-3">
-          <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Ventas</span>
-        </div>
         <a routerLink="/orders" routerLinkActive="bg-brand-600 text-white"
-           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors group">
+           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 flex-shrink-0">
             <path fill-rule="evenodd" d="M6 4.75A.75.75 0 016.75 4h10.5a.75.75 0 010 1.5H6.75A.75.75 0 016 4.75zM6 10a.75.75 0 01.75-.75h10.5a.75.75 0 010 1.5H6.75A.75.75 0 016 10zm0 5.25a.75.75 0 01.75-.75h10.5a.75.75 0 010 1.5H6.75a.75.75 0 01-.75-.75zM1.99 4.75a1 1 0 011-1H3a1 1 0 011 1v.01a1 1 0 01-1 1h-.01a1 1 0 01-1-1v-.01zM1.99 15.25a1 1 0 011-1H3a1 1 0 011 1v.01a1 1 0 01-1 1h-.01a1 1 0 01-1-1v-.01zM1.99 10a1 1 0 011-1H3a1 1 0 011 1v.01a1 1 0 01-1 1h-.01a1 1 0 01-1-1V10z" clip-rule="evenodd" />
           </svg>
-          <span>Pedidos</span>
+          <span>Pedidos Clientes / Benefactores</span>
         </a>
       }
+
+      @if (auth.hasPermission('proveedores:read')) {
+        <a routerLink="/providers" routerLinkActive="bg-brand-600 text-white"
+           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 flex-shrink-0">
+            <path fill-rule="evenodd" d="M4.5 2A2.5 2.5 0 002 4.5v3.879a2.5 2.5 0 00.732 1.767l7.5 7.5a2.5 2.5 0 003.536 0l3.878-3.879a2.5 2.5 0 000-3.535l-7.5-7.5A2.5 2.5 0 008.38 2H4.5zM5 6a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+          </svg>
+          <span>Proveedores</span>
+        </a>
+      }
+
+      @if (auth.hasPermission('inventario:read')) {
+        <a routerLink="/products" routerLinkActive="bg-brand-600 text-white"
+           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 flex-shrink-0">
+            <path d="M10.362 1.093a.75.75 0 00-.724 0L2.523 5.018 10 9.143l7.477-4.125-7.115-3.925zM18 6.443l-7.25 3.998v8.668l6.498-3.58A.75.75 0 0018 14.9V6.443zm-8.75 12.666V10.44L2 6.443V14.9a.75.75 0 00.752.629L9.25 19.11z" />
+          </svg>
+          <span>Inventario</span>
+        </a>
+      }
+
+      <!-- ── LÍNEA LABOR SOCIAL ───────────────────────────── -->
+      <div class="pt-5 pb-1.5 px-3">
+        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Línea Labor Social</span>
+      </div>
+
+      @if (auth.hasPermission('beneficiarios:read')) {
+        <a routerLink="/beneficiaries" routerLinkActive="bg-brand-600 text-white"
+           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 flex-shrink-0">
+            <path d="M10 9a3 3 0 100-6 3 3 0 000 6zM6 8a2 2 0 11-4 0 2 2 0 014 0zM1.49 15.326a.78.78 0 01-.358-.442 3 3 0 014.308-3.516 6.484 6.484 0 00-1.905 3.959c-.023.222-.014.442.025.654a4.97 4.97 0 01-2.07-.655zM16.44 15.98a4.97 4.97 0 002.07-.654.78.78 0 00.357-.442 3 3 0 00-4.308-3.517 6.484 6.484 0 011.907 3.96 2.32 2.32 0 01-.026.654zM18 8a2 2 0 11-4 0 2 2 0 014 0zM5.304 16.19a.844.844 0 01-.277-.71 5 5 0 019.947 0 .843.843 0 01-.277.71A6.975 6.975 0 0110 17a6.974 6.974 0 01-4.696-1.81z" />
+          </svg>
+          <span>Beneficiarios</span>
+        </a>
+
+        <a routerLink="/historial-ayudas" routerLinkActive="bg-brand-600 text-white"
+           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 flex-shrink-0">
+            <path fill-rule="evenodd" d="M9.653 16.915l-.005-.003-.019-.01a20.759 20.759 0 01-1.162-.682 22.045 22.045 0 01-2.582-2.025C4.363 12.476 2.5 10.43 2.5 7.5a4.5 4.5 0 018.29-2.396A4.5 4.5 0 0117.5 7.5c0 2.93-1.863 4.976-3.385 6.195a22.045 22.045 0 01-2.582 2.025 20.759 20.759 0 01-1.162.682l-.019.01-.005.003h-.001l-.003.001-.002.001z" clip-rule="evenodd" />
+          </svg>
+          <span>Historial Ayudas Beneficiarios</span>
+        </a>
+      }
+
+      <a routerLink="/sala-ludica" routerLinkActive="bg-brand-600 text-white"
+         class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 flex-shrink-0">
+          <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zm5.99 7.176A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z" />
+        </svg>
+        <span>Sala Lúdica</span>
+      </a>
+
+      <a routerLink="/voluntarios" routerLinkActive="bg-brand-600 text-white"
+         class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 flex-shrink-0">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-5.5-2.5a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0zM10 12a5.99 5.99 0 00-4.793 2.39A6.483 6.483 0 0010 16.5a6.483 6.483 0 004.793-2.11A5.99 5.99 0 0010 12z" clip-rule="evenodd" />
+        </svg>
+        <span>Voluntarios</span>
+      </a>
+
+      <a routerLink="/historial-apoyos-voluntarios" routerLinkActive="bg-brand-600 text-white"
+         class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 flex-shrink-0">
+          <path fill-rule="evenodd" d="M1 2.75A.75.75 0 011.75 2h10.5a.75.75 0 010 1.5H12v13.75a.75.75 0 01-1.5 0V3.5h-1v13.75a.75.75 0 01-1.5 0V3.5H3.5v13.75a.75.75 0 01-1.5 0V3.5h-.25A.75.75 0 011 2.75zM15 3.5a.5.5 0 01.5-.5h2a.5.5 0 01.5.5v15a.5.5 0 01-.5.5h-2a.5.5 0 01-.5-.5v-15z" clip-rule="evenodd" />
+        </svg>
+        <span>Historial Apoyos Voluntarios</span>
+      </a>
+
+      <!-- ── LÍNEA COMUNICACIONES ────────────────────────── -->
+      <div class="pt-5 pb-1.5 px-3">
+        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Línea Comunicaciones</span>
+      </div>
+
+      <a routerLink="/segmentacion" routerLinkActive="bg-brand-600 text-white"
+         class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 flex-shrink-0">
+          <path d="M3.5 2A1.5 1.5 0 002 3.5V5c0 1.149.16 2.26.461 3.314A12.056 12.056 0 0011.686 17.54 12.056 12.056 0 0015 18h1.5a1.5 1.5 0 001.5-1.5v-1.396a1.5 1.5 0 00-1.135-1.455l-2.553-.638a1.5 1.5 0 00-1.635.61l-.53.795a10.555 10.555 0 01-3.564-3.564l.796-.529a1.5 1.5 0 00.609-1.635l-.638-2.553A1.5 1.5 0 004.896 4H3.5zM16 4.5a.5.5 0 01.5-.5h1a.5.5 0 010 1H17v.5a.5.5 0 01-1 0v-.5h-.5a.5.5 0 01-.5-.5z" />
+          <path d="M12 2a1 1 0 011-1 7 7 0 017 7 1 1 0 11-2 0 5 5 0 00-5-5 1 1 0 01-1-1z" />
+          <path d="M12 6a1 1 0 011-1 3 3 0 013 3 1 1 0 11-2 0 1 1 0 00-1-1 1 1 0 01-1-1z" />
+        </svg>
+        <span>Segmentación Base de Datos</span>
+      </a>
+
+      <a routerLink="/listas-difusion" routerLinkActive="bg-brand-600 text-white"
+         class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 flex-shrink-0">
+          <path fill-rule="evenodd" d="M3.43 2.524A41.29 41.29 0 0110 2c2.236 0 4.43.18 6.57.524 1.437.231 2.43 1.49 2.43 2.902v5.148c0 1.413-.993 2.67-2.43 2.902a41.202 41.202 0 01-5.183.501.78.78 0 00-.528.224l-3.579 3.58A.75.75 0 016 17.25v-3.443a41.033 41.033 0 01-2.57-.374C1.993 13.174 1 11.916 1 10.504V5.426c0-1.413.993-2.67 2.43-2.902z" clip-rule="evenodd" />
+        </svg>
+        <span>Listas Difusión WhatsApp</span>
+      </a>
+
+      <a routerLink="/mailing-masivo" routerLinkActive="bg-brand-600 text-white"
+         class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 flex-shrink-0">
+          <path d="M3 4a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L19 7.162V6a2 2 0 00-2-2H3z" />
+          <path d="M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z" />
+        </svg>
+        <span>Mailing Masivo</span>
+      </a>
 
     </nav>
 

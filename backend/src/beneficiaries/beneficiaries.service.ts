@@ -50,16 +50,48 @@ export class BeneficiariesService {
       include: {
         ayudas: {
           orderBy: { fecha: 'desc' },
-          take: 10,
           select: {
             id: true, fecha: true, tipoSolicitud: true,
-            personasBeneficiadas: true, valor: true, estado: true,
+            personasBeneficiadas: true, justificacion: true,
+            valor: true, estado: true,
           },
         },
       },
     });
     if (!ben) throw new NotFoundException(`Beneficiario ${id} no encontrado`);
     return ben;
+  }
+
+  async findByDocNumber(docNumber: string) {
+    if (!docNumber) return null;
+    return this.prisma.beneficiary.findUnique({
+      where: { docNumber },
+      select: {
+        id: true, firstName: true, lastName: true,
+        docType: true, docNumber: true, birthDate: true,
+        nationality: true, gender: true, address: true,
+        neighborhood: true, city: true, department: true,
+        isDisplaced: true, eps: true, regimen: true,
+        sisbenGroup: true, diagnostico: true, otherDiagnosis: true,
+        tratadoEn: true, clinicaHospital: true,
+        motherName: true, motherDocNumber: true, motherPhone: true,
+        motherEducation: true, motherProfession: true, motherOccupation: true,
+        motherLivesWithChild: true, motherRespondsEcon: true,
+        fatherName: true, fatherDocNumber: true, fatherPhone: true,
+        fatherEducation: true, fatherProfession: true, fatherOccupation: true,
+        fatherLivesWithChild: true, fatherRespondsEcon: true,
+        hasSiblings: true, numSiblings: true, siblingsData: true,
+        caregiverName: true, caregiverRelationship: true, caregiverPhone: true,
+        zone: true, housingType: true, housingStrata: true,
+        publicServices: true, publicTransportNearby: true, numPeopleInHome: true,
+        incomeSource: true, receivesGovSubsidy: true, govSubsidyType: true,
+        comoSeEntero: true, status: true,
+        ayudas: {
+          orderBy: { fecha: 'desc' },
+          select: { id: true, fecha: true, tipoSolicitud: true, valor: true, estado: true },
+        },
+      },
+    });
   }
 
   async create(dto: CreateBeneficiaryDto) {

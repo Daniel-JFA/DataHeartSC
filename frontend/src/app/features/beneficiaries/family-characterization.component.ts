@@ -1,9 +1,45 @@
-import { Component, inject, signal, effect } from '@angular/core';
+import { Component, inject, signal, computed, effect } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 
 type Step = 'form' | 'success' | 'error';
+
+const COLOMBIA_DEPTOS: { value: string; label: string; ciudades: string[] }[] = [
+  { value: 'AMAZONAS', label: 'Amazonas', ciudades: ['Leticia', 'Puerto Nariño'] },
+  { value: 'ANTIOQUIA', label: 'Antioquia', ciudades: ['Medellín', 'Bello', 'Itagüí', 'Envigado', 'Sabaneta', 'Rionegro', 'Apartadó', 'Turbo', 'Caucasia', 'La Ceja', 'Caldas', 'Copacabana', 'Girardota', 'Barbosa'] },
+  { value: 'ARAUCA', label: 'Arauca', ciudades: ['Arauca', 'Saravena', 'Tame', 'Arauquita'] },
+  { value: 'ATLANTICO', label: 'Atlántico', ciudades: ['Barranquilla', 'Soledad', 'Malambo', 'Sabanalarga', 'Baranoa'] },
+  { value: 'BOGOTA', label: 'Bogotá D.C.', ciudades: ['Bogotá'] },
+  { value: 'BOLIVAR', label: 'Bolívar', ciudades: ['Cartagena', 'Magangué', 'Mompox', 'El Carmen de Bolívar'] },
+  { value: 'BOYACA', label: 'Boyacá', ciudades: ['Tunja', 'Duitama', 'Sogamoso', 'Chiquinquirá', 'Paipa'] },
+  { value: 'CALDAS', label: 'Caldas', ciudades: ['Manizales', 'Villamaría', 'La Dorada', 'Chinchiná', 'Riosucio'] },
+  { value: 'CAQUETA', label: 'Caquetá', ciudades: ['Florencia', 'San Vicente del Caguán', 'Puerto Rico', 'El Paujil'] },
+  { value: 'CASANARE', label: 'Casanare', ciudades: ['Yopal', 'Aguazul', 'Villanueva', 'Tauramena', 'Monterrey'] },
+  { value: 'CAUCA', label: 'Cauca', ciudades: ['Popayán', 'Santander de Quilichao', 'Puerto Tejada', 'Corinto', 'Miranda'] },
+  { value: 'CESAR', label: 'Cesar', ciudades: ['Valledupar', 'Aguachica', 'Agustín Codazzi', 'La Paz'] },
+  { value: 'CHOCO', label: 'Chocó', ciudades: ['Quibdó', 'Istmina', 'Condoto', 'Riosucio'] },
+  { value: 'CORDOBA', label: 'Córdoba', ciudades: ['Montería', 'Lorica', 'Sahagún', 'Cereté', 'Planeta Rica'] },
+  { value: 'CUNDINAMARCA', label: 'Cundinamarca', ciudades: ['Soacha', 'Facatativá', 'Zipaquirá', 'Chía', 'Fusagasugá', 'Girardot', 'Madrid', 'Mosquera', 'Cajicá', 'Tocancipá'] },
+  { value: 'GUAINIA', label: 'Guainía', ciudades: ['Inírida'] },
+  { value: 'GUAVIARE', label: 'Guaviare', ciudades: ['San José del Guaviare', 'El Retorno', 'Calamar'] },
+  { value: 'HUILA', label: 'Huila', ciudades: ['Neiva', 'Pitalito', 'Garzón', 'La Plata', 'Campoalegre'] },
+  { value: 'LA_GUAJIRA', label: 'La Guajira', ciudades: ['Riohacha', 'Maicao', 'Uribia', 'Manaure'] },
+  { value: 'MAGDALENA', label: 'Magdalena', ciudades: ['Santa Marta', 'Ciénaga', 'Fundación', 'Plato', 'El Banco'] },
+  { value: 'META', label: 'Meta', ciudades: ['Villavicencio', 'Acacías', 'Granada', 'La Macarena', 'Puerto López'] },
+  { value: 'NARINO', label: 'Nariño', ciudades: ['Pasto', 'Tumaco', 'Ipiales', 'La Unión', 'Samaniego'] },
+  { value: 'NORTE_SANTANDER', label: 'Norte de Santander', ciudades: ['Cúcuta', 'Ocaña', 'Pamplona', 'Tibú', 'Villa del Rosario'] },
+  { value: 'PUTUMAYO', label: 'Putumayo', ciudades: ['Mocoa', 'Puerto Asís', 'Orito', 'Valle del Guamuez'] },
+  { value: 'QUINDIO', label: 'Quindío', ciudades: ['Armenia', 'Calarcá', 'Montenegro', 'Quimbaya', 'La Tebaida'] },
+  { value: 'RISARALDA', label: 'Risaralda', ciudades: ['Pereira', 'Dosquebradas', 'Santa Rosa de Cabal', 'La Virginia'] },
+  { value: 'SAN_ANDRES', label: 'San Andrés y Providencia', ciudades: ['San Andrés', 'Providencia'] },
+  { value: 'SANTANDER', label: 'Santander', ciudades: ['Bucaramanga', 'Floridablanca', 'Girón', 'Piedecuesta', 'Barrancabermeja', 'Socorro'] },
+  { value: 'SUCRE', label: 'Sucre', ciudades: ['Sincelejo', 'Corozal', 'Sampués', 'Toluviejo'] },
+  { value: 'TOLIMA', label: 'Tolima', ciudades: ['Ibagué', 'Espinal', 'Melgar', 'Honda', 'Chaparral'] },
+  { value: 'VALLE_CAUCA', label: 'Valle del Cauca', ciudades: ['Cali', 'Buenaventura', 'Palmira', 'Tuluá', 'Buga', 'Cartago', 'Yumbo', 'Jamundí', 'Florida', 'Candelaria'] },
+  { value: 'VAUPES', label: 'Vaupés', ciudades: ['Mitú'] },
+  { value: 'VICHADA', label: 'Vichada', ciudades: ['Puerto Carreño', 'La Primavera'] },
+];
 
 const DOC_TYPES = [
   { value: 'Registro Civil', label: 'Registro Civil' },
@@ -90,14 +126,26 @@ export class FamilyCharacterizationComponent {
   // Local state for siblings
   siblingsList = signal<Array<{ age: number; livesWith: boolean }>>([]);
 
-  readonly DOC_TYPES = DOC_TYPES;
-  readonly GENDERS = GENDERS;
-  readonly REGIMENES = REGIMENES;
-  readonly SISBEN_GROUPS = SISBEN_GROUPS;
-  readonly ESCOLARIDAD = ESCOLARIDAD;
-  readonly ZONAS = ZONAS;
-  readonly TIPOS_VIVIENDA = TIPOS_VIVIENDA;
+  readonly DOC_TYPES        = DOC_TYPES;
+  readonly GENDERS           = GENDERS;
+  readonly REGIMENES         = REGIMENES;
+  readonly SISBEN_GROUPS     = SISBEN_GROUPS;
+  readonly ESCOLARIDAD       = ESCOLARIDAD;
+  readonly ZONAS             = ZONAS;
+  readonly TIPOS_VIVIENDA    = TIPOS_VIVIENDA;
   readonly SERVICIOS_PUBLICOS = SERVICIOS_PUBLICOS;
+  readonly COLOMBIA_DEPTOS   = COLOMBIA_DEPTOS;
+
+  // Cascading departamento → ciudades
+  deptoResidencia  = signal('');
+  ciudadesResidencia = computed(() =>
+    COLOMBIA_DEPTOS.find(d => d.value === this.deptoResidencia())?.ciudades ?? []
+  );
+
+  // Lookup de beneficiario existente
+  lookupLoading       = signal(false);
+  existingBeneficiary = signal<any>(null);
+  isUpdateMode        = signal(false);
 
   // EPS check conditional signals
   hasEpsOption = signal<'SI' | 'NO'>('SI');
@@ -168,6 +216,12 @@ export class FamilyCharacterizationComponent {
   });
 
   constructor() {
+    // Cascading departamento → ciudades
+    this.form.get('department')?.valueChanges.subscribe(v => {
+      this.deptoResidencia.set(v ?? '');
+      this.form.get('city')?.setValue('');
+    });
+
     // Escucha de condicionales
     effect(() => {
       // Si cambia la opción de EPS, podemos resetear campos
@@ -252,6 +306,122 @@ export class FamilyCharacterizationComponent {
     return this.serviciosSelected().includes(val);
   }
 
+  calcularEdad(): string {
+    const val = this.form.get('birthDate')?.value;
+    if (!val) return '';
+    const hoy = new Date();
+    const nac = new Date(val);
+    if (isNaN(nac.getTime())) return '';
+    let años = hoy.getFullYear() - nac.getFullYear();
+    const meses = hoy.getMonth() - nac.getMonth();
+    if (meses < 0 || (meses === 0 && hoy.getDate() < nac.getDate())) años--;
+    if (años < 0) return '';
+    if (años < 1) {
+      const diffMs = hoy.getTime() - nac.getTime();
+      const mesesTotal = Math.floor(diffMs / (1000 * 60 * 60 * 24 * 30.44));
+      return `${mesesTotal} ${mesesTotal === 1 ? 'mes' : 'meses'}`;
+    }
+    return `${años} ${años === 1 ? 'año' : 'años'}`;
+  }
+
+  onDocNumberBlur() {
+    const docNumber = this.form.get('docNumber')?.value?.trim();
+    if (!docNumber || docNumber.length < 4) return;
+
+    this.lookupLoading.set(true);
+    this.http.get<any>(`${environment.apiUrl}/beneficiaries/public-lookup?docNumber=${encodeURIComponent(docNumber)}`).subscribe({
+      next: (data) => {
+        this.lookupLoading.set(false);
+        if (data) {
+          this.existingBeneficiary.set(data);
+          this.isUpdateMode.set(true);
+          this.prefillForm(data);
+        } else {
+          this.existingBeneficiary.set(null);
+          this.isUpdateMode.set(false);
+        }
+      },
+      error: () => this.lookupLoading.set(false),
+    });
+  }
+
+  private prefillForm(d: any) {
+    this.form.patchValue({
+      firstName:            d.firstName            ?? '',
+      lastName:             d.lastName             ?? '',
+      docType:              d.docType              ?? 'Registro Civil',
+      birthDate:            d.birthDate ? d.birthDate.split('T')[0] : '',
+      nationality:          d.nationality          ?? 'Colombiana',
+      gender:               d.gender               ?? 'Femenino',
+      address:              d.address              ?? '',
+      neighborhood:         d.neighborhood         ?? '',
+      city:                 d.city                 ?? '',
+      department:           d.department           ?? '',
+      isDisplaced:          d.isDisplaced          ? 'SI' : 'NO',
+      sisbenGroup:          d.sisbenGroup          ?? 'No lo conoce',
+      diagnostico:          d.diagnostico          ?? '',
+      otherDiagnosis:       d.otherDiagnosis       ?? '',
+      hasOtherDiagnosis:    d.otherDiagnosis       ? 'SI' : 'NO',
+      tratadoEn:            d.tratadoEn            ?? '',
+      clinicaHospital:      d.clinicaHospital      ?? '',
+      motherName:           d.motherName           ?? '',
+      motherDocNumber:      d.motherDocNumber      ?? '',
+      motherPhone:          d.motherPhone          ?? '',
+      motherEducation:      d.motherEducation      ?? 'Bachiller',
+      motherProfession:     d.motherProfession     ?? '',
+      motherOccupation:     d.motherOccupation     ?? '',
+      motherLivesWithChild: d.motherLivesWithChild ? 'SI' : 'NO',
+      motherRespondsEcon:   d.motherRespondsEcon   ? 'SI' : 'NO',
+      fatherName:           d.fatherName           ?? '',
+      fatherDocNumber:      d.fatherDocNumber      ?? '',
+      fatherPhone:          d.fatherPhone          ?? '',
+      fatherEducation:      d.fatherEducation      ?? 'Bachiller',
+      fatherProfession:     d.fatherProfession     ?? '',
+      fatherOccupation:     d.fatherOccupation     ?? '',
+      fatherLivesWithChild: d.fatherLivesWithChild ? 'SI' : 'NO',
+      fatherRespondsEcon:   d.fatherRespondsEcon   ? 'SI' : 'NO',
+      numSiblings:          d.numSiblings          ?? 0,
+      caregiverName:        d.caregiverName        ?? '',
+      caregiverRelationship: d.caregiverRelationship ?? '',
+      caregiverPhone:       d.caregiverPhone       ?? '',
+      zone:                 d.zone                 ?? 'Urbano',
+      housingType:          d.housingType          ?? 'Familiar',
+      housingStrata:        d.housingStrata        ?? 1,
+      publicTransportNearby: d.publicTransportNearby ? 'SI' : 'NO',
+      numPeopleInHome:      d.numPeopleInHome      ?? 2,
+      incomeSource:         d.incomeSource         ?? '',
+      govSubsidyType:       d.govSubsidyType       ?? '',
+      comoSeEntero:         d.comoSeEntero         ?? '',
+    });
+
+    // EPS
+    const epsVal: string = d.eps ?? '';
+    if (epsVal && !epsVal.startsWith('NO EPS')) {
+      this.hasEpsOption.set('SI');
+      this.form.patchValue({ eps: epsVal, regimen: d.regimen ?? '' });
+    } else {
+      this.hasEpsOption.set('NO');
+      const reason = epsVal.replace('NO EPS - ', '');
+      this.form.patchValue({ epsNoReason: reason });
+    }
+
+    // Hermanos
+    if (d.hasSiblings && Array.isArray(d.siblingsData) && d.siblingsData.length > 0) {
+      this.hasSiblingsOption.set('SI');
+      this.siblingsList.set(d.siblingsData as Array<{ age: number; livesWith: boolean }>);
+    }
+
+    // Subsidio
+    if (d.receivesGovSubsidy) {
+      this.receivesGovSubsidyOption.set('SI');
+    }
+
+    // Servicios públicos
+    if (Array.isArray(d.publicServices)) {
+      this.serviciosSelected.set(d.publicServices as string[]);
+    }
+  }
+
   validateStep(stepNum: number): boolean {
     this.stepErrors.set('');
     const v = this.form.value;
@@ -298,7 +468,7 @@ export class FamilyCharacterizationComponent {
           this.form.controls.motherOccupation.invalid ||
           this.form.controls.fatherName.invalid ||
           this.form.controls.fatherOccupation.invalid) {
-        this.stepErrors.set('Por favor ingrese el nombre, contacto y ocupación de la mamá y el papá.');
+        this.stepErrors.set('Por favor ingrese el nombre, celular de contacto y ocupación de la mamá y el papá.');
         return false;
       }
     }
@@ -414,7 +584,12 @@ export class FamilyCharacterizationComponent {
       status:                     'Activo', // Por defecto entra activo
     };
 
-    this.http.post(`${environment.apiUrl}/beneficiaries/public-register`, payload).subscribe({
+    const existing = this.existingBeneficiary();
+    const request$ = existing && this.isUpdateMode()
+      ? this.http.put(`${environment.apiUrl}/beneficiaries/public-update/${existing.id}`, payload)
+      : this.http.post(`${environment.apiUrl}/beneficiaries/public-register`, payload);
+
+    request$.subscribe({
       next: () => {
         this.step.set('success');
         this.loading.set(false);

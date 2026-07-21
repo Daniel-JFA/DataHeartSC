@@ -115,6 +115,39 @@
         </div>
 
       </div>
+
+      <!-- ─── Ayudas KPI row ─── -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+        <!-- Total Ayudas Entregadas -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+          <div class="flex items-start justify-between mb-3">
+            <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-amber-50">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 text-amber-600">
+                <path d="M9.653 16.915l-.005-.003-.019-.01a20.759 20.759 0 01-1.162-.682 22.045 22.045 0 01-2.582-2.025 11.928 11.928 0 01-2.524-3.488c-.544-1.147-.68-2.314-.356-3.327.262-.812.795-1.516 1.519-1.974 1.188-.75 2.661-.81 3.865-.19.208.107.405.228.591.361a5.986 5.986 0 01.591-.361c1.204-.62 2.677-.56 3.865.19.724.458 1.257 1.162 1.519 1.974.324 1.013.188 2.18-.356 3.327a11.928 11.928 0 01-2.524 3.488 22.046 22.046 0 01-2.582 2.025 20.76 20.76 0 01-1.181.692z" />
+              </svg>
+            </div>
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Ayudas Entregadas</span>
+          </div>
+          <p class="text-2xl font-bold text-slate-900 leading-none mb-1.5">{{ s.kpis.totalAyudas | number }}</p>
+          <p class="text-sm text-slate-500">Total de entregas registradas</p>
+        </div>
+
+        <!-- Valor Total en Ayudas -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+          <div class="flex items-start justify-between mb-3">
+            <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-teal-50">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 text-teal-600">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.732 6.232a2.5 2.5 0 013.536 0 .75.75 0 101.06-1.06A4 4 0 006.5 8v.165c0 .364.034.728.1 1.085H6a.75.75 0 000 1.5h.845l-.042.614a5.003 5.003 0 01-.19.902L6.25 13.5a.75.75 0 00.714 1h6.072a.75.75 0 00.714-1l-.363-1.234a5.005 5.005 0 01-.192-.902l-.041-.614H14a.75.75 0 000-1.5h-.645c.066-.357.1-.721.1-1.085V8a4 4 0 00-4.723-3.924.75.75 0 00.002 0z" clip-rule="evenodd" />
+              </svg>
+            </div>
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Valor en Ayudas</span>
+          </div>
+          <p class="text-2xl font-bold text-teal-600 leading-none mb-1.5">{{ formatCOP(s.kpis.totalAyudasValor) }}</p>
+          <p class="text-sm text-slate-500">Valorización total entregada</p>
+        </div>
+
+      </div>
     }
   }
 
@@ -178,6 +211,29 @@
           <h2 class="text-sm font-semibold text-slate-700 mb-4">Donaciones por Pasarela de Pago</h2>
           <div class="relative h-72">
             <canvas #gatewayChart class="w-full h-full"></canvas>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ─── Ayudas charts row ─── -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+
+        <!-- Ayudas por tipo (horizontal bar) -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+          <h2 class="text-sm font-semibold text-slate-700 mb-1">Ayudas por Tipo de Solicitud</h2>
+          <p class="text-xs text-slate-400 mb-4">Cantidad y valor por categoría</p>
+          <div class="relative h-80">
+            <canvas #ayudasTipoChart class="w-full h-full"></canvas>
+          </div>
+        </div>
+
+        <!-- Ayudas por mes (dual-axis line) -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+          <h2 class="text-sm font-semibold text-slate-700 mb-1">Evolución Mensual de Ayudas</h2>
+          <p class="text-xs text-slate-400 mb-4">Últimos 12 meses — entregas y valor</p>
+          <div class="relative h-80">
+            <canvas #ayudasMesChart class="w-full h-full"></canvas>
           </div>
         </div>
 

@@ -17,15 +17,19 @@ export class DashboardComponent implements OnInit, OnDestroy {
   loading = signal(true);
   error   = signal('');
 
-  revenueChart: Chart | null = null;
-  statusChart:  Chart | null = null;
-  categoryChart: Chart | null = null;
-  gatewayChart: Chart | null = null;
+  revenueChart:    Chart | null = null;
+  statusChart:     Chart | null = null;
+  categoryChart:   Chart | null = null;
+  gatewayChart:    Chart | null = null;
+  ayudasTipoChart: Chart | null = null;
+  ayudasMesChart:  Chart | null = null;
 
-  private revenueCanvas: HTMLCanvasElement | null = null;
-  private statusCanvas: HTMLCanvasElement | null = null;
-  private categoryCanvas: HTMLCanvasElement | null = null;
-  private gatewayCanvas: HTMLCanvasElement | null = null;
+  private revenueCanvas:    HTMLCanvasElement | null = null;
+  private statusCanvas:     HTMLCanvasElement | null = null;
+  private categoryCanvas:   HTMLCanvasElement | null = null;
+  private gatewayCanvas:    HTMLCanvasElement | null = null;
+  private ayudasTipoCanvas: HTMLCanvasElement | null = null;
+  private ayudasMesCanvas:  HTMLCanvasElement | null = null;
 
   @ViewChild('revenueChart') set revenueCanvasRef(ref: ElementRef<HTMLCanvasElement> | undefined) {
     this.revenueCanvas = ref ? ref.nativeElement : null;
@@ -44,6 +48,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   @ViewChild('gatewayChart') set gatewayCanvasRef(ref: ElementRef<HTMLCanvasElement> | undefined) {
     this.gatewayCanvas = ref ? ref.nativeElement : null;
+    this.tryInitCharts();
+  }
+
+  @ViewChild('ayudasTipoChart') set ayudasTipoCanvasRef(ref: ElementRef<HTMLCanvasElement> | undefined) {
+    this.ayudasTipoCanvas = ref ? ref.nativeElement : null;
+    this.tryInitCharts();
+  }
+
+  @ViewChild('ayudasMesChart') set ayudasMesCanvasRef(ref: ElementRef<HTMLCanvasElement> | undefined) {
+    this.ayudasMesCanvas = ref ? ref.nativeElement : null;
     this.tryInitCharts();
   }
 
@@ -80,6 +94,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.statusChart?.destroy();
     this.categoryChart?.destroy();
     this.gatewayChart?.destroy();
+    this.ayudasTipoChart?.destroy();
+    this.ayudasMesChart?.destroy();
   }
 
   private tryInitCharts(): void {
@@ -97,6 +113,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
     if (this.gatewayCanvas) {
       this.initGatewayChart(this.gatewayCanvas, stats);
+    }
+    if (this.ayudasTipoCanvas) {
+      this.initAyudasTipoChart(this.ayudasTipoCanvas, stats);
+    }
+    if (this.ayudasMesCanvas) {
+      this.initAyudasMesChart(this.ayudasMesCanvas, stats);
     }
   }
 
@@ -336,6 +358,153 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
   }
 
+
+  private initAyudasTipoChart(canvas: HTMLCanvasElement, stats: DashboardStats): void {
+    this.ayudasTipoChart?.destroy();
+
+    const TIPO_COLORS = [
+      '#e11d48','#f59e0b','#10b981','#3b82f6','#8b5cf6',
+      '#ec4899','#06b6d4','#84cc16','#f97316','#6366f1',
+      '#14b8a6','#a855f7','#ef4444','#22c55e','#0ea5e9',
+    ];
+
+    const data = stats.ayudasPorTipo.slice(0, 12);
+
+    this.ayudasTipoChart = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels: data.map(a => a.tipo),
+        datasets: [{
+          label: 'Entregas',
+          data: data.map(a => a.count),
+          backgroundColor: data.map((_, i) => TIPO_COLORS[i % TIPO_COLORS.length] + 'cc'),
+          borderRadius: 6,
+          borderWidth: 0,
+          barThickness: 16,
+        }],
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            padding: 10,
+            backgroundColor: 'rgba(15,23,42,0.92)',
+            callbacks: {
+              label: ctx => {
+                const d = data[ctx.dataIndex];
+                const val = d.total > 0
+                  ? ' · ' + new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(d.total)
+                  : '';
+                return ` ${ctx.parsed.x} entregas${val}`;
+              },
+            },
+          },
+        },
+        scales: {
+          x: { grid: { color: '#f1f5f9' }, ticks: { font: { size: 10 }, stepSize: 1 } },
+          y: { grid: { display: false }, ticks: { font: { size: 10 } } },
+        },
+      },
+    });
+  }
+
+  private initAyudasMesChart(canvas: HTMLCanvasElement, stats: DashboardStats): void {
+    this.ayudasMesChart?.destroy();
+
+    const MONTH_NAMES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    const formatMonth = (ym: string) => {
+      const [y, m] = ym.split('-');
+      return `${MONTH_NAMES[parseInt(m, 10) - 1]} ${y.slice(2)}`;
+    };
+
+    const ctx = canvas.getContext('2d');
+    let gradient: any = 'rgba(225,29,72,0.1)';
+    if (ctx) {
+      const g = ctx.createLinearGradient(0, 0, 0, 260);
+      g.addColorStop(0, 'rgba(225,29,72,0.25)');
+      g.addColorStop(1, 'rgba(225,29,72,0.01)');
+      gradient = g;
+    }
+
+    this.ayudasMesChart = new Chart(canvas, {
+      type: 'line',
+      data: {
+        labels: stats.ayudasPorMes.map(a => formatMonth(a.month)),
+        datasets: [
+          {
+            label: 'Nº de entregas',
+            data: stats.ayudasPorMes.map(a => a.count),
+            borderColor: '#e11d48',
+            backgroundColor: gradient,
+            fill: true,
+            tension: 0.35,
+            borderWidth: 3,
+            pointBackgroundColor: '#e11d48',
+            pointHoverRadius: 6,
+            yAxisID: 'yCount',
+          },
+          {
+            label: 'Valor entregado',
+            data: stats.ayudasPorMes.map(a => a.total),
+            borderColor: '#f59e0b',
+            backgroundColor: 'transparent',
+            fill: false,
+            tension: 0.35,
+            borderWidth: 2,
+            borderDash: [4, 3],
+            pointBackgroundColor: '#f59e0b',
+            pointHoverRadius: 5,
+            yAxisID: 'yValor',
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+            labels: { boxWidth: 10, usePointStyle: true, pointStyle: 'circle', font: { size: 11 }, padding: 14 },
+          },
+          tooltip: {
+            padding: 10,
+            backgroundColor: 'rgba(15,23,42,0.92)',
+            callbacks: {
+              label: ctx => {
+                if (ctx.dataset.yAxisID === 'yValor') {
+                  return ` Valor: ${new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(ctx.parsed.y ?? 0)}`;
+                }
+                return ` Entregas: ${ctx.parsed.y}`;
+              },
+            },
+          },
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+          yCount: {
+            type: 'linear',
+            position: 'left',
+            grid: { color: '#f1f5f9' },
+            ticks: { font: { size: 10 }, stepSize: 1 },
+          },
+          yValor: {
+            type: 'linear',
+            position: 'right',
+            grid: { display: false },
+            ticks: {
+              font: { size: 10 },
+              callback: v => '$' + Number(v).toLocaleString('es-CO', { maximumFractionDigits: 0 }),
+            },
+          },
+        },
+      },
+    });
+  }
 
   formatCOP(n: number): string {
     return '$' + n.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 });

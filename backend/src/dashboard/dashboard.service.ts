@@ -183,6 +183,43 @@ export class DashboardService {
       amount: Number(dg._sum.amount || 0)
     }));
 
+    // 8. Ayudas — KPIs
+    const totalAyudas = await this.prisma.ayuda.count();
+    const ayudasValorSum = await this.prisma.ayuda.aggregate({ _sum: { valor: true } });
+    const totalAyudasValor = Number(ayudasValorSum._sum.valor || 0);
+
+    // 9. Ayudas por tipo de solicitud
+    const ayudasPorTipoRaw = await this.prisma.ayuda.groupBy({
+      by: ['tipoSolicitud'],
+      _count: { id: true },
+      _sum:   { valor: true },
+      orderBy: { _count: { id: 'desc' } },
+    });
+    const ayudasPorTipo = ayudasPorTipoRaw.map(a => ({
+      tipo:  a.tipoSolicitud,
+      count: a._count.id,
+      total: Number(a._sum.valor || 0),
+    }));
+
+    // 10. Ayudas por mes (últimos 12 meses)
+    const ayudasPorMesRaw = await this.prisma.$queryRaw<
+      Array<{ month: string; count: number; total: number }>
+    >`
+      SELECT
+        TO_CHAR(fecha, 'YYYY-MM') AS month,
+        COUNT(*)::int             AS count,
+        COALESCE(SUM(valor), 0)::float AS total
+      FROM ayudas
+      WHERE fecha >= NOW() - INTERVAL '12 months'
+      GROUP BY month
+      ORDER BY month ASC
+    `;
+    const ayudasPorMes = ayudasPorMesRaw.map(a => ({
+      month: a.month,
+      count: Number(a.count),
+      total: Number(a.total),
+    }));
+
     return {
       kpis: {
         totalClients,
@@ -194,12 +231,16 @@ export class DashboardService {
         paidRevenue,
         totalDonations,
         totalDonationsAmount,
+        totalAyudas,
+        totalAyudasValor,
       },
       ordersByStatus,
       revenueByDay,
       donationsByDay,
       topCategories,
       donationsByGateway,
+      ayudasPorTipo,
+      ayudasPorMes,
       recentOrders,
       lowStockItems,
     };

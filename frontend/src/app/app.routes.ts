@@ -67,6 +67,42 @@ export const routes: Routes = [
         canActivate: [permissionGuard],
         data: { permission: 'beneficiarios:read' },
       },
+      {
+        path: 'providers',
+        loadComponent: () => import('./features/providers/providers-list.component').then(m => m.ProvidersListComponent),
+        canActivate: [permissionGuard],
+        data: { permission: 'proveedores:read' },
+      },
+      {
+        path: 'historial-ayudas',
+        loadComponent: () => import('./features/labor-social/historial-ayudas.component').then(m => m.HistorialAyudasComponent),
+        canActivate: [permissionGuard],
+        data: { permission: 'beneficiarios:read' },
+      },
+      {
+        path: 'sala-ludica',
+        loadComponent: () => import('./features/labor-social/sala-ludica.component').then(m => m.SalaLudicaComponent),
+      },
+      {
+        path: 'voluntarios',
+        loadComponent: () => import('./features/labor-social/voluntarios.component').then(m => m.VoluntariosComponent),
+      },
+      {
+        path: 'historial-apoyos-voluntarios',
+        loadComponent: () => import('./features/labor-social/historial-apoyos-voluntarios.component').then(m => m.HistorialApoyosVoluntariosComponent),
+      },
+      {
+        path: 'segmentacion',
+        loadComponent: () => import('./features/comunicaciones/segmentacion.component').then(m => m.SegmentacionComponent),
+      },
+      {
+        path: 'listas-difusion',
+        loadComponent: () => import('./features/comunicaciones/listas-difusion.component').then(m => m.ListasDifusionComponent),
+      },
+      {
+        path: 'mailing-masivo',
+        loadComponent: () => import('./features/comunicaciones/mailing-masivo.component').then(m => m.MailingMasivoComponent),
+      },
     ],
   },
   { path: '**', redirectTo: 'dashboard' },
