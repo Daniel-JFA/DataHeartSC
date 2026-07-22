@@ -13,6 +13,8 @@ import { ProvidersModule } from './providers/providers.module';
 import { BeneficiariesModule } from './beneficiaries/beneficiaries.module';
 import { AyudasModule } from './ayudas/ayudas.module';
 import { WebhooksModule } from './webhooks/webhooks.module';
+import { CertificatesModule } from './certificates/certificates.module';
+import { MailerModule } from './mailer/mailer.module';
 
 @Module({
   imports: [
@@ -28,6 +30,8 @@ import { WebhooksModule } from './webhooks/webhooks.module';
     BeneficiariesModule,
     AyudasModule,
     WebhooksModule,
+    CertificatesModule,
+    MailerModule,
   ],
   controllers: [AppController],
   providers: [AppService],

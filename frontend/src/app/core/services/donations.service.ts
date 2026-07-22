@@ -8,6 +8,12 @@ export interface DonationClient {
   docNumber: string;
 }
 
+export interface DonationCertificate {
+  id: string;
+  certificateNumber: number;
+  status: string;
+}
+
 export interface Donation {
   id: string;
   clientId: string;
@@ -20,6 +26,7 @@ export interface Donation {
   concept?: string;
   createdAt: string;
   client?: DonationClient;
+  certificates?: DonationCertificate[];
 }
 
 export interface DonationStats {
@@ -86,5 +93,18 @@ export class DonationsService {
 
   updateStatus(id: string, status: string) {
     return this.http.patch<Donation>(`${this.base}/${id}/status`, { status });
+  }
+
+  downloadCertificate(certId: string) {
+    return this.http.get(`${environment.apiUrl}/certificates/${certId}/download`, {
+      responseType: 'blob',
+    });
+  }
+
+  simulateWompi(payload: { amount?: number; email?: string; donorName?: string }) {
+    return this.http.post<{ status: string; transactionId: string }>(
+      `${environment.apiUrl}/webhooks/wompi/simulate`,
+      payload,
+    );
   }
 }

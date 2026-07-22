@@ -7,11 +7,12 @@ import {
   Donation,
   DonationStats,
 } from '../../core/services/donations.service';
+import { ReactiveFormsModule, FormBuilder } from '@angular/forms';
 
 @Component({
   selector: 'app-donations-list',
   standalone: true,
-  imports: [DecimalPipe, CurrencyPipe, RouterLink, FormsModule],
+  imports: [DecimalPipe, CurrencyPipe, RouterLink, FormsModule, ReactiveFormsModule],
   templateUrl: './donations-list.component.html',
 })
 export class DonationsListComponent implements OnInit {
@@ -130,4 +131,46 @@ export class DonationsListComponent implements OnInit {
 
   readonly gateways = ['Wompi', 'PayU', 'PayPal', 'Frecuenti'];
   readonly statuses = ['Approved', 'Pending', 'Declined'];
+
+  // ── Simulador Wompi ──────────────────────────────────────────
+  showSimulator = signal(false);
+  simulatorAmount = 50000;
+  simulatorEmail  = '';
+  simulatorName   = '';
+  simulating      = signal(false);
+  simResult       = signal<string>('');
+
+  runWompiSimulation() {
+    this.simulating.set(true);
+    this.simResult.set('');
+    this.svc.simulateWompi({
+      amount:    this.simulatorAmount,
+      email:     this.simulatorEmail || undefined,
+      donorName: this.simulatorName  || undefined,
+    }).subscribe({
+      next: r => {
+        this.simulating.set(false);
+        this.simResult.set(`Donación creada · ID: ${r.transactionId}`);
+        setTimeout(() => { this.loadDonations(); this.loadStats(); }, 800);
+      },
+      error: () => {
+        this.simulating.set(false);
+        this.simResult.set('Error al simular la transacción.');
+      },
+    });
+  }
+
+  // ── Descargar certificado ────────────────────────────────────
+  downloadCert(certId: string, certNumber: number) {
+    this.svc.downloadCertificate(certId).subscribe({
+      next: blob => {
+        const url = URL.createObjectURL(blob);
+        const a   = document.createElement('a');
+        a.href     = url;
+        a.download = `certificado_SC-${new Date().getFullYear()}-${String(certNumber).padStart(4, '0')}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+      },
+    });
+  }
 }

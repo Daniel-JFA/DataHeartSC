@@ -49,6 +49,9 @@ export class DonationsService {
           client: {
             select: { id: true, name: true, docNumber: true },
           },
+          certificates: {
+            select: { id: true, certificateNumber: true, status: true },
+          },
         },
       }),
       this.prisma.donation.count({ where }),

@@ -1015,3 +1015,35 @@ Before starting any work, read the last 15-20 lines to understand the latest cha
 - **Pending Tasks / Notes for next agent:**
   - Implementar contenido real en cada módulo stub según prioridad de la fundación
   - Pendiente despliegue en producción (sc.danielflorez.dev)
+
+---
+
+## 2026-07-22 — Claude — Hito 2: Webhooks Wompi/PayU + Generador de Certificados PDF + Correo automático
+
+- **Task:** Implementar los módulos faltantes del Hito 2: webhooks de pasarelas de pago (Wompi y PayU), generador automático de certificados de donación en PDF, envío de correo con certificado adjunto, y columna de descarga en la pantalla de donaciones.
+- **Files Created:**
+  - `backend/src/mailer/mailer.service.ts` — servicio de correo con nodemailer; omite envío si SMTP no está configurado (graceful degradation)
+  - `backend/src/mailer/mailer.module.ts`
+  - `backend/src/certificates/certificates.service.ts` — genera PDF con pdf-lib (diseño con logo, tabla de datos, nota legal), registra en DB (Certificate), envía correo con adjunto
+  - `backend/src/certificates/certificates.controller.ts` — `GET /api/certificates/:id/download` protegido con JWT
+  - `backend/src/certificates/certificates.module.ts`
+- **Files Modified:**
+  - `backend/src/webhooks/webhooks.controller.ts` — agregados: webhook Wompi (`POST /api/webhooks/wompi` con verificación SHA256), webhook PayU (`POST /api/webhooks/payu` con verificación MD5), simulador Wompi (`POST /api/webhooks/wompi/simulate` con JWT); webhookSecret renombrado a shopifySecret
+  - `backend/src/webhooks/webhooks.module.ts` — importa CertificatesModule
+  - `backend/src/app.module.ts` — importa CertificatesModule y MailerModule
+  - `backend/src/donations/donations.service.ts` — findAll ahora incluye certificates (id, certificateNumber, status)
+  - `frontend/src/app/core/services/donations.service.ts` — nuevas interfaces DonationCertificate y métodos downloadCertificate(), simulateWompi()
+  - `frontend/src/app/features/donations/donations-list.component.ts` — métodos downloadCert(), runWompiSimulation(), showSimulator signal
+  - `frontend/src/app/features/donations/donations-list.component.html` — columna "Certificado" con botón de descarga PDF, panel simulador de Wompi (amber)
+- **New env vars needed (backend/.env en producción):**
+  - `WOMPI_INTEGRITY_KEY` — llave de integridad del dashboard de Wompi
+  - `PAYU_API_KEY` y `PAYU_MERCHANT_ID` — credenciales PayU
+  - `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `EMAIL_FROM` — servidor de correo saliente
+- **Current Status:**
+  - ✅ Backend build: 0 errores
+  - ✅ Frontend build: 0 errores, 0 warnings (3.240 s)
+  - Flujo completo: transacción Wompi → donación en DB → PDF generado → correo enviado → botón descarga en UI
+- **Pending Tasks / Notes for next agent:**
+  - Configurar variables de entorno en producción (WOMPI_INTEGRITY_KEY, PAYU, SMTP)
+  - Pendiente despliegue en producción (sc.danielflorez.dev) para cobrar Hito 2
+  - Sprint 05 a documentar en docs/sprints/sprint-05.md
