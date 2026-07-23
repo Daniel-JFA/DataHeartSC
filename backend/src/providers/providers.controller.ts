@@ -62,7 +62,7 @@ export class ProvidersController {
   /** Lista de proveedores — protegida */
   @Get()
   @UseGuards(JwtAuthGuard, PermissionsGuard)
-  @RequirePermission('segmentacion:read')
+  @RequirePermission('inventario:read')
   findAll(
     @Query('page',  new DefaultValuePipe(1),  ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
@@ -71,10 +71,10 @@ export class ProvidersController {
     return this.service.findAll(page, limit, search);
   }
 
-  /** Actualizar estado (Pendiente → Activo | Rechazado) — protegida */
+  /** Actualizar estado (Pendiente → Aprobado | Rechazado) — protegida */
   @Patch(':id/status')
   @UseGuards(JwtAuthGuard, PermissionsGuard)
-  @RequirePermission('segmentacion:write')
+  @RequirePermission('inventario:write')
   updateStatus(
     @Param('id') id: string,
     @Body('status') status: string,

@@ -1,36 +1,119 @@
-import { Component } from '@angular/core';
+import { Component, inject, signal, computed, effect } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { SlicePipe } from '@angular/common';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
+
+interface Provider {
+  id: string;
+  name: string;
+  docType: string;
+  docNumber: string;
+  email: string | null;
+  phone: string | null;
+  city: string | null;
+  department: string | null;
+  naturaleza: string | null;
+  tipoSolicitud: string | null;
+  contactName: string | null;
+  status: string;
+  createdAt: string;
+  rutPath: string | null;
+  camaraComercioPath: string | null;
+  certBancariaPath: string | null;
+}
+
+interface ProvidersResponse {
+  data: Provider[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
 
 @Component({
   selector: 'app-providers-list',
   standalone: true,
-  imports: [RouterLink],
-  template: `
-    <div class="p-8">
-      <div class="mb-6 flex items-center justify-between">
-        <div>
-          <h2 class="text-2xl font-bold text-slate-800">Proveedores</h2>
-          <p class="text-sm text-slate-500 mt-1">Gestión de proveedores de la fundación</p>
-        </div>
-        <a routerLink="/proveedores/registro"
-           class="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
-            <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
-          </svg>
-          Registrar proveedor
-        </a>
-      </div>
-
-      <div class="bg-white rounded-xl border border-slate-200 flex flex-col items-center justify-center py-20 gap-4">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             stroke-width="1.5" class="w-14 h-14 text-slate-300">
-          <path stroke-linecap="round" stroke-linejoin="round"
-                d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25z" />
-        </svg>
-        <p class="text-slate-500 text-sm font-medium">Listado de proveedores próximamente</p>
-        <p class="text-slate-400 text-xs">Módulo en construcción</p>
-      </div>
-    </div>
-  `,
+  imports: [RouterLink, FormsModule, SlicePipe],
+  templateUrl: './providers-list.component.html',
 })
-export class ProvidersListComponent {}
+export class ProvidersListComponent {
+  private http = inject(HttpClient);
+
+  providers  = signal<Provider[]>([]);
+  total      = signal(0);
+  totalPages = signal(0);
+  page       = signal(1);
+  search     = signal('');
+  loading    = signal(false);
+  updating   = signal<string | null>(null); // id del proveedor que se está actualizando
+
+  pendientes = computed(() => this.providers().filter(p => p.status === 'Pendiente').length);
+  aprobados  = computed(() => this.providers().filter(p => p.status === 'Aprobado').length);
+  rechazados = computed(() => this.providers().filter(p => p.status === 'Rechazado').length);
+
+  private searchTimeout: ReturnType<typeof setTimeout> | null = null;
+
+  constructor() {
+    effect(() => {
+      this.page();
+      this.load();
+    }, { allowSignalWrites: true });
+  }
+
+  load() {
+    this.loading.set(true);
+    let params = new HttpParams()
+      .set('page', this.page())
+      .set('limit', 15);
+    if (this.search()) params = params.set('search', this.search());
+
+    this.http.get<ProvidersResponse>(`${environment.apiUrl}/providers`, { params })
+      .subscribe({
+        next: res => {
+          this.providers.set(res.data);
+          this.total.set(res.total);
+          this.totalPages.set(res.totalPages);
+          this.loading.set(false);
+        },
+        error: () => this.loading.set(false),
+      });
+  }
+
+  onSearch(q: string) {
+    this.search.set(q);
+    if (this.searchTimeout) clearTimeout(this.searchTimeout);
+    this.searchTimeout = setTimeout(() => {
+      this.page.set(1);
+      this.load();
+    }, 350);
+  }
+
+  updateStatus(provider: Provider, status: 'Aprobado' | 'Rechazado') {
+    this.updating.set(provider.id);
+    this.http.patch(`${environment.apiUrl}/providers/${provider.id}/status`, { status })
+      .subscribe({
+        next: () => {
+          this.providers.update(list =>
+            list.map(p => p.id === provider.id ? { ...p, status } : p)
+          );
+          this.updating.set(null);
+        },
+        error: () => this.updating.set(null),
+      });
+  }
+
+  statusBadge(status: string): string {
+    const map: Record<string, string> = {
+      'Pendiente':  'bg-amber-100 text-amber-800 border border-amber-200',
+      'Aprobado':   'bg-green-100 text-green-800 border border-green-200',
+      'Rechazado':  'bg-red-100 text-red-800 border border-red-200',
+    };
+    return map[status] ?? 'bg-slate-100 text-slate-700';
+  }
+
+  pages(): number[] {
+    return Array.from({ length: this.totalPages() }, (_, i) => i + 1);
+  }
+}

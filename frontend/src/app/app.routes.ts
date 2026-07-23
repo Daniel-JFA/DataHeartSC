@@ -71,7 +71,7 @@ export const routes: Routes = [
         path: 'providers',
         loadComponent: () => import('./features/providers/providers-list.component').then(m => m.ProvidersListComponent),
         canActivate: [permissionGuard],
-        data: { permission: 'proveedores:read' },
+        data: { permission: 'inventario:read' },
       },
       {
         path: 'shopify-test',

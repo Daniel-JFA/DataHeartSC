@@ -1,0 +1,215 @@
+<div class="p-6 space-y-6">
+
+  <!-- Header -->
+  <div class="flex items-center justify-between">
+    <div>
+      <h2 class="text-2xl font-bold text-slate-800">Proveedores</h2>
+      <p class="text-sm text-slate-500 mt-1">Gestión y vinculación SAGRILAFT · {{ total() }} registros</p>
+    </div>
+    <a routerLink="/proveedores/registro"
+       class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition-colors">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+        <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z"/>
+      </svg>
+      Registrar proveedor
+    </a>
+  </div>
+
+  <!-- KPIs -->
+  <div class="grid grid-cols-3 gap-4">
+    <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-center">
+      <p class="text-2xl font-bold text-amber-700">{{ pendientes() }}</p>
+      <p class="text-xs font-semibold text-amber-600 mt-1">Pendientes de revisión</p>
+    </div>
+    <div class="bg-green-50 border border-green-200 rounded-xl p-4 text-center">
+      <p class="text-2xl font-bold text-green-700">{{ aprobados() }}</p>
+      <p class="text-xs font-semibold text-green-600 mt-1">Aprobados</p>
+    </div>
+    <div class="bg-red-50 border border-red-200 rounded-xl p-4 text-center">
+      <p class="text-2xl font-bold text-red-700">{{ rechazados() }}</p>
+      <p class="text-xs font-semibold text-red-600 mt-1">Rechazados</p>
+    </div>
+  </div>
+
+  <!-- Búsqueda -->
+  <div class="relative">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+         class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+      <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd"/>
+    </svg>
+    <input type="text" placeholder="Buscar por nombre, documento, correo o ciudad..."
+           [value]="search()"
+           (input)="onSearch($any($event.target).value)"
+           class="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+  </div>
+
+  <!-- Tabla -->
+  <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+    @if (loading()) {
+      <div class="flex justify-center items-center py-20 text-slate-400 text-sm">Cargando...</div>
+    } @else if (providers().length === 0) {
+      <div class="flex flex-col items-center justify-center py-20 gap-3">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="1.5" class="w-12 h-12 text-slate-300">
+          <path stroke-linecap="round" stroke-linejoin="round"
+                d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25z"/>
+        </svg>
+        <p class="text-slate-500 text-sm">No se encontraron proveedores</p>
+      </div>
+    } @else {
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="bg-slate-50 border-b border-slate-200 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">
+              <th class="px-4 py-3">Proveedor</th>
+              <th class="px-4 py-3">Documento</th>
+              <th class="px-4 py-3">Contacto</th>
+              <th class="px-4 py-3">Ciudad</th>
+              <th class="px-4 py-3">Tipo</th>
+              <th class="px-4 py-3">Fecha registro</th>
+              <th class="px-4 py-3">Estado</th>
+              <th class="px-4 py-3 text-center">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            @for (p of providers(); track p.id) {
+              <tr class="hover:bg-slate-50 transition-colors">
+
+                <!-- Nombre -->
+                <td class="px-4 py-3">
+                  <p class="font-semibold text-slate-800 leading-tight">{{ p.name }}</p>
+                  @if (p.contactName) {
+                    <p class="text-xs text-slate-400 mt-0.5">{{ p.contactName }}</p>
+                  }
+                </td>
+
+                <!-- Documento -->
+                <td class="px-4 py-3">
+                  <span class="text-xs font-medium text-slate-500">{{ p.docType }}</span>
+                  <p class="font-mono text-slate-700">{{ p.docNumber }}</p>
+                </td>
+
+                <!-- Contacto -->
+                <td class="px-4 py-3">
+                  @if (p.email) {
+                    <p class="text-slate-700">{{ p.email }}</p>
+                  }
+                  @if (p.phone) {
+                    <p class="text-xs text-slate-400">{{ p.phone }}</p>
+                  }
+                  @if (!p.email && !p.phone) {
+                    <span class="text-slate-300">—</span>
+                  }
+                </td>
+
+                <!-- Ciudad -->
+                <td class="px-4 py-3 text-slate-600">
+                  {{ p.city || '—' }}
+                  @if (p.department) {
+                    <span class="text-slate-400">, {{ p.department }}</span>
+                  }
+                </td>
+
+                <!-- Tipo solicitud -->
+                <td class="px-4 py-3">
+                  @if (p.naturaleza) {
+                    <span class="inline-block text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                      {{ p.naturaleza }}
+                    </span>
+                  } @else {
+                    <span class="text-slate-300">—</span>
+                  }
+                </td>
+
+                <!-- Fecha -->
+                <td class="px-4 py-3 text-slate-500 text-xs whitespace-nowrap">
+                  {{ p.createdAt | slice:0:10 }}
+                </td>
+
+                <!-- Estado -->
+                <td class="px-4 py-3">
+                  <span class="inline-block text-xs font-semibold px-2.5 py-1 rounded-full {{ statusBadge(p.status) }}">
+                    {{ p.status }}
+                  </span>
+                </td>
+
+                <!-- Acciones -->
+                <td class="px-4 py-3">
+                  <div class="flex items-center justify-center gap-2">
+                    @if (p.status === 'Pendiente') {
+                      <button
+                        (click)="updateStatus(p, 'Aprobado')"
+                        [disabled]="updating() === p.id"
+                        class="inline-flex items-center gap-1 px-3 py-1.5 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white text-xs font-semibold rounded-lg transition-colors">
+                        @if (updating() === p.id) {
+                          <svg class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                          </svg>
+                        } @else {
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5">
+                            <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/>
+                          </svg>
+                          Aprobar
+                        }
+                      </button>
+                      <button
+                        (click)="updateStatus(p, 'Rechazado')"
+                        [disabled]="updating() === p.id"
+                        class="inline-flex items-center gap-1 px-3 py-1.5 bg-white hover:bg-red-50 disabled:opacity-50 text-red-600 text-xs font-semibold border border-red-300 rounded-lg transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5">
+                          <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z"/>
+                        </svg>
+                        Rechazar
+                      </button>
+                    } @else if (p.status === 'Aprobado') {
+                      <button
+                        (click)="updateStatus(p, 'Rechazado')"
+                        [disabled]="updating() === p.id"
+                        class="px-3 py-1.5 text-xs font-semibold text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50">
+                        Rechazar
+                      </button>
+                    } @else {
+                      <button
+                        (click)="updateStatus(p, 'Aprobado')"
+                        [disabled]="updating() === p.id"
+                        class="px-3 py-1.5 text-xs font-semibold text-green-700 border border-green-200 rounded-lg hover:bg-green-50 transition-colors disabled:opacity-50">
+                        Aprobar
+                      </button>
+                    }
+                  </div>
+                </td>
+
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Paginación -->
+      @if (totalPages() > 1) {
+        <div class="px-4 py-3 border-t border-slate-100 flex items-center justify-between text-sm text-slate-500">
+          <span>{{ total() }} proveedores · Página {{ page() }} de {{ totalPages() }}</span>
+          <div class="flex gap-1">
+            <button (click)="page.set(page() - 1)" [disabled]="page() === 1"
+                    class="px-3 py-1 rounded border border-slate-200 disabled:opacity-40 hover:bg-slate-50">
+              ←
+            </button>
+            @for (n of pages(); track n) {
+              <button (click)="page.set(n)"
+                      class="px-3 py-1 rounded border text-xs font-medium transition-colors
+                             {{ n === page() ? 'bg-indigo-600 text-white border-indigo-600' : 'border-slate-200 hover:bg-slate-50' }}">
+                {{ n }}
+              </button>
+            }
+            <button (click)="page.set(page() + 1)" [disabled]="page() === totalPages()"
+                    class="px-3 py-1 rounded border border-slate-200 disabled:opacity-40 hover:bg-slate-50">
+              →
+            </button>
+          </div>
+        </div>
+      }
+    }
+  </div>
+
+</div>
