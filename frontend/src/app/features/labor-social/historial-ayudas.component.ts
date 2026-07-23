@@ -1,6 +1,6 @@
 import { Component, inject, signal, computed, effect } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { CurrencyPipe } from '@angular/common';
+import { CurrencyPipe, DecimalPipe, SlicePipe } from '@angular/common';
 import { environment } from '../../../environments/environment';
 
 interface Ayuda {
@@ -70,7 +70,7 @@ const TIPO_COLOR_MAP: Record<string, string> = {
 @Component({
   selector: 'app-historial-ayudas',
   standalone: true,
-  imports: [CurrencyPipe],
+  imports: [CurrencyPipe, DecimalPipe, SlicePipe],
   templateUrl: './historial-ayudas.component.html',
 })
 export class HistorialAyudasComponent {
