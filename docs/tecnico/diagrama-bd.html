@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DataHeartSC — Diagrama de Base de Datos</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: #f1f5f9;
+  color: #1e293b;
+  min-height: 100vh;
+}
+header {
+  background: #0f172a;
+  color: #f8fafc;
+  padding: 20px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+header h1 { font-size: 1.2rem; font-weight: 800; }
+header p  { font-size: 0.75rem; color: #94a3b8; margin-top: 2px; }
+.back-btn {
+  background: #1e293b;
+  color: #94a3b8;
+  border: 1px solid #334155;
+  padding: 6px 16px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+.back-btn:hover { background: #334155; color: #f8fafc; }
+
+.stats-bar {
+  background: #fff;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 14px 32px;
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+.stat { text-align: center; }
+.stat-val { font-size: 1.4rem; font-weight: 800; color: #7c3aed; line-height: 1; }
+.stat-lbl { font-size: 0.68rem; color: #64748b; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.05em; }
+
+.groups {
+  display: flex;
+  gap: 16px;
+  padding: 20px 32px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.group-pill {
+  padding: 5px 14px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.15s;
+}
+.group-pill:hover { opacity: 0.8; }
+.group-pill.active { box-shadow: 0 0 0 2px #7c3aed; }
+
+.diagram-wrapper {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  margin: 0 32px 32px;
+  padding: 32px;
+  overflow: auto;
+  min-height: 500px;
+}
+.diagram-wrapper svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.tables-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+  margin: 0 32px 32px;
+}
+.table-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.table-header {
+  padding: 10px 16px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.table-badge {
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #f0fdf4;
+  color: #16a34a;
+}
+.table-badge.empty {
+  background: #fef9c3;
+  color: #92400e;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+}
+th {
+  background: #f8fafc;
+  padding: 6px 12px;
+  text-align: left;
+  color: #64748b;
+  font-weight: 600;
+  border-bottom: 1px solid #e2e8f0;
+}
+td {
+  padding: 5px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #374151;
+  font-family: 'Courier New', monospace;
+  font-size: 0.72rem;
+}
+tr:last-child td { border-bottom: none; }
+.pk  { color: #7c3aed; font-weight: 700; }
+.fk  { color: #0284c7; font-weight: 600; }
+.tag-pk { background: #f5f3ff; color: #7c3aed; padding: 1px 5px; border-radius: 3px; font-size: 0.62rem; margin-left: 4px; }
+.tag-fk { background: #e0f2fe; color: #0284c7; padding: 1px 5px; border-radius: 3px; font-size: 0.62rem; margin-left: 4px; }
+.tag-u  { background: #fef3c7; color: #92400e; padding: 1px 5px; border-radius: 3px; font-size: 0.62rem; margin-left: 4px; }
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 32px 16px;
+  padding-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #e2e8f0;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>DataHeartSC — Diagrama de Base de Datos</h1>
+    <p>PostgreSQL 16 + PostGIS · 19 tablas · Actualizado: 23-jul-2026</p>
+  </div>
+  <a href="../progress-board.html" class="back-btn">← Volver al Roadmap</a>
+</header>
+
+<!-- Stats -->
+<div class="stats-bar">
+  <div class="stat"><div class="stat-val">19</div><div class="stat-lbl">Tablas</div></div>
+  <div class="stat"><div class="stat-val">15.594</div><div class="stat-lbl">Clientes</div></div>
+  <div class="stat"><div class="stat-val">25.151</div><div class="stat-lbl">Pedidos</div></div>
+  <div class="stat"><div class="stat-val">4.493</div><div class="stat-lbl">Donaciones</div></div>
+  <div class="stat"><div class="stat-val">1.002</div><div class="stat-lbl">Beneficiarios</div></div>
+  <div class="stat"><div class="stat-val">4.160</div><div class="stat-lbl">Ayudas</div></div>
+  <div class="stat"><div class="stat-val">468</div><div class="stat-lbl">Productos</div></div>
+  <div class="stat"><div class="stat-val">18</div><div class="stat-lbl">FK activas</div></div>
+</div>
+
+<!-- Diagram -->
+<div style="padding: 24px 32px 8px;">
+  <h2 class="section-title">Diagrama Entidad-Relación</h2>
+</div>
+<div class="diagram-wrapper">
+<pre class="mermaid">
+erDiagram
+    roles {
+        text id PK
+        text name
+        text description
+    }
+    permissions {
+        text id PK
+        text name
+        text key_name
+    }
+    role_permissions {
+        text role_id FK
+        text permission_id FK
+    }
+    users {
+        text id PK
+        text email
+        text password_hash
+        text first_name
+        text last_name
+        text role_id FK
+        boolean is_active
+        timestamp created_at
+    }
+    audit_logs {
+        text id PK
+        text user_id FK
+        text action
+        text ip_address
+        text details
+        timestamp timestamp
+    }
+    clients_donors {
+        text id PK
+        text name
+        text doc_type
+        text doc_number
+        text phone
+        text email
+        text address
+        text city
+        text commune
+        text neighborhood
+        text status
+        text historical_id
+        timestamp created_at
+    }
+    orders {
+        text id PK
+        text client_id FK
+        timestamp order_date
+        text status
+        numeric total_amount
+        text payment_status
+        text source
+        text order_type
+        text invoice_number
+        text canal_atencion
+        text municipio_entrega
+        text domiciliario
+        text created_by_user_id FK
+    }
+    order_items {
+        text id PK
+        text order_id FK
+        text product_id FK
+        integer quantity
+        numeric unit_price
+        numeric subtotal
+    }
+    products {
+        text id PK
+        text name
+        text sku
+        integer stock
+        integer min_stock
+        numeric price
+        boolean is_active
+        text category_name
+        text subcategory_name
+        text external_id
+    }
+    donations {
+        text id PK
+        text client_id FK
+        numeric amount
+        timestamp date
+        text payment_gateway
+        text transaction_id
+        text status
+        text campaign
+        text concept
+        timestamp created_at
+    }
+    certificates {
+        text id PK
+        text donation_id FK
+        integer certificate_number
+        timestamp issue_date
+        text pdf_path
+        text status
+    }
+    inputs {
+        text id PK
+        text name
+        numeric stock
+        numeric min_stock
+        text unit
+    }
+    product_inputs {
+        text product_id FK
+        text input_id FK
+        numeric quantity_required
+    }
+    companions {
+        text id PK
+        text name
+        integer stock
+        integer min_stock
+    }
+    inventory_movements {
+        text id PK
+        text item_type
+        text product_id FK
+        text input_id FK
+        text companion_id FK
+        text movement_type
+        numeric quantity
+        text user_id FK
+        timestamp movement_date
+        text description
+    }
+    beneficiaries {
+        text id PK
+        text first_name
+        text last_name
+        text doc_type
+        text doc_number
+        timestamp birth_date
+        text eps
+        text sisben_group
+        text status
+        text historical_id
+        timestamp enroll_date
+    }
+    ayudas {
+        text id PK
+        text beneficiary_id FK
+        timestamp fecha
+        text tipo_solicitud
+        integer personas_beneficiadas
+        text justificacion
+        numeric valor
+        text estado
+        timestamp created_at
+    }
+    volunteers {
+        text id PK
+        text first_name
+        text last_name
+        text doc_type
+        text doc_number
+        text email
+        text role
+        text skills
+        text status
+        timestamp join_date
+    }
+    providers {
+        text id PK
+        text name
+        text doc_type
+        text doc_number
+        text status
+        json rep_legal
+        json referencias
+        json accionistas
+        text rut_path
+        timestamp created_at
+    }
+
+    roles ||--o{ users : "asignado a"
+    roles ||--o{ role_permissions : "tiene"
+    permissions ||--o{ role_permissions : "en"
+    users ||--o{ audit_logs : "genera"
+    users ||--o{ orders : "crea"
+    users ||--o{ inventory_movements : "registra"
+    clients_donors ||--o{ orders : "realiza"
+    clients_donors ||--o{ donations : "hace"
+    orders ||--o{ order_items : "contiene"
+    order_items }o--|| products : "referencia"
+    donations ||--o{ certificates : "genera"
+    products ||--o{ product_inputs : "usa"
+    inputs ||--o{ product_inputs : "en"
+    products ||--o{ inventory_movements : "mueve"
+    inputs ||--o{ inventory_movements : "mueve"
+    companions ||--o{ inventory_movements : "mueve"
+    beneficiaries ||--o{ ayudas : "recibe"
+</pre>
+</div>
+
+<!-- Table reference -->
+<div style="padding: 8px 32px 8px;">
+  <h2 class="section-title">Referencia de Tablas</h2>
+</div>
+
+<div class="tables-grid">
+
+  <!-- RBAC -->
+  <div class="table-card">
+    <div class="table-header" style="background:#f5f3ff; color:#5b21b6;">
+      roles <span class="table-badge" style="background:#ede9fe;color:#5b21b6;">10 filas</span>
+    </div>
+    <table><tr><th>Columna</th><th>Tipo</th><th>Nota</th></tr>
+      <tr><td class="pk">id</td><td>text</td><td><span class="tag-pk">PK</span></td></tr>
+      <tr><td>name</td><td>text</td><td><span class="tag-u">UNIQUE</span></td></tr>
+      <tr><td>description</td><td>text</td><td>nullable</td></tr>
+    </table>
+  </div>
+
+  <div class="table-card">
+    <div class="table-header" style="background:#f5f3ff; color:#5b21b6;">
+      permissions <span class="table-badge" style="background:#ede9fe;color:#5b21b6;">14 filas</span>
+    </div>
+    <table><tr><th>Columna</th><th>Tipo</th><th>Nota</th></tr>
+      <tr><td class="pk">id</td><td>text</td><td><span class="tag-pk">PK</span></td></tr>
+      <tr><td>name</td><td>text</td><td><span class="tag-u">UNIQUE</span></td></tr>
+      <tr><td>key_name</td><td>text</td><td><span class="tag-u">UNIQUE</span></td></tr>
+    </table>
+  </div>
+
+  <div class="table-card">
+    <div class="table-header" style="background:#f5f3ff; color:#5b21b6;">
+      role_permissions <span class="table-badge" style="background:#ede9fe;color:#5b21b6;">69 filas</span>
+    </div>
+    <table><tr><th>Columna</th><th>Tipo</th><th>Nota</th></tr>
+      <tr><td class="fk">role_id</td><td>text</td><td><span class="tag-fk">FK → roles</span></td></tr>
+      <tr><td class="fk">permission_id</td><td>text</td><td><span class="tag-fk">FK → permissions</span></td></tr>
+    </table>
+  </div>
+
+  <div class="table-card">
+    <div class="table-header" style="background:#f5f3ff; color:#5b21b6;">
+      users <span class="table-badge" style="background:#ede9fe;color:#5b21b6;">8 filas</span>
+    </div>
+    <table><tr><th>Columna</th><th>Tipo</th><th>Nota</th></tr>
+      <tr><td class="pk">id</td><td>text</td><td><span class="tag-pk">PK</span></td></tr>
+      <tr><td>email</td><td>text</td><td><span class="tag-u">UNIQUE</span></td></tr>
+      <tr><td>password_hash</td><td>text</td><td></td></tr>
+      <tr><td>first_name / last_name</td><td>text</td><td></td></tr>
+      <tr><td class="fk">role_id</td><td>text</td><td><span class="tag-fk">FK → roles</span></td></tr>
+      <tr><td>is_active</td><td>boolean</td><td>default true</td></tr>
+    </table>
+  </div>
+
+  <!-- Clientes y Ventas -->
+  <div class="table-card">
+    <div class="table-header" style="background:#eff6ff; color:#1d4ed8;">
+      clients_donors <span class="table-badge">15.594 filas</span>
+    </div>
+    <table><tr><th>Columna</th><th>Tipo</th><th>Nota</th></tr>
+      <tr><td class="pk">id</td><td>text</td><td><span class="tag-pk">PK</span></td></tr>
+      <tr><td>name</td><td>text</td><td></td></tr>
+      <tr><td>doc_type</td><td>text</td><td>Cédula, NIT…</td></tr>
+      <tr><td>doc_number</td><td>text</td><td><span class="tag-u">UNIQUE</span></td></tr>
+      <tr><td>phone / email</td><td>text</td><td>nullable</td></tr>
+      <tr><td>address / city / commune</td><td>text</td><td>nullable</td></tr>
+      <tr><td>status</td><td>text</td><td>Activo | Inactivo</td></tr>
+      <tr><td>historical_id</td><td>text</td><td>ID original Access</td></tr>
+    </table>
+  </div>
+
+  <div class="table-card">
+    <div class="table-header" style="background:#eff6ff; color:#1d4ed8;">
+      orders <span class="table-badge">25.151 filas</span>
+    </div>
+    <table><tr><th>Columna</th><th>Tipo</th><th>Nota</th></tr>
+      <tr><td class="pk">id</td><td>text</td><td><span class="tag-pk">PK</span></td></tr>
+      <tr><td class="fk">client_id</td><td>text</td><td><span class="tag-fk">FK → clients_donors</span></td></tr>
+      <tr><td>order_date</td><td>timestamp</td><td></td></tr>
+      <tr><td>status</td><td>text</td><td>Recibido→Entregado</td></tr>
+      <tr><td>total_amount</td><td>numeric(12,2)</td><td></td></tr>
+      <tr><td>payment_status</td><td>text</td><td>Pendiente|Pagado</td></tr>
+      <tr><td>source</td><td>text</td><td>Manual|Shopify|WhatsApp</td></tr>
+      <tr><td>order_type</td><td>text</td><td>Venta|NotaCredito…</td></tr>
+      <tr><td>invoice_number</td><td>text</td><td>N° original Access</td></tr>
+      <tr><td>canal_atencion</td><td>text</td><td>nullable</td></tr>
+      <tr><td class="fk">created_by_user_id</td><td>text</td><td><span class="tag-fk">FK → users</span></td></tr>
+    </table>
+  </div>
+
+  <div class="table-card">
+    <div class="table-header" style="background:#eff6ff; color:#1d4ed8;">
+      order_items <span class="table-badge">38.205 filas</span>
+    </div>
+    <table><tr><th>Columna</th><th>Tipo</th><th>Nota</th></tr>
+      <tr><td class="pk">id</td><td>text</td><td><span class="tag-pk">PK</span></td></tr>
+      <tr><td class="fk">order_id</td><td>text</td><td><span class="tag-fk">FK → orders</span> Cascade</td></tr>
+      <tr><td class="fk">product_id</td><td>text</td><td><span class="tag-fk">FK → products</span></td></tr>
+      <tr><td>quantity</td><td>integer</td><td></td></tr>
+      <tr><td>unit_price</td><td>numeric(12,2)</td><td></td></tr>
+      <tr><td>subtotal</td><td>numeric(12,2)</td><td></td></tr>
+    </table>
+  </div>
+
+  <div class="table-card">
+    <div class="table-header" style="background:#eff6ff; color:#1d4ed8;">
+      products <span class="table-badge">468 filas</span>
+    </div>
+    <table><tr><th>Columna</th><th>Tipo</th><th>Nota</th></tr>
+      <tr><td class="pk">id</td><td>text</td><td><span class="tag-pk">PK</span></td></tr>
+      <tr><td>name</td><td>text</td><td></td></tr>
+      <tr><td>sku</td><td>text</td><td><span class="tag-u">UNIQUE</span></td></tr>
+      <tr><td>stock / min_stock</td><td>integer</td><td></td></tr>
+      <tr><td>price</td><td>numeric(12,2)</td><td></td></tr>
+      <tr><td>is_active</td><td>boolean</td><td>default true</td></tr>
+      <tr><td>category_name</td><td>text</td><td>nullable</td></tr>
+      <tr><td>external_id</td><td>text</td><td>ID original Excel</td></tr>
+    </table>
+  </div>
+
+  <!-- Donaciones -->
+  <div class="table-card">
+    <div class="table-header" style="background:#f0fdf4; color:#15803d;">
+      donations <span class="table-badge">4.493 filas</span>
+    </div>
+    <table><tr><th>Columna</th><th>Tipo</th><th>Nota</th></tr>
+      <tr><td class="pk">id</td><td>text</td><td><span class="tag-pk">PK</span></td></tr>
+      <tr><td class="fk">client_id</td><td>text</td><td><span class="tag-fk">FK → clients_donors</span></td></tr>
+      <tr><td>amount</td><td>numeric(12,2)</td><td></td></tr>
+      <tr><td>payment_gateway</td><td>text</td><td>Wompi|PayU|PayPal</td></tr>
+      <tr><td>transaction_id</td><td>text</td><td><span class="tag-u">UNIQUE</span></td></tr>
+      <tr><td>status</td><td>text</td><td>Approved|Pending|Declined</td></tr>
+      <tr><td>campaign / concept</td><td>text</td><td>nullable</td></tr>
+    </table>
+  </div>
+
+  <div class="table-card">
+    <div class="table-header" style="background:#f0fdf4; color:#15803d;">
+      certificates <span class="table-badge empty">0 filas</span>
+    </div>
+    <table><tr><th>Columna</th><th>Tipo</th><th>Nota</th></tr>
+      <tr><td class="pk">id</td><td>text</td><td><span class="tag-pk">PK</span></td></tr>
+      <tr><td class="fk">donation_id</td><td>text</td><td><span class="tag-fk">FK → donations</span> Cascade</td></tr>
+      <tr><td>certificate_number</td><td>integer</td><td><span class="tag-u">UNIQUE</span> consecutivo</td></tr>
+      <tr><td>issue_date</td><td>timestamp</td><td></td></tr>
+      <tr><td>pdf_path</td><td>text</td><td>ruta del PDF</td></tr>
+      <tr><td>status</td><td>text</td><td>Enviado|Pendiente</td></tr>
+    </table>
+  </div>
+
+  <!-- Beneficiarios -->
+  <div class="table-card">
+    <div class="table-header" style="background:#fff7ed; color:#c2410c;">
+      beneficiaries <span class="table-badge">1.002 filas</span>
+    </div>
+    <table><tr><th>Columna</th><th>Tipo</th><th>Nota</th></tr>
+      <tr><td class="pk">id</td><td>text</td><td><span class="tag-pk">PK</span></td></tr>
+      <tr><td>first_name / last_name</td><td>text</td><td></td></tr>
+      <tr><td>doc_type / doc_number</td><td>text</td><td><span class="tag-u">UNIQUE</span></td></tr>
+      <tr><td>birth_date</td><td>timestamp</td><td>nullable</td></tr>
+      <tr><td>eps / regimen / sisben_group</td><td>text</td><td>nullable</td></tr>
+      <tr><td>diagnostico / other_diagnosis</td><td>text</td><td>nullable</td></tr>
+      <tr><td>mother_* (7 campos)</td><td>text/boolean</td><td>datos familia</td></tr>
+      <tr><td>father_* (7 campos)</td><td>text/boolean</td><td>datos familia</td></tr>
+      <tr><td>siblings_data</td><td>jsonb</td><td>arreglo hermanos</td></tr>
+      <tr><td>public_services</td><td>jsonb</td><td>servicios públicos</td></tr>
+      <tr><td>status</td><td>text</td><td>Activo|Inactivo|Fallecido</td></tr>
+      <tr><td>historical_id</td><td>text</td><td>ID original Access</td></tr>
+    </table>
+  </div>
+
+  <div class="table-card">
+    <div class="table-header" style="background:#fff7ed; color:#c2410c;">
+      ayudas <span class="table-badge">4.160 filas</span>
+    </div>
+    <table><tr><th>Columna</th><th>Tipo</th><th>Nota</th></tr>
+      <tr><td class="pk">id</td><td>text</td><td><span class="tag-pk">PK</span></td></tr>
+      <tr><td class="fk">beneficiary_id</td><td>text</td><td><span class="tag-fk">FK → beneficiaries</span></td></tr>
+      <tr><td>fecha</td><td>timestamp</td><td></td></tr>
+      <tr><td>tipo_solicitud</td><td>text</td><td>Transporte|Medicamento…</td></tr>
+      <tr><td>personas_beneficiadas</td><td>integer</td><td>default 1</td></tr>
+      <tr><td>justificacion</td><td>text</td><td>nullable</td></tr>
+      <tr><td>valor</td><td>numeric(12,2)</td><td>default 0</td></tr>
+      <tr><td>estado</td><td>text</td><td>Pendiente|Resuelta</td></tr>
+    </table>
+  </div>
+
+  <!-- Inventario -->
+  <div class="table-card">
+    <div class="table-header" style="background:#f0f9ff; color:#0369a1;">
+      inputs <span class="table-badge empty">0 filas</span>
+    </div>
+    <table><tr><th>Columna</th><th>Tipo</th><th>Nota</th></tr>
+      <tr><td class="pk">id</td><td>text</td><td><span class="tag-pk">PK</span></td></tr>
+      <tr><td>name</td><td>text</td><td><span class="tag-u">UNIQUE</span></td></tr>
+      <tr><td>stock / min_stock</td><td>numeric(12,3)</td><td>soporta kg/gr</td></tr>
+      <tr><td>unit</td><td>text</td><td>Kg|Unidades|Metros</td></tr>
+    </table>
+  </div>
+
+  <div class="table-card">
+    <div class="table-header" style="background:#f0f9ff; color:#0369a1;">
+      product_inputs <span class="table-badge empty">0 filas</span>
+    </div>
+    <table><tr><th>Columna</th><th>Tipo</th><th>Nota</th></tr>
+      <tr><td class="fk">product_id</td><td>text</td><td><span class="tag-fk">FK → products</span></td></tr>
+      <tr><td class="fk">input_id</td><td>text</td><td><span class="tag-fk">FK → inputs</span></td></tr>
+      <tr><td>quantity_required</td><td>numeric(12,3)</td><td>cantidad por unidad</td></tr>
+    </table>
+  </div>
+
+  <div class="table-card">
+    <div class="table-header" style="background:#f0f9ff; color:#0369a1;">
+      companions <span class="table-badge empty">0 filas</span>
+    </div>
+    <table><tr><th>Columna</th><th>Tipo</th><th>Nota</th></tr>
+      <tr><td class="pk">id</td><td>text</td><td><span class="tag-pk">PK</span></td></tr>
+      <tr><td>name</td><td>text</td><td><span class="tag-u">UNIQUE</span></td></tr>
+      <tr><td>stock / min_stock</td><td>integer</td><td></td></tr>
+    </table>
+  </div>
+
+  <div class="table-card">
+    <div class="table-header" style="background:#f0f9ff; color:#0369a1;">
+      inventory_movements <span class="table-badge empty">0 filas</span>
+    </div>
+    <table><tr><th>Columna</th><th>Tipo</th><th>Nota</th></tr>
+      <tr><td class="pk">id</td><td>text</td><td><span class="tag-pk">PK</span></td></tr>
+      <tr><td>item_type</td><td>text</td><td>Producto|Insumo|Acompañante</td></tr>
+      <tr><td class="fk">product_id</td><td>text</td><td><span class="tag-fk">FK → products</span> nullable</td></tr>
+      <tr><td class="fk">input_id</td><td>text</td><td><span class="tag-fk">FK → inputs</span> nullable</td></tr>
+      <tr><td class="fk">companion_id</td><td>text</td><td><span class="tag-fk">FK → companions</span> nullable</td></tr>
+      <tr><td>movement_type</td><td>text</td><td>Entrada|Salida|Ajuste</td></tr>
+      <tr><td>quantity</td><td>numeric(12,3)</td><td></td></tr>
+      <tr><td class="fk">user_id</td><td>text</td><td><span class="tag-fk">FK → users</span></td></tr>
+    </table>
+  </div>
+
+  <!-- Independientes -->
+  <div class="table-card">
+    <div class="table-header" style="background:#fdf4ff; color:#7e22ce;">
+      volunteers <span class="table-badge empty">0 filas</span>
+    </div>
+    <table><tr><th>Columna</th><th>Tipo</th><th>Nota</th></tr>
+      <tr><td class="pk">id</td><td>text</td><td><span class="tag-pk">PK</span></td></tr>
+      <tr><td>first_name / last_name</td><td>text</td><td></td></tr>
+      <tr><td>doc_number</td><td>text</td><td><span class="tag-u">UNIQUE</span></td></tr>
+      <tr><td>email</td><td>text</td><td><span class="tag-u">UNIQUE</span></td></tr>
+      <tr><td>role / skills</td><td>text</td><td>nullable</td></tr>
+      <tr><td>status</td><td>text</td><td>Activo|Inactivo</td></tr>
+    </table>
+  </div>
+
+  <div class="table-card">
+    <div class="table-header" style="background:#fdf4ff; color:#7e22ce;">
+      providers <span class="table-badge">8 filas</span>
+    </div>
+    <table><tr><th>Columna</th><th>Tipo</th><th>Nota</th></tr>
+      <tr><td class="pk">id</td><td>text</td><td><span class="tag-pk">PK</span></td></tr>
+      <tr><td>name</td><td>text</td><td></td></tr>
+      <tr><td>doc_number</td><td>text</td><td><span class="tag-u">UNIQUE</span></td></tr>
+      <tr><td>status</td><td>text</td><td>Pendiente|Aprobado</td></tr>
+      <tr><td>rep_legal / referencias / accionistas</td><td>jsonb</td><td>secciones SAGRILAFT</td></tr>
+      <tr><td>rut_path / camara_comercio_path</td><td>text</td><td>rutas de archivos</td></tr>
+      <tr><td colspan="3" style="color:#64748b;font-size:0.68rem;padding-top:6px;">+ 50 campos SAGRILAFT (naturaleza, pagos, PPE, financiero…)</td></tr>
+    </table>
+  </div>
+
+  <div class="table-card">
+    <div class="table-header" style="background:#fdf4ff; color:#7e22ce;">
+      audit_logs <span class="table-badge empty">0 filas</span>
+    </div>
+    <table><tr><th>Columna</th><th>Tipo</th><th>Nota</th></tr>
+      <tr><td class="pk">id</td><td>text</td><td><span class="tag-pk">PK</span></td></tr>
+      <tr><td class="fk">user_id</td><td>text</td><td><span class="tag-fk">FK → users</span> nullable</td></tr>
+      <tr><td>action / ip_address / details</td><td>text</td><td></td></tr>
+      <tr><td>timestamp</td><td>timestamp</td><td></td></tr>
+    </table>
+  </div>
+
+</div>
+
+<!-- Relations summary -->
+<div style="padding: 8px 32px 8px;">
+  <h2 class="section-title">Resumen de Relaciones (FK activas)</h2>
+</div>
+<div style="margin: 0 32px 40px; background:#fff; border:1px solid #e2e8f0; border-radius:10px; overflow:hidden;">
+  <table style="font-size:0.8rem;">
+    <tr><th>Tabla origen</th><th>Columna</th><th>Tabla destino</th><th>Tipo</th><th>On Delete</th></tr>
+    <tr><td>users</td><td>role_id</td><td>roles</td><td>N:1</td><td>Restrict</td></tr>
+    <tr><td>role_permissions</td><td>role_id / permission_id</td><td>roles / permissions</td><td>N:M</td><td>Cascade</td></tr>
+    <tr><td>audit_logs</td><td>user_id</td><td>users</td><td>N:1</td><td>SetNull</td></tr>
+    <tr><td>orders</td><td>client_id</td><td>clients_donors</td><td>N:1</td><td>Restrict</td></tr>
+    <tr><td>orders</td><td>created_by_user_id</td><td>users</td><td>N:1</td><td>SetNull</td></tr>
+    <tr><td>order_items</td><td>order_id</td><td>orders</td><td>N:1</td><td>Cascade</td></tr>
+    <tr><td>order_items</td><td>product_id</td><td>products</td><td>N:1</td><td>Restrict</td></tr>
+    <tr><td>donations</td><td>client_id</td><td>clients_donors</td><td>N:1</td><td>Restrict</td></tr>
+    <tr><td>certificates</td><td>donation_id</td><td>donations</td><td>N:1</td><td>Cascade</td></tr>
+    <tr><td>product_inputs</td><td>product_id</td><td>products</td><td>N:M</td><td>Cascade</td></tr>
+    <tr><td>product_inputs</td><td>input_id</td><td>inputs</td><td>N:M</td><td>Restrict</td></tr>
+    <tr><td>inventory_movements</td><td>user_id</td><td>users</td><td>N:1</td><td>Restrict</td></tr>
+    <tr><td>inventory_movements</td><td>product_id</td><td>products</td><td>N:1 opcional</td><td>Cascade</td></tr>
+    <tr><td>inventory_movements</td><td>input_id</td><td>inputs</td><td>N:1 opcional</td><td>Cascade</td></tr>
+    <tr><td>inventory_movements</td><td>companion_id</td><td>companions</td><td>N:1 opcional</td><td>Cascade</td></tr>
+    <tr><td>ayudas</td><td>beneficiary_id</td><td>beneficiaries</td><td>N:1</td><td>Restrict</td></tr>
+  </table>
+</div>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'default',
+    er: { diagramPadding: 40, layoutDirection: 'TB', minEntityWidth: 100, minEntityHeight: 75, entityPadding: 15, useMaxWidth: true }
+  });
+</script>
+</body>
+</html>

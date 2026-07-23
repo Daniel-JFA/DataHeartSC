@@ -361,8 +361,21 @@ erDiagram
         String doc_type
         String doc_number
         DateTime birth_date
+        String eps
+        String sisben_group
         String status
+        String historical_id
         DateTime enroll_date
+    }
+    Ayuda {
+        String id PK
+        String beneficiary_id FK
+        DateTime fecha
+        String tipo_solicitud
+        Int personas_beneficiadas
+        String justificacion
+        Decimal valor
+        String estado
     }
     Volunteer {
         String id PK
@@ -407,6 +420,7 @@ erDiagram
     Product ||--o{ InventoryMovement : "mueve"
     Input ||--o{ InventoryMovement : "mueve"
     Companion ||--o{ InventoryMovement : "mueve"
+    Beneficiary ||--o{ Ayuda : "recibe"
 ```
 
 ### Descripción de tablas
@@ -423,14 +437,15 @@ erDiagram
 | `order_items` | **38,086+** | Líneas de detalle por pedido |
 | `products` | **468** | Catálogo completo |
 | `donations` | **4,493** | Donaciones separadas del histórico |
-| `certificates` | — | Certificados tributarios PDF (Sprint 7) |
+| `certificates` | — | Certificados tributarios PDF (módulo activo, pendiente producción) |
 | `inputs` | — | Insumos de producción (Sprint 17) |
 | `product_inputs` | — | Recetas BOM (Sprint 17) |
 | `companions` | — | Materiales complementarios |
 | `inventory_movements` | — | Movimientos de inventario (Sprint 18) |
-| `beneficiaries` | — | Niños beneficiarios (Sprint 9) |
-| `volunteers` | — | Voluntarios (Sprint 13) |
-| `providers` | — | Proveedores SAGRILAFT |
+| `beneficiaries` | **1,002** | Niños beneficiarios migrados de Access |
+| `ayudas` | **4,160** | Historial de apoyos por beneficiario |
+| `volunteers` | — | Voluntarios (pendiente carga de datos) |
+| `providers` | **8** | Proveedores SAGRILAFT registrados |
 
 ### Campos clave — Order (extendidos Sprint 2b)
 

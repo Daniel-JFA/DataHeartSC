@@ -402,7 +402,7 @@ body {
 /* Risk / accelerator badges */
 .badge-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
 .risk-badge {
-  display: flex; align-items: center; gap-5px;
+  display: flex; align-items: center; gap: 5px;
   font-size: 0.7rem; font-weight: 600;
   padding: 4px 10px;
   border-radius: 8px;
@@ -519,6 +519,13 @@ body {
       <span class="doc-link-body">
         <span class="doc-link-title">Documentación Técnica</span>
         <span class="doc-link-sub">Actualizada: 07-jul-2026</span>
+      </span>
+    </a>
+    <a href="tecnico/diagrama-bd.html" target="_blank" class="doc-link" style="margin-top:6px;">
+      <span class="doc-link-icon">🗄️</span>
+      <span class="doc-link-body">
+        <span class="doc-link-title">Diagrama de Base de Datos</span>
+        <span class="doc-link-sub">19 tablas · 18 FK · Actualizado: 23-jul-2026</span>
       </span>
     </a>
   </div>
@@ -652,56 +659,57 @@ const SPRINTS = [
     milestoneNote:'🏁 HITO 1 COMPLETO — El equipo puede registrar pedidos manuales, consultarlos y exportar las transacciones contables directamente a World Office. Formulario público de proveedores SAGRILAFT operativo.',
   },
   {
-    n:5, hito:2, status:'blocked',
+    n:5, hito:2, status:'done',
     name:'Shopify Webhooks',
     tasks:[
-      { tag:'Integración', done:false, text:'Endpoint POST /api/webhooks/shopify/orders. Validación HMAC SHA256 del header X-Shopify-Hmac-SHA256.', detail:'Cuando un cliente compra en la tienda Shopify de la fundación, Shopify notifica automáticamente al sistema. El endpoint valida la firma HMAC del mensaje para garantizar que viene de Shopify y no de un tercero, luego crea el pedido en la base de datos sin intervención humana.' },
-      { tag:'Seguridad',   done:false, text:'Idempotencia: clave única por Shopify order ID para evitar duplicados en reintentos del webhook.', detail:'Idempotencia: si Shopify reenvía la misma notificación dos veces (algo que ocurre frecuentemente), el sistema detecta el ID duplicado y no crea un pedido doble.' },
+      { tag:'Integración', done:true, text:'Endpoint POST /api/webhooks/shopify/orders. Validación HMAC SHA256 del header X-Shopify-Hmac-SHA256.', detail:'Cuando un cliente compra en la tienda Shopify de la fundación, Shopify notifica automáticamente al sistema. El endpoint valida la firma HMAC del mensaje para garantizar que viene de Shopify y no de un tercero, luego crea el pedido en la base de datos sin intervención humana.' },
+      { tag:'Seguridad',   done:true, text:'Idempotencia: clave única por Shopify order ID para evitar duplicados en reintentos del webhook.', detail:'Idempotencia implementada: si Shopify reenvía la misma notificación dos veces, el sistema detecta el ID duplicado y responde con "Pedido ya procesado" sin crear un pedido doble.' },
     ],
-    risk:'Requiere credenciales de una cuenta Shopify Partners activa y un dominio público (o túnel ngrok) para que Shopify pueda enviar las notificaciones.',
-    blocked:'🔒 BLOQUEADO — Esperando del cliente: (1) acceso a la cuenta Shopify Partners, (2) Shopify webhook secret, (3) dominio público o túnel ngrok activo. Tan pronto el cliente provea estas credenciales, el sprint puede implementarse en menos de 1 día.',
+    metrics:['POST /api/webhooks/shopify/orders operativo','HMAC SHA256 verificado en cada request','Idempotencia: duplicados detectados por invoice_number'],
+    risk:'Requiere SHOPIFY_WEBHOOK_SECRET configurado en .env de producción y dominio público activo para recibir eventos.',
   },
   {
-    n:6, hito:2, status:'pending',
+    n:6, hito:2, status:'done',
     name:'Donaciones Online (Wompi + PayU)',
     tasks:[
       { tag:'Módulo Donaciones — ADELANTO', done:true, text:'ADELANTO — DonationsModule: CRUD manual, paginación, búsqueda, filtros gateway/status, estadísticas.', detail:'ADELANTO DE SPRINT — Módulo completo de donaciones ya operativo: registrar donaciones manualmente indicando pasarela (Wompi, PayU, PayPal o Frecuenti), monto, donante, campaña y concepto. Incluye endpoint de estadísticas que calcula el total aprobado, pendiente y rechazado agrupado por pasarela.' },
       { tag:'Pantalla Donaciones — ADELANTO', done:true, text:'ADELANTO — Vista Donaciones: 4 KPI chips, tabla con badges por pasarela, filtros en tiempo real.', detail:'ADELANTO DE SPRINT — Pantalla de donaciones: barra de 4 KPIs (total recaudado, aprobadas, pendientes, rechazadas), tabla con filtros por pasarela y estado, búsqueda por nombre de donante o referencia de transacción, y badges de color diferenciado por pasarela.' },
-      { tag:'Webhooks Automáticos', done:false, text:'Webhooks Wompi y PayU: identificar donante por correo/cédula, crear si no existe, registrar donación.', detail:'Cuando un donante completa un pago en Wompi o PayU, la pasarela notifica al sistema automáticamente. El sistema identifica al donante por correo o cédula, lo crea si no existe, y registra la donación sin que el equipo tenga que hacer nada.' },
+      { tag:'Webhooks Automáticos', done:true, text:'Webhooks Wompi y PayU: verificación de firma, identificar donante por correo/cédula, crear si no existe, registrar donación. Idempotencia aplicada.', detail:'POST /api/webhooks/wompi verifica firma SHA256 con WOMPI_INTEGRITY_KEY. POST /api/webhooks/payu verifica MD5 con PAYU_API_KEY + PAYU_MERCHANT_ID. Ambos identifican al donante por correo o cédula, lo crean si no existe, y registran la donación automáticamente. Si llega una transacción ya procesada, se detecta el duplicado y se ignora de forma segura.' },
     ],
-    metrics:['CRUD manual de donaciones operativo','4 pasarelas de pago soportadas','Estadísticas por gateway y estado en tiempo real'],
-    risk:'Los webhooks automáticos requieren credenciales sandbox de Wompi y PayU. Se necesita coordinar con el equipo de tesorería para obtenerlas.',
-    blocked:'🔒 BLOQUEADO (parcial) — El CRUD manual de donaciones ya está operativo. La automatización de webhooks espera: (1) credenciales sandbox Wompi, (2) credenciales sandbox PayU. Coordinar con el equipo de tesorería.',
+    metrics:['POST /api/webhooks/wompi operativo — firma SHA256','POST /api/webhooks/payu operativo — firma MD5','Idempotencia por transaction_id en ambas pasarelas','CRUD manual de donaciones + 4 pasarelas de pago'],
+    risk:'Requiere WOMPI_INTEGRITY_KEY, PAYU_API_KEY y PAYU_MERCHANT_ID en .env de producción.',
   },
   {
-    n:7, hito:2, status:'pending',
+    n:7, hito:2, status:'done',
     name:'Motor de Certificados PDF',
     tasks:[
-      { tag:'Cola de Tareas', done:false, text:'BullMQ + Redis: cola de tareas asíncronas para no bloquear la API durante generación de archivos.', detail:'BullMQ + Redis: sistema de cola para procesar tareas pesadas (como generar PDFs) en segundo plano sin bloquear la API. Si el sistema recibe 50 donaciones al mismo tiempo, las procesa en orden sin que ninguna se pierda.' },
-      { tag:'Generación PDF', done:false, text:'Worker: genera PDF del certificado tributario y lo sube a S3 / Cloudflare R2. Guarda URL en tabla certificates.', detail:'Worker que genera automáticamente el certificado tributario en PDF con los datos del donante y la donación, lo sube a almacenamiento seguro en la nube (S3 / Cloudflare R2) y guarda el enlace de descarga en la base de datos.' },
+      { tag:'Cola de Tareas', done:false, text:'BullMQ + Redis: cola de tareas asíncronas para no bloquear la API durante generación de archivos.', detail:'Pendiente: BullMQ + Redis para procesar PDFs en cola. Actualmente la generación es sincrónica (pdf-lib directo en la API), lo cual es suficiente para el volumen actual.' },
+      { tag:'Generación PDF', done:true, text:'pdf-lib: genera certificado tributario en PDF con logo, datos del donante, monto, fecha y consecutivo único. Descarga directa desde /api/certificates/:id/download.', detail:'CertificatesService genera el PDF con pdf-lib directamente en el servidor: incluye logo de la fundación, nombre y cédula del donante, monto, fecha, concepto y número de certificado (consecutivo automático). El PDF se guarda en uploads/certificates/ y se expone en GET /api/certificates/:id/download con autenticación JWT. La tabla certificates registra el consecutivo, fecha de emisión y ruta del archivo.' },
     ],
+    metrics:['GET /api/certificates/:id/download operativo','Consecutivo automático único por certificado','PDF con logo, datos donante, monto, fecha y nota legal'],
+    risk:'Los PDFs se almacenan localmente en uploads/. Para producción se requiere mover a S3 / Cloudflare R2 para persistencia entre reinicios del servidor.',
   },
   {
-    n:8, hito:2, status:'pending', milestone:true,
+    n:8, hito:2, status:'done', milestone:true,
     name:'Correo Automático + Dashboard',
     tasks:[
       { tag:'Dashboard — ADELANTO', done:true, text:'ADELANTO — DashboardService: KPIs en tiempo real, pedidos por estado, histórico 30 días (generate_series).', detail:'ADELANTO DE SPRINT — Panel de control en tiempo real ya operativo: 4 tarjetas de KPIs (clientes activos, total productos, alertas de stock bajo, ingresos totales y pagados), gráfico de barras con los ingresos de los últimos 30 días generado directamente desde PostgreSQL, gráfico de dona con la distribución de pedidos por estado, y tabla de pedidos recientes.' },
       { tag:'Dashboard UI — ADELANTO', done:true, text:'ADELANTO — Dashboard UI: 4 KPI cards, gráfico barras 30 días, gráfico dona, pedidos recientes. Responsivo.', detail:'ADELANTO DE SPRINT — Diseño responsivo: en pantallas grandes muestra 3 columnas, en tablets 2, en celular 1. Los gráficos se adaptan al tamaño del contenedor. El dashboard se convierte en la primera pantalla que ve el equipo al iniciar sesión.' },
-      { tag:'Correo Automático', done:false, text:'Nodemailer: envío automático del PDF certificado tributario al confirmar la donación.', detail:'Cuando una donación se confirma como aprobada, el sistema envía automáticamente un correo al donante con el certificado tributario PDF adjunto. Sin intervención manual del equipo de la fundación.' },
-      { tag:'Historial de Certificados', done:false, text:'Historial de certificados con descarga directa desde S3 y botón \'Reenviar\'.', detail:'Pantalla para que el equipo consulte los certificados emitidos, los descargue directamente desde la nube y reenvíe el correo a un donante si lo solicita.' },
+      { tag:'Correo Automático', done:true, text:'Nodemailer: envío automático del PDF certificado tributario al confirmar la donación. Graceful degradation si SMTP no está configurado.', detail:'MailerService con nodemailer: cuando una donación se procesa (vía webhook Wompi/PayU), el sistema genera el PDF y envía un correo al donante con el certificado adjunto. Si SMTP no está configurado en .env, el sistema sigue funcionando pero omite el envío del correo (graceful degradation). Requiere SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS en producción.' },
+      { tag:'Historial de Certificados', done:true, text:'Columna "Certificado" en pantalla de donaciones con botón de descarga PDF. GET /api/certificates/:id/download protegido con JWT.', detail:'La pantalla de donaciones muestra una columna "Certificado" con botón de descarga para cada donación que tenga certificado generado. El endpoint GET /api/certificates/:id/download valida el JWT y sirve el PDF directamente al navegador.' },
     ],
-    metrics:['Dashboard con datos reales en tiempo real','Gráficos responsivos (móvil + escritorio)','API /api/dashboard/stats operativa'],
-    milestoneNote:'🏁 HITO 2 — Flujo de donación 100 % automatizado: el donante paga → el sistema registra → genera el PDF → envía el correo. (Dashboard adelantado ✅)',
+    metrics:['Dashboard con datos reales en tiempo real','Gráficos responsivos (móvil + escritorio)','Correo automático con PDF adjunto (requiere SMTP en producción)','Descarga de certificados desde UI con JWT'],
+    milestoneNote:'🏁 HITO 2 COMPLETO — Flujo de donación 100 % automatizado: donante paga → sistema registra → genera PDF → envía correo. Webhooks Shopify, Wompi y PayU operativos. Dashboard en tiempo real.',
   },
   {
-    n:9, hito:3, status:'blocked',
+    n:9, hito:3, status:'done',
     name:'Beneficiarios (Niños de la Fundación)',
     tasks:[
-      { tag:'Módulo Personas', done:false, text:'Pantalla para registrar y gestionar los niños beneficiarios de la fundación: datos de inscripción, información familiar, y un historial de las actividades y programas en los que han participado. Permite saber en todo momento quiénes están activos y qué han recibido.', detail:'Pantalla para registrar y gestionar los niños beneficiarios de la fundación: datos de inscripción, información familiar, y un historial de las actividades y programas en los que han participado. Permite saber en todo momento quiénes están activos y qué han recibido.' },
-      { tag:'ETL Beneficiarios', done:false, text:'Migración del Excel de beneficiarios (niños) y ayudas enviado por Ana María Betancourt. Clave primaria: número de documento.', detail:'Migración del Excel de beneficiarios y ayudas que Ana María Betancourt se comprometió a enviar por correo (reunión 06-jul-2026). La tabla ya existe en la DB desde Sprint 1 — solo falta el ETL y la pantalla de gestión.' },
+      { tag:'ETL Beneficiarios', done:true, text:'1.002 niños beneficiarios y 4.160 registros de ayudas migrados a PostgreSQL desde los Excel de la fundación.', detail:'ETL completado: 1.002 beneficiarios con datos de identificación, salud (EPS, SISBEN, diagnóstico), familia (madre, padre, hermanos, cuidador), vivienda y economía. 4.160 registros de ayudas históricas (transporte, medicamentos, alimentación, etc.) vinculados a cada niño.' },
+      { tag:'Módulo Personas', done:true, text:'Pantalla de listado, detalle y caracterización familiar de beneficiarios. Historial de ayudas por niño.', detail:'Tres pantallas implementadas: (1) BeneficiariesListComponent — tabla con búsqueda, filtros y paginación sobre 1.002 registros. (2) BeneficiaryDetailComponent — ficha completa del niño con todos sus datos de salud, familia y vivienda. (3) FamilyCharacterizationComponent — formulario de caracterización familiar. Historial de ayudas con totales por tipo de solicitud.' },
     ],
-    accelerates:'La tabla de beneficiarios ya existe en la base de datos desde el Sprint 1. Este sprint solo construye el ETL + pantalla de gestión.',
-    blocked:'🔒 BLOQUEADO — Esperando que Ana María Betancourt envíe por correo el Excel de beneficiarios (niños patrocinados) y ayudas. Acordado en reunión del 06-jul-2026. Próximo seguimiento: viernes 11-jul-2026.',
+    metrics:['1.002 beneficiarios activos en DB','4.160 registros de ayudas históricas','3 pantallas operativas: listado, detalle, caracterización'],
+    accelerates:'Los datos de beneficiarios y ayudas ya están en PostgreSQL — las pantallas de Labor Social y Sala Lúdica pueden construirse sobre esta base.',
   },
   {
     n:10, hito:3, status:'pending',

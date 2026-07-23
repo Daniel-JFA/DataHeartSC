@@ -29,7 +29,7 @@ const ROLES = [
   { name: 'DIRECTORA',                  description: 'Luisa Fernanda Muriel — solo lectura global en todos los módulos' },
   { name: 'LIDER_DATA_HEART',           description: 'Ana Maria Betancourt — acceso total a todos los módulos' },
   { name: 'ASISTENTE_CONTABLE',         description: 'Alejandra Betancur — ventas, facturación, inventario (total) + beneficiarios y dashboards (lectura)' },
-  { name: 'CONTADORA',                  description: 'Doris Giraldo — ventas, facturación e inventario (acceso total)' },
+  { name: 'CONTADORA',                  description: 'Doris Giraldo — ventas y facturación (acceso total)' },
   { name: 'LIDER_CLIENTES_BENEFACTORES',description: 'Paula Gómez — ventas, facturación y beneficiarios (total) + dashboards (lectura)' },
   { name: 'LIDER_ATENCION_FAMILIAS',    description: 'Marcela Gallego — ventas, inventario y beneficiarios (total) + dashboards (lectura)' },
   { name: 'LIDER_COMUNICACIONES',       description: 'Megan David — segmentación CRM (total) + ventas, beneficiarios, voluntarios y dashboards (lectura)' },
@@ -44,11 +44,12 @@ const ROLES = [
 // Módulo                    DIRECTORA  DATA_HEART  ASIST_CONT  CONTADORA  CLIENTES  FAMILIAS  COMUNICACIONES
 // Ventas y Donaciones       R          R+W         R+W         R+W        R+W       R+W       R
 // Facturación y Recibos     R          R+W         R+W         R+W        R+W       —         —
-// Proveedores e Inventario  R          R+W         R+W         R+W        —         R+W       —
+// Proveedores e Inventario  R          R+W         R+W         —          —         R+W       —
 // Módulo Beneficiarios      R          R+W         R           —          R+W       R+W       R
 // Módulo Voluntarios        R          R+W         —           —          —         —         R
 // Dashboards y Reportes     R          R+W         R           —          R         R         R
 // Segmentación CRM          R          R+W         —           —          —         —         R+W
+// (Matriz v3 — 23-jul-2026: CONTADORA pierde inventario)
 //
 const ROLE_PERMISSIONS: Record<string, string[]> = {
   DIRECTORA: [
@@ -79,7 +80,6 @@ const ROLE_PERMISSIONS: Record<string, string[]> = {
   CONTADORA: [
     'ventas_donaciones:read', 'ventas_donaciones:write',
     'facturacion:read',       'facturacion:write',
-    'inventario:read',        'inventario:write',
   ],
   // CAMBIO v2: Paula pierde Voluntarios, gana Beneficiarios (total)
   LIDER_CLIENTES_BENEFACTORES: [
@@ -115,13 +115,13 @@ const ROLE_PERMISSIONS: Record<string, string[]> = {
 
 // ─── Usuarios reales de la Fundación ─────────────────────────────────────────
 const USERS = [
-  { email: 'luisa@santiagocorazon.org',    firstName: 'Luisa',     lastName: 'Muriel',      roleName: 'DIRECTORA',                   password: 'dataheart2026' },
-  { email: 'ana@santiagocorazon.org',      firstName: 'Ana',       lastName: 'Betancourt',  roleName: 'LIDER_DATA_HEART',             password: 'dataheart2026' },
-  { email: 'alejandra@santiagocorazon.org',firstName: 'Alejandra', lastName: 'Betancur',    roleName: 'ASISTENTE_CONTABLE',           password: 'dataheart2026' },
-  { email: 'doris@santiagocorazon.org',    firstName: 'Doris',     lastName: 'Giraldo',     roleName: 'CONTADORA',                   password: 'dataheart2026' },
-  { email: 'paula@santiagocorazon.org',    firstName: 'Paula',     lastName: 'Gomez',       roleName: 'LIDER_CLIENTES_BENEFACTORES', password: 'dataheart2026' },
-  { email: 'marcela@santiagocorazon.org',  firstName: 'Marcela',   lastName: 'Gallego',     roleName: 'LIDER_ATENCION_FAMILIAS',     password: 'dataheart2026' },
-  { email: 'megan@santiagocorazon.org',    firstName: 'Megan',     lastName: 'David',       roleName: 'LIDER_COMUNICACIONES',        password: 'dataheart2026' },
+  { email: 'santiagocorazon@santiagocorazon.org',   firstName: 'Luisa',     lastName: 'Muriel',      roleName: 'DIRECTORA',                   password: 'dataheart2026' },
+  { email: 'eventos@santiagocorazon.org',           firstName: 'Ana',       lastName: 'Betancourt',  roleName: 'LIDER_DATA_HEART',             password: 'dataheart2026' },
+  { email: 'secretaria@santiagocorazon.org',        firstName: 'Alejandra', lastName: 'Betancur',    roleName: 'ASISTENTE_CONTABLE',           password: 'dataheart2026' },
+  { email: 'dorisgiraldo8@yahoo.es',                firstName: 'Doris',     lastName: 'Giraldo',     roleName: 'CONTADORA',                   password: 'dataheart2026' },
+  { email: 'productos@santiagocorazon.org',         firstName: 'Paula',     lastName: 'Gomez',       roleName: 'LIDER_CLIENTES_BENEFACTORES', password: 'dataheart2026' },
+  { email: 'atencionfamilias@santiagocorazon.org',  firstName: 'Marcela',   lastName: 'Gallego',     roleName: 'LIDER_ATENCION_FAMILIAS',     password: 'dataheart2026' },
+  { email: 'comunicaciones.sc@santiagocorazon.org', firstName: 'Megan',     lastName: 'David',       roleName: 'LIDER_COMUNICACIONES',        password: 'dataheart2026' },
 ];
 
 async function main() {

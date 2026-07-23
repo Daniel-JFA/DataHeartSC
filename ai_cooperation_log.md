@@ -1047,3 +1047,17 @@ Before starting any work, read the last 15-20 lines to understand the latest cha
   - Configurar variables de entorno en producción (WOMPI_INTEGRITY_KEY, PAYU, SMTP)
   - Pendiente despliegue en producción (sc.danielflorez.dev) para cobrar Hito 2
   - Sprint 05 a documentar en docs/sprints/sprint-05.md
+
+## 2026-07-23 — Claude — Actualización roles, emails y documentación
+
+- **Task:** Corregir emails de usuarios reales, ajustar permisos de CONTADORA, actualizar progress-board y documentación.
+- **DB changes (aplicados directamente):**
+  - Emails actualizados para los 7 usuarios: santiagocorazon@, eventos@, secretaria@, dorisgiraldo8@yahoo.es, productos@, atencionfamilias@, comunicaciones.sc@
+  - CONTADORA: eliminados inventario:read e inventario:write (matriz v3)
+- **Files Modified:**
+  - `backend/prisma/seed.ts` — emails reales, descripción CONTADORA corregida, matriz v3 (sin inventario para Contadora)
+  - `docs/progress-board.html` — Sprints 5,6,7,8,9 actualizados a status:'done'; enlace diagrama BD en sidebar; bug CSS gap-5px corregido
+  - `docs/tecnico/diagrama-bd.html` — NUEVO: diagrama ERD completo con Mermaid.js + referencia de tablas con conteos reales
+  - `docs/tecnico/TECHNICAL_DOCUMENTATION.md` — tabla Ayuda agregada al ERD Mermaid, conteos actualizados
+- **Current Status:** ✅ DB sincronizada con matriz de accesos v3
+- **Pending:** Cambiar contraseñas temporales (dataheart2026) antes de capacitación del personal
