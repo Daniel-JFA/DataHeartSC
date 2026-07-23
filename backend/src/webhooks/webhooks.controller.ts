@@ -307,7 +307,7 @@ export class WebhooksController {
       },
     });
 
-    await this.certificates.generateForDonation(donation.id);
+    await this.certificates.enqueueForDonation(donation.id);
     this.logger.log(`Donación Wompi ${transactionId} registrada y certificado generado`);
   }
 
@@ -385,7 +385,7 @@ export class WebhooksController {
       },
     });
 
-    await this.certificates.generateForDonation(donation.id);
+    await this.certificates.enqueueForDonation(donation.id);
     this.logger.log(`Donación PayU ${referenceCode} registrada y certificado generado`);
     return { received: true, action: 'created' };
   }

@@ -1,9 +1,12 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 import { PrismaService } from '../prisma/prisma.service';
 import { MailerService } from '../mailer/mailer.service';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import * as fs from 'fs';
 import * as path from 'path';
+import { CERTIFICATES_QUEUE, CertificateJobData } from './certificates.queue';
 
 @Injectable()
 export class CertificatesService {
@@ -13,9 +16,21 @@ export class CertificatesService {
   constructor(
     private prisma: PrismaService,
     private mailer: MailerService,
+    @InjectQueue(CERTIFICATES_QUEUE) private queue: Queue<CertificateJobData>,
   ) {
     this.uploadsDir = path.join(process.cwd(), 'uploads', 'certificates');
     fs.mkdirSync(this.uploadsDir, { recursive: true });
+  }
+
+  // ── Encolar generación de certificado (async) ────────────────────────────────
+  async enqueueForDonation(donationId: string) {
+    await this.queue.add('generate', { donationId }, {
+      attempts: 3,
+      backoff: { type: 'exponential', delay: 5000 },
+      removeOnComplete: 100,
+      removeOnFail: 50,
+    });
+    this.logger.log(`Certificado encolado para donación ${donationId}`);
   }
 
   // ── Generar y emitir certificado para una donación aprobada ──────────────────
