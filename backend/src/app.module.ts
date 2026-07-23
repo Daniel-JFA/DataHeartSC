@@ -15,6 +15,7 @@ import { AyudasModule } from './ayudas/ayudas.module';
 import { WebhooksModule } from './webhooks/webhooks.module';
 import { CertificatesModule } from './certificates/certificates.module';
 import { MailerModule } from './mailer/mailer.module';
+import { VolunteersModule } from './volunteers/volunteers.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { MailerModule } from './mailer/mailer.module';
     WebhooksModule,
     CertificatesModule,
     MailerModule,
+    VolunteersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
