@@ -345,22 +345,53 @@ model Ayuda {
 }
 
 model Volunteer {
-  id           String    @id @default(uuid())
-  firstName    String    @map("first_name")
-  lastName     String    @map("last_name")
-  docType      String    @map("doc_type")
-  docNumber    String    @unique @map("doc_number")
-  email        String?   @unique
-  phone        String?
-  role         String?   // Rol dentro de la fundación
-  skills       String?   // Habilidades relevantes
-  status       String    @default("Activo")
-  joinDate     DateTime  @default(now()) @map("join_date")
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime  @updatedAt @map("updated_at")
+  id            String    @id @default(uuid())
+  firstName     String    @map("first_name")
+  lastName      String    @map("last_name")
+  docType       String    @map("doc_type")
+  docNumber     String    @unique @map("doc_number")
+  birthDate     DateTime? @map("birth_date")
+  birthCity     String?   @map("birth_city")
+  email         String?   @unique
+  phone         String?
+  address       String?
+  city          String?
+  department    String?
+  eps           String?
+  occupation    String?
+  shirtSize     String?   @map("shirt_size")
+  availability  String?
+  segment       String?
+  supportNeeds  String?   @map("support_needs")
+  expectations  String?
+  role          String?   // Rol dentro de la fundación
+  skills        String?   // Habilidades relevantes
+  status        String    @default("Activo")
+  joinDate      DateTime  @default(now()) @map("join_date")
+  lastUpdatedAt DateTime? @map("last_updated_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  supports      VolunteerSupport[]
 
   @@index([docNumber])
   @@map("volunteers")
+}
+
+model VolunteerSupport {
+  id            String    @id @default(uuid())
+  volunteerDoc  String    @map("volunteer_doc")
+  date          DateTime
+  hours         Float?
+  type          String?   // Eventos, Productos, Logística, etc.
+  mealValue     Decimal?  @map("meal_value") @db.Decimal(12, 2)
+  notes         String?
+  createdAt     DateTime  @default(now()) @map("created_at")
+  volunteer     Volunteer @relation(fields: [volunteerDoc], references: [docNumber], onDelete: Cascade)
+
+  @@index([volunteerDoc])
+  @@index([date])
+  @@map("volunteer_supports")
 }
 
 model Provider {
