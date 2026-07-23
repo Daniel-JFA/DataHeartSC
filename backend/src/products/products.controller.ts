@@ -18,12 +18,13 @@ export class ProductsController {
   @Get()
   @RequirePermission('inventario:read')
   findAll(
-    @Query('page',       new DefaultValuePipe(1),     ParseIntPipe)  page: number,
-    @Query('limit',      new DefaultValuePipe(20),    ParseIntPipe)  limit: number,
-    @Query('search',     new DefaultValuePipe(''))                   search: string,
-    @Query('onlyActive', new DefaultValuePipe(false), ParseBoolPipe) onlyActive: boolean,
+    @Query('page',         new DefaultValuePipe(1),     ParseIntPipe)  page: number,
+    @Query('limit',        new DefaultValuePipe(20),    ParseIntPipe)  limit: number,
+    @Query('search',       new DefaultValuePipe(''))                   search: string,
+    @Query('onlyActive',   new DefaultValuePipe(false), ParseBoolPipe) onlyActive: boolean,
+    @Query('categoryName', new DefaultValuePipe(''))                   categoryName: string,
   ) {
-    return this.productsService.findAll(page, limit, search, onlyActive);
+    return this.productsService.findAll(page, limit, search, onlyActive, categoryName);
   }
 
   @Get(':id')

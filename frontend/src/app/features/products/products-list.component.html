@@ -15,8 +15,8 @@
 
 <div class="px-8 py-6 space-y-5">
 
-  <!-- Search bar -->
-  <div class="flex items-center gap-3">
+  <!-- Search bar + category filter -->
+  <div class="flex items-center gap-3 flex-wrap">
     <div class="relative flex-1 max-w-md">
       <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-slate-400">
@@ -27,6 +27,13 @@
         (input)="onSearch($event)"
         class="w-full border border-slate-300 rounded-lg pl-9 pr-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
     </div>
+    <select (change)="onCategoryFilter($any($event.target).value)" [value]="categoryFilter()"
+            class="px-3 py-2.5 border border-slate-300 rounded-lg text-sm text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors">
+      <option value="">Todas las categorías</option>
+      @for (cat of categorias; track cat) {
+        <option [value]="cat">{{ cat }}</option>
+      }
+    </select>
   </div>
 
   <!-- Table card -->
@@ -57,6 +64,7 @@
           <thead class="bg-slate-50 border-b border-slate-200">
             <tr>
               <th class="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Producto</th>
+              <th class="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Categoría</th>
               <th class="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">SKU</th>
               <th class="text-right px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Precio</th>
               <th class="text-right px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Stock</th>
@@ -67,6 +75,13 @@
             @for (p of products(); track p.id) {
               <tr class="hover:bg-slate-50/70 transition-colors" [class.bg-red-50]="lowStock(p)">
                 <td class="px-5 py-3.5 font-medium text-slate-900">{{ p.name }}</td>
+                <td class="px-5 py-3.5">
+                  @if (p.categoryName) {
+                    <span class="text-xs font-medium px-2 py-0.5 rounded-full {{ categoryBadge(p.categoryName) }}">{{ p.categoryName }}</span>
+                  } @else {
+                    <span class="text-slate-300 text-xs">—</span>
+                  }
+                </td>
                 <td class="px-5 py-3.5">
                   <span class="font-mono text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded">{{ p.sku }}</span>
                 </td>

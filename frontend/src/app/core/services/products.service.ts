@@ -10,6 +10,7 @@ export interface Product {
   minStock: number;
   price: string;
   isActive: boolean;
+  categoryName: string | null;
 }
 
 export interface PagedResult<T> {
@@ -25,12 +26,13 @@ export class ProductsService {
   private http = inject(HttpClient);
   private base = `${environment.apiUrl}/products`;
 
-  getAll(page = 1, limit = 20, search = '', onlyActive = false) {
-    const params = new HttpParams()
+  getAll(page = 1, limit = 20, search = '', onlyActive = false, categoryName = '') {
+    let params = new HttpParams()
       .set('page', page)
       .set('limit', limit)
       .set('search', search)
       .set('onlyActive', onlyActive);
+    if (categoryName) params = params.set('categoryName', categoryName);
     return this.http.get<PagedResult<Product>>(this.base, { params });
   }
 }

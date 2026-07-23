@@ -1,4 +1,5 @@
 import { Component, inject, signal, computed, effect } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { ClientsService, Client, CreateClientPayload } from '../../core/services/clients.service';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { PaginationComponent } from '../../shared/components/pagination/pagination.component';
@@ -7,7 +8,7 @@ import { DecimalPipe } from '@angular/common';
 @Component({
   selector: 'app-clients-list',
   standalone: true,
-  imports: [ReactiveFormsModule, PaginationComponent, DecimalPipe],
+  imports: [RouterLink, ReactiveFormsModule, PaginationComponent, DecimalPipe],
   templateUrl: './clients-list.component.html',
 })
 export class ClientsListComponent {

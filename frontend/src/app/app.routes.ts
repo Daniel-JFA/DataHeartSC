@@ -32,6 +32,12 @@ export const routes: Routes = [
         data: { permission: 'segmentacion:read' },
       },
       {
+        path: 'clients/:id',
+        loadComponent: () => import('./features/clients/client-detail.component').then(m => m.ClientDetailComponent),
+        canActivate: [permissionGuard],
+        data: { permission: 'segmentacion:read' },
+      },
+      {
         path: 'products',
         loadComponent: () => import('./features/products/products-list.component').then(m => m.ProductsListComponent),
         canActivate: [permissionGuard],

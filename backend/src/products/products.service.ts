@@ -7,10 +7,11 @@ import { UpdateProductDto } from './dto/update-product.dto';
 export class ProductsService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll(page = 1, limit = 20, search = '', onlyActive = false) {
+  async findAll(page = 1, limit = 20, search = '', onlyActive = false, categoryName = '') {
     const skip = (page - 1) * limit;
     const where: Record<string, unknown> = {};
     if (onlyActive) where['isActive'] = true;
+    if (categoryName) where['categoryName'] = categoryName;
     if (search) {
       where['OR'] = [
         { name: { contains: search, mode: 'insensitive' } },
@@ -22,7 +23,7 @@ export class ProductsService {
       this.prisma.product.findMany({
         where, skip, take: limit,
         orderBy: { name: 'asc' },
-        select: { id: true, name: true, sku: true, stock: true, minStock: true, price: true, isActive: true },
+        select: { id: true, name: true, sku: true, stock: true, minStock: true, price: true, isActive: true, categoryName: true },
       }),
       this.prisma.product.count({ where }),
     ]);

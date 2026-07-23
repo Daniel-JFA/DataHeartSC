@@ -10,9 +10,34 @@ export interface Client {
   phone?: string;
   email?: string;
   city?: string;
+  commune?: string;
+  neighborhood?: string;
+  address?: string;
   status: string;
   createdAt: string;
   _count?: { orders: number; donations: number };
+}
+
+export interface ClientOrder {
+  id: string;
+  orderDate: string;
+  status: string;
+  totalAmount: string;
+  source: string;
+  items?: Array<{ product: { name: string }; quantity: number; unitPrice: string }>;
+}
+
+export interface ClientDonation {
+  id: string;
+  date: string;
+  amount: string;
+  paymentGateway: string;
+  status: string;
+}
+
+export interface ClientDetail extends Client {
+  orders: ClientOrder[];
+  donations: ClientDonation[];
 }
 
 export interface PagedResult<T> {
@@ -49,7 +74,7 @@ export class ClientsService {
   }
 
   getOne(id: string) {
-    return this.http.get<Client>(`${this.base}/${id}`);
+    return this.http.get<ClientDetail>(`${this.base}/${id}`);
   }
 
   create(payload: CreateClientPayload) {

@@ -51,8 +51,15 @@ export class ClientsService {
     const client = await this.prisma.clientDonor.findUnique({
       where: { id },
       include: {
-        orders:    { orderBy: { orderDate: 'desc' }, take: 5, select: { id: true, orderDate: true, status: true, totalAmount: true, source: true } },
-        donations: { orderBy: { date: 'desc' },      take: 5, select: { id: true, date: true, amount: true, paymentGateway: true, status: true } },
+        orders: {
+          orderBy: { orderDate: 'desc' },
+          take: 50,
+          select: {
+            id: true, orderDate: true, status: true, totalAmount: true, source: true,
+            items: { select: { quantity: true, unitPrice: true, product: { select: { name: true } } } },
+          },
+        },
+        donations: { orderBy: { date: 'desc' }, take: 50, select: { id: true, date: true, amount: true, paymentGateway: true, status: true } },
       },
     });
     if (!client) throw new NotFoundException(`Cliente ${id} no encontrado`);
