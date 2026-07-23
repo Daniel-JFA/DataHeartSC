@@ -3,6 +3,17 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
 
+export interface SegmentFilters {
+  city?: string;
+  hasEmail?: boolean;
+  hasPhone?: boolean;
+  hasDonations?: boolean;
+  hasOrders?: boolean;
+  status?: string;
+  page?: number;
+  limit?: number;
+}
+
 @Injectable()
 export class ClientsService {
   constructor(private prisma: PrismaService) {}
@@ -66,5 +77,65 @@ export class ClientsService {
   async remove(id: string) {
     await this.findOne(id);
     return this.prisma.clientDonor.update({ where: { id }, data: { status: 'Inactivo' } });
+  }
+
+  async segment(filters: SegmentFilters) {
+    const {
+      city, hasEmail, hasPhone, hasDonations, hasOrders, status,
+      page = 1, limit = 20,
+    } = filters;
+
+    const where: Record<string, unknown> = {};
+
+    if (city)   where['city']  = { contains: city, mode: 'insensitive' };
+    if (status) where['status'] = status;
+    if (hasEmail)  where['email'] = { not: null };
+    if (hasPhone)  where['phone'] = { not: null };
+    if (hasDonations) where['donations'] = { some: {} };
+    if (hasOrders)    where['orders']    = { some: {} };
+
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.clientDonor.findMany({
+        where, skip, take: limit,
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true, name: true, docType: true, docNumber: true,
+          phone: true, email: true, city: true, status: true, createdAt: true,
+          _count: { select: { orders: true, donations: true } },
+        },
+      }),
+      this.prisma.clientDonor.count({ where }),
+    ]);
+
+    // KPI: total con email dentro del segmento
+    const conEmail = await this.prisma.clientDonor.count({
+      where: { ...where, email: { not: null } },
+    });
+
+    // KPI: total con teléfono dentro del segmento
+    const conTelefono = await this.prisma.clientDonor.count({
+      where: { ...where, phone: { not: null } },
+    });
+
+    // Top-10 ciudades dentro del segmento
+    const ciudadesRaw = await this.prisma.clientDonor.groupBy({
+      by: ['city'],
+      where: { ...where, city: { not: null } },
+      _count: { city: true },
+      orderBy: { _count: { city: 'desc' } },
+      take: 10,
+    });
+
+    const ciudades = ciudadesRaw.map(c => ({ city: c.city, count: c._count.city }));
+
+    return {
+      data,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
+      kpis: { conEmail, conTelefono, ciudades },
+    };
   }
 }

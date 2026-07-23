@@ -1061,3 +1061,66 @@ Before starting any work, read the last 15-20 lines to understand the latest cha
   - `docs/tecnico/TECHNICAL_DOCUMENTATION.md` — tabla Ayuda agregada al ERD Mermaid, conteos actualizados
 - **Current Status:** ✅ DB sincronizada con matriz de accesos v3
 - **Pending:** Cambiar contraseñas temporales (dataheart2026) antes de capacitación del personal
+
+---
+
+## 2026-07-23 — Claude — Módulo Proveedores completo + corrección RBAC
+
+- **Task:** Commit y push del módulo de proveedores funcional (estaba sin commitear al reiniciarse la sesión).
+- **Files Committed:**
+  - `backend/src/providers/providers.controller.ts` — permisos corregidos a `inventario:read/write`
+  - `frontend/src/app/app.routes.ts` — ruta `/providers` con permiso `inventario:read`
+  - `frontend/src/app/shared/layout/shell/shell.component.html` — sidebar usa `inventario:read`
+  - `frontend/src/app/features/providers/providers-list.component.ts` — componente completo: signals, paginación, búsqueda, PATCH de estado
+  - `frontend/src/app/features/providers/providers-list.component.html` — tabla, KPIs, botones Aprobar/Rechazar
+- **Current Status:** ✅ Commit `213d0b3` en main, push exitoso
+- **Pending Tasks / Notes for next agent:**
+  - Configurar variables de entorno en producción (WOMPI_INTEGRITY_KEY, PAYU, SMTP)
+  - Despliegue en sc.danielflorez.dev (Hito 2 listo para cobro)
+  - Sprint 05 documentar en docs/sprints/sprint-05.md
+
+---
+
+## 2026-07-23 — Claude — ETL Voluntarios desde Excel
+
+- **Task:** Extender schema Volunteer, crear VolunteerSupport, migrar BD e importar datos desde Excel.
+- **Files Modified/Created:**
+  - `backend/prisma/schema.prisma` — Volunteer +12 campos; nuevo modelo VolunteerSupport
+  - `backend/prisma/migrations/20260723203839_add_volunteer_fields_and_supports/migration.sql` — migración aplicada
+  - `backend/prisma/etl-volunteers.ts` — ETL: lee "Datos Personales junio.xlsx" y "Apoyos Junio.xlsx"
+  - `backend/package.json` — devDependency xlsx
+- **DB Result:** 164 voluntarios + 128 apoyos importados. 2 apoyos omitidos (datos Lorem ipsum de prueba).
+- **Current Status:** ✅ Commit 0163ac8, push exitoso
+- **Pending Tasks / Notes for next agent:**
+  - Crear módulo NestJS para voluntarios (GET /api/volunteers con paginación)
+  - Frontend: completar pantalla de voluntarios (stub actual en /voluntarios)
+  - Configurar env vars producción + despliegue sc.danielflorez.dev
+
+---
+
+## 2026-07-23 — Claude — Componente Historial de Ayudas (Angular)
+
+- **Task:** Reemplazar stub con componente real `HistorialAyudasComponent` para `GET /api/ayudas`.
+- **Files Modified/Created:**
+  - `frontend/src/app/features/labor-social/historial-ayudas.component.ts` — componente standalone con Signals, HttpClient directo, effect reactivo, tipoBadge/estadoBadge, computed valorTotal/pages
+  - `frontend/src/app/features/labor-social/historial-ayudas.component.html` — tabla con KPIs, filtros tipo/estado, paginación idéntica a providers-list, empty/loading state, subtotal de página en tfoot
+- **Current Status:** ✅ TypeScript sin errores (tsc --noEmit), ruta ya registrada en app.routes.ts
+- **Pending Tasks / Notes for next agent:**
+  - Verificar que el backend `/api/ayudas/stats` devuelva `{ total, valorTotal, ayudasMes }` — si el campo tiene otro nombre, ajustar `AyudasStats` interface en el .ts
+  - Si el backend usa `tipoSolicitud` con acento (ej. "Ropa y Juguetes" vs "Ropa y Jugetes"), sincronizar la lista `TIPOS_SOLICITUD` en el .ts
+
+---
+
+## 2026-07-23 — Claude — Modulo Segmentacion (Backend + Frontend)
+
+- **Task:** Construir modulo de segmentacion completo: endpoint NestJS + componente Angular standalone.
+- **Files Modified:**
+  - `backend/src/clients/clients.service.ts` — interfaz `SegmentFilters` + metodo `segment()` con filtros Prisma, KPIs (conEmail, conTelefono) y top-10 ciudades via `groupBy`
+  - `backend/src/clients/clients.controller.ts` — endpoint `GET /clients/segment` antes de `GET :id` (para evitar conflicto de rutas), protegido con `@RequirePermission('segmentacion:read')`
+- **Files Created:**
+  - `frontend/src/app/features/comunicaciones/segmentacion.component.ts` — componente standalone con Signals (results, total, totalPages, page, loading, kpiEmail, kpiPhone, ciudades, copied), draft-signals para filtros, applyFilters/clearFilters, copyEmails via navigator.clipboard, paginacion con ellipsis
+  - `frontend/src/app/features/comunicaciones/segmentacion.component.html` — Header + KPI cards (3), panel de filtros (ciudad, estado, 4 checkboxes), top ciudades pills, tabla 8 columnas, paginacion con ellipsis; usa @if/@for
+- **Current Status:** ✅ tsc --noEmit sin errores en backend y frontend
+- **Pending Tasks / Notes for next agent:**
+  - El endpoint devuelve emails solo de la pagina actual (20 registros). Si se necesita "copiar todos los emails del segmento completo", agregar endpoint `GET /clients/segment/emails` que retorne solo los emails sin paginacion.
+  - Ruta ya registrada en app.routes.ts (permissionGuard con 'segmentacion:read' existia antes).

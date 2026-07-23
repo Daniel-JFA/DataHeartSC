@@ -101,7 +101,7 @@ export const routes: Routes = [
       },
       {
         path: 'listas-difusion',
-        loadComponent: () => import('./features/comunicaciones/listas-difusion.component').then(m => m.ListasDifusionComponent),
+        loadComponent: () => import('./features/labor-social/listas-difusion.component').then(m => m.ListasDifusionComponent),
       },
       {
         path: 'mailing-masivo',

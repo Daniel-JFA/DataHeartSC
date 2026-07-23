@@ -94,11 +94,15 @@ export class AyudasService {
   }
 
   async getStats() {
-    const [total, resueltas, pendientes, porTipo, totalValor, valorPorTipo] =
+    const now   = new Date();
+    const mesInicio = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const [total, resueltas, pendientes, ayudasMes, porTipo, agg, valorPorTipo] =
       await this.prisma.$transaction([
         this.prisma.ayuda.count(),
         this.prisma.ayuda.count({ where: { estado: 'Resuelta' } }),
         this.prisma.ayuda.count({ where: { estado: 'Pendiente' } }),
+        this.prisma.ayuda.count({ where: { fecha: { gte: mesInicio } } }),
         this.prisma.ayuda.groupBy({
           by: ['tipoSolicitud'], _count: { id: true },
           orderBy: { _count: { id: 'desc' } },
@@ -112,9 +116,9 @@ export class AyudasService {
       ]);
 
     return {
-      total, resueltas, pendientes,
+      total, resueltas, pendientes, ayudasMes,
       porTipo,
-      totalValor: totalValor._sum.valor ?? 0,
+      totalValor: agg._sum.valor ?? 0,
       valorPorTipo,
     };
   }

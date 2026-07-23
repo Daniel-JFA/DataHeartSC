@@ -25,6 +25,31 @@ export class ClientsController {
     return this.clientsService.findAll(page, limit, search);
   }
 
+  @Get('segment')
+  @RequirePermission('segmentacion:read')
+  segment(
+    @Query('city',         new DefaultValuePipe(undefined))              city: string | undefined,
+    @Query('status',       new DefaultValuePipe(undefined))              status: string | undefined,
+    @Query('hasEmail',     new DefaultValuePipe(undefined))              hasEmailRaw: string | undefined,
+    @Query('hasPhone',     new DefaultValuePipe(undefined))              hasPhoneRaw: string | undefined,
+    @Query('hasDonations', new DefaultValuePipe(undefined))              hasDonationsRaw: string | undefined,
+    @Query('hasOrders',    new DefaultValuePipe(undefined))              hasOrdersRaw: string | undefined,
+    @Query('page',         new DefaultValuePipe(1),  ParseIntPipe)       page: number,
+    @Query('limit',        new DefaultValuePipe(20), ParseIntPipe)       limit: number,
+  ) {
+    const parseBool = (v: string | undefined) => v === 'true' ? true : v === 'false' ? false : undefined;
+    return this.clientsService.segment({
+      city:         city || undefined,
+      status:       status || undefined,
+      hasEmail:     parseBool(hasEmailRaw),
+      hasPhone:     parseBool(hasPhoneRaw),
+      hasDonations: parseBool(hasDonationsRaw),
+      hasOrders:    parseBool(hasOrdersRaw),
+      page,
+      limit,
+    });
+  }
+
   @Get(':id')
   @RequirePermission('segmentacion:read')
   findOne(@Param('id') id: string) {
