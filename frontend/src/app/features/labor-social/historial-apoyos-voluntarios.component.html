@@ -1,0 +1,158 @@
+<div class="p-6 space-y-6">
+
+  <!-- Header -->
+  <div>
+    <h2 class="text-2xl font-bold text-slate-800">Historial de Apoyos</h2>
+    <p class="text-sm text-slate-500 mt-1">Registro de apoyos y horas donadas por voluntarios · {{ total() }} registros</p>
+  </div>
+
+  <!-- KPIs -->
+  <div class="grid grid-cols-3 gap-4">
+    <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-4 text-center">
+      <p class="text-2xl font-bold text-indigo-700">{{ kpis().totalApoyos }}</p>
+      <p class="text-xs font-semibold text-indigo-500 mt-1">Total apoyos registrados</p>
+    </div>
+    <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-center">
+      <p class="text-2xl font-bold text-amber-700">{{ kpis().totalHoras | number:'1.0-0' }}</p>
+      <p class="text-xs font-semibold text-amber-600 mt-1">Horas donadas</p>
+    </div>
+    <div class="bg-green-50 border border-green-200 rounded-xl p-4 text-center">
+      <p class="text-2xl font-bold text-green-700">{{ kpis().totalAlimentacion | currency:'COP':'symbol-narrow':'1.0-0' }}</p>
+      <p class="text-xs font-semibold text-green-600 mt-1">Valor en alimentación</p>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="flex gap-3">
+    <div class="relative flex-1">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+           class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+        <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd"/>
+      </svg>
+      <input type="text" placeholder="Buscar por nombre o documento del voluntario..."
+             [value]="search()"
+             (input)="onSearch($any($event.target).value)"
+             class="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+    </div>
+    <select [value]="typeFilter()"
+            (change)="onTypeFilter($any($event.target).value)"
+            class="px-3 py-2.5 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-700">
+      <option value="">Todos los tipos</option>
+      @for (t of tipos; track t) {
+        <option [value]="t">{{ t }}</option>
+      }
+    </select>
+  </div>
+
+  <!-- Tabla -->
+  <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+    @if (loading()) {
+      <div class="flex justify-center items-center py-20 text-slate-400 text-sm">Cargando...</div>
+    } @else if (supports().length === 0) {
+      <div class="flex flex-col items-center justify-center py-20 gap-3">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="1.5" class="w-12 h-12 text-slate-300">
+          <path stroke-linecap="round" stroke-linejoin="round"
+                d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/>
+        </svg>
+        <p class="text-slate-500 text-sm">No se encontraron registros</p>
+      </div>
+    } @else {
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="bg-slate-50 border-b border-slate-200 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">
+              <th class="px-4 py-3">Voluntario</th>
+              <th class="px-4 py-3">Fecha</th>
+              <th class="px-4 py-3">Tipo</th>
+              <th class="px-4 py-3 text-center">Horas</th>
+              <th class="px-4 py-3 text-right">Alimentación</th>
+              <th class="px-4 py-3">Observaciones</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            @for (s of supports(); track s.id) {
+              <tr class="hover:bg-slate-50 transition-colors">
+
+                <!-- Voluntario -->
+                <td class="px-4 py-3">
+                  <p class="font-semibold text-slate-800 leading-tight">
+                    {{ s.volunteer.firstName }} {{ s.volunteer.lastName }}
+                  </p>
+                  <p class="text-xs text-slate-400 font-mono mt-0.5">{{ s.volunteer.docNumber }}</p>
+                </td>
+
+                <!-- Fecha -->
+                <td class="px-4 py-3 text-slate-600 whitespace-nowrap text-xs">
+                  {{ s.date | slice:0:10 }}
+                </td>
+
+                <!-- Tipo -->
+                <td class="px-4 py-3">
+                  @if (s.type) {
+                    <span class="inline-block text-xs font-semibold px-2.5 py-1 rounded-full {{ typeBadge(s.type) }}">
+                      {{ s.type }}
+                    </span>
+                  } @else {
+                    <span class="text-slate-300">—</span>
+                  }
+                </td>
+
+                <!-- Horas -->
+                <td class="px-4 py-3 text-center">
+                  @if (s.hours !== null) {
+                    <span class="font-mono text-slate-700">{{ s.hours }}</span>
+                  } @else {
+                    <span class="text-slate-300">—</span>
+                  }
+                </td>
+
+                <!-- Alimentación -->
+                <td class="px-4 py-3 text-right">
+                  @if (s.mealValue) {
+                    <span class="font-mono text-green-700">
+                      {{ s.mealValue | currency:'COP':'symbol-narrow':'1.0-0' }}
+                    </span>
+                  } @else {
+                    <span class="text-slate-300">—</span>
+                  }
+                </td>
+
+                <!-- Observaciones -->
+                <td class="px-4 py-3 text-slate-500 text-xs max-w-xs">
+                  @if (s.notes) {
+                    <span class="line-clamp-2" [title]="s.notes">{{ s.notes }}</span>
+                  } @else {
+                    <span class="text-slate-300">—</span>
+                  }
+                </td>
+
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Paginación -->
+      @if (totalPages() > 1) {
+        <div class="px-4 py-3 border-t border-slate-100 flex items-center justify-between text-sm text-slate-500">
+          <span>{{ total() }} apoyos · Página {{ page() }} de {{ totalPages() }}</span>
+          <div class="flex gap-1">
+            <button (click)="page.set(page() - 1)" [disabled]="page() === 1"
+                    class="px-3 py-1 rounded border border-slate-200 disabled:opacity-40 hover:bg-slate-50">←</button>
+            @for (n of pages(); track n) {
+              <button (click)="page.set(n)"
+                      class="px-3 py-1 rounded border text-xs font-medium transition-colors
+                             {{ n === page() ? 'bg-indigo-600 text-white border-indigo-600' : 'border-slate-200 hover:bg-slate-50' }}">
+                {{ n }}
+              </button>
+            }
+            <button (click)="page.set(page() + 1)" [disabled]="page() === totalPages()"
+                    class="px-3 py-1 rounded border border-slate-200 disabled:opacity-40 hover:bg-slate-50">→</button>
+          </div>
+        </div>
+      }
+    }
+  </div>
+
+</div>

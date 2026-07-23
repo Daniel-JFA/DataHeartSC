@@ -83,4 +83,54 @@ export class VolunteersService {
       data: { status },
     });
   }
+
+  async findSupports(page = 1, limit = 20, search?: string, type?: string) {
+    const where: any = {};
+
+    if (search) {
+      where.volunteer = {
+        OR: [
+          { firstName: { contains: search, mode: 'insensitive' } },
+          { lastName:  { contains: search, mode: 'insensitive' } },
+          { docNumber: { contains: search, mode: 'insensitive' } },
+        ],
+      };
+    }
+
+    if (type) where.type = type;
+
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.volunteerSupport.findMany({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { date: 'desc' },
+        include: {
+          volunteer: {
+            select: { id: true, firstName: true, lastName: true, docNumber: true },
+          },
+        },
+      }),
+      this.prisma.volunteerSupport.count({ where }),
+    ]);
+
+    // KPIs globales (sin filtros)
+    const agg = await this.prisma.volunteerSupport.aggregate({
+      _sum: { hours: true, mealValue: true },
+      _count: { id: true },
+    });
+
+    return {
+      data,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+      kpis: {
+        totalApoyos:      agg._count.id,
+        totalHoras:       agg._sum.hours ?? 0,
+        totalAlimentacion: Number(agg._sum.mealValue ?? 0),
+      },
+    };
+  }
 }

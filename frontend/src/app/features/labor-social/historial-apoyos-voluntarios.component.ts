@@ -1,25 +1,80 @@
-import { Component } from '@angular/core';
+import { Component, inject, signal, computed, effect, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { VolunteersService, VolunteerSupport } from '../../core/services/volunteers.service';
+
+const TIPOS = ['Administrativos', 'Comunicaciones', 'Eventos', 'Productos'];
 
 @Component({
   selector: 'app-historial-apoyos-voluntarios',
   standalone: true,
-  template: `
-    <div class="p-8">
-      <div class="mb-6">
-        <h2 class="text-2xl font-bold text-slate-800">Historial Apoyos Voluntarios</h2>
-        <p class="text-sm text-slate-500 mt-1">Registro de apoyos y contribuciones del equipo voluntario</p>
-      </div>
-
-      <div class="bg-white rounded-xl border border-slate-200 flex flex-col items-center justify-center py-20 gap-4">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             stroke-width="1.5" class="w-14 h-14 text-slate-300">
-          <path stroke-linecap="round" stroke-linejoin="round"
-                d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
-        </svg>
-        <p class="text-slate-500 text-sm font-medium">Módulo en construcción</p>
-        <p class="text-slate-400 text-xs">El historial de apoyos voluntarios estará disponible pronto</p>
-      </div>
-    </div>
-  `,
+  imports: [CommonModule],
+  templateUrl: './historial-apoyos-voluntarios.component.html',
 })
-export class HistorialApoyosVoluntariosComponent {}
+export class HistorialApoyosVoluntariosComponent implements OnInit {
+  private svc = inject(VolunteersService);
+
+  supports   = signal<VolunteerSupport[]>([]);
+  total      = signal(0);
+  page       = signal(1);
+  totalPages = signal(1);
+  loading    = signal(false);
+
+  search     = signal('');
+  typeFilter = signal('');
+
+  kpis = signal({ totalApoyos: 0, totalHoras: 0, totalAlimentacion: 0 });
+
+  readonly tipos = TIPOS;
+
+  pages = computed(() =>
+    Array.from({ length: this.totalPages() }, (_, i) => i + 1)
+  );
+
+  private searchTimeout: ReturnType<typeof setTimeout> | null = null;
+
+  constructor() {
+    effect(() => {
+      void this.page();
+      void this.typeFilter();
+      this.load();
+    }, { allowSignalWrites: true });
+  }
+
+  ngOnInit() { this.load(); }
+
+  load() {
+    this.loading.set(true);
+    this.svc.getSupports(this.page(), 20, this.search() || undefined, this.typeFilter() || undefined)
+      .subscribe({
+        next: res => {
+          this.supports.set(res.data);
+          this.total.set(res.total);
+          this.totalPages.set(res.totalPages);
+          this.kpis.set(res.kpis);
+          this.loading.set(false);
+        },
+        error: () => this.loading.set(false),
+      });
+  }
+
+  onSearch(value: string) {
+    this.search.set(value);
+    if (this.searchTimeout) clearTimeout(this.searchTimeout);
+    this.searchTimeout = setTimeout(() => { this.page.set(1); this.load(); }, 350);
+  }
+
+  onTypeFilter(value: string) {
+    this.typeFilter.set(value);
+    this.page.set(1);
+  }
+
+  typeBadge(type: string | null): string {
+    const map: Record<string, string> = {
+      'Eventos':         'bg-purple-100 text-purple-700',
+      'Productos':       'bg-blue-100 text-blue-700',
+      'Administrativos': 'bg-amber-100 text-amber-700',
+      'Comunicaciones':  'bg-teal-100 text-teal-700',
+    };
+    return type ? (map[type] ?? 'bg-slate-100 text-slate-600') : 'bg-slate-100 text-slate-400';
+  }
+}

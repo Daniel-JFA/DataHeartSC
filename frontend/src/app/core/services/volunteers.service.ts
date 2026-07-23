@@ -9,6 +9,16 @@ export interface VolunteerSupport {
   type: string | null;
   mealValue: number | null;
   notes: string | null;
+  volunteer: { id: string; firstName: string; lastName: string; docNumber: string };
+}
+
+export interface SupportsResponse {
+  data: VolunteerSupport[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  kpis: { totalApoyos: number; totalHoras: number; totalAlimentacion: number };
 }
 
 export interface Volunteer {
@@ -55,5 +65,12 @@ export class VolunteersService {
 
   updateStatus(id: string, status: string) {
     return this.http.patch(`${this.base}/${id}/status`, { status });
+  }
+
+  getSupports(page: number, limit: number, search?: string, type?: string) {
+    let params = new HttpParams().set('page', page).set('limit', limit);
+    if (search) params = params.set('search', search);
+    if (type)   params = params.set('type', type);
+    return this.http.get<SupportsResponse>(`${this.base}/supports/all`, { params });
   }
 }

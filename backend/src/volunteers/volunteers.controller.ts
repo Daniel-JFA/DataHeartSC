@@ -23,6 +23,17 @@ export class VolunteersController {
     return this.service.findAll(page, limit, search, status);
   }
 
+  @Get('supports/all')
+  @RequirePermission('voluntarios:read')
+  findSupports(
+    @Query('page',  new DefaultValuePipe(1),  ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
+    @Query('search') search?: string,
+    @Query('type') type?: string,
+  ) {
+    return this.service.findSupports(page, limit, search, type);
+  }
+
   @Get(':id')
   @RequirePermission('voluntarios:read')
   findOne(@Param('id') id: string) {
