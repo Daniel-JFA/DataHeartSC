@@ -93,23 +93,27 @@
                ════════════════════════════════════════ -->
           @if (currentStep() === 1) {
 
+            <!-- ══ Fecha de actualización ══ -->
+            <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+              <div class="px-5 py-3.5 border-b border-slate-100 bg-slate-50">
+                <h3 class="text-xs font-semibold text-slate-700 uppercase tracking-wider">Fecha de actualización</h3>
+              </div>
+              <div class="px-5 py-5">
+                <div class="max-w-xs">
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Fecha de actualización <span class="text-red-500">*</span></label>
+                  <input formControlName="fechaActualizacion" type="date" max="2099-12-31"
+                         class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900
+                                focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors" />
+                </div>
+              </div>
+            </section>
+
             <!-- ══ Identificación del Niño ══ -->
             <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
               <div class="px-5 py-3.5 border-b border-slate-100 bg-slate-50">
                 <h3 class="text-xs font-semibold text-slate-700 uppercase tracking-wider">1. Información del Niño(a)</h3>
               </div>
               <div class="px-5 py-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-xs font-medium text-slate-700 mb-1">Nombre Completo *</label>
-                  <input type="text" formControlName="firstName" placeholder="Nombres"
-                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
-                </div>
-                <div>
-                  <label class="block text-xs font-medium text-slate-700 mb-1">Apellidos Completo *</label>
-                  <input type="text" formControlName="lastName" placeholder="Apellidos"
-                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
-                </div>
-
                 <div>
                   <label class="block text-xs font-medium text-slate-700 mb-1">Tipo de Documento *</label>
                   <select formControlName="docType"
@@ -136,9 +140,16 @@
                   </div>
                 </div>
 
+                <div class="col-span-2">
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Nombre completo <span class="text-red-500">*</span></label>
+                  <input type="text" formControlName="nombreCompleto" placeholder="Nombre(s) y apellidos completos"
+                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
+                  <p class="mt-1 text-xs text-slate-400">Ingrese nombre(s) y apellidos tal como aparecen en el documento.</p>
+                </div>
+
                 <div>
                   <label class="block text-xs font-medium text-slate-700 mb-1">Fecha de Nacimiento *</label>
-                  <input type="date" formControlName="birthDate"
+                  <input type="date" formControlName="birthDate" max="2099-12-31"
                          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
                   @if (calcularEdad()) {
                     <p class="mt-1 text-xs font-medium text-rose-600">
@@ -372,8 +383,13 @@
                 </div>
                 <div>
                   <label class="block text-xs font-medium text-slate-700 mb-1">Número Celular de Contacto *</label>
-                  <input type="text" formControlName="motherPhone" placeholder="Teléfono"
-                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
+                  <input type="text" formControlName="motherPhone" placeholder="Teléfono" maxlength="10"
+                         class="w-full rounded-lg border px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
+                         [class.border-red-400]="form.get('motherPhone')?.invalid && form.get('motherPhone')?.touched"
+                         [class.border-slate-300]="!(form.get('motherPhone')?.invalid && form.get('motherPhone')?.touched)">
+                  @if (form.get('motherPhone')?.invalid && form.get('motherPhone')?.touched) {
+                    <p class="mt-1 text-xs text-red-600">El celular debe tener exactamente 10 dígitos.</p>
+                  }
                 </div>
 
                 <div>
@@ -434,8 +450,13 @@
                 </div>
                 <div>
                   <label class="block text-xs font-medium text-slate-700 mb-1">Número Celular de Contacto</label>
-                  <input type="text" formControlName="fatherPhone" placeholder="Teléfono"
-                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
+                  <input type="text" formControlName="fatherPhone" placeholder="Teléfono" maxlength="10"
+                         class="w-full rounded-lg border px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
+                         [class.border-red-400]="form.get('fatherPhone')?.invalid && form.get('fatherPhone')?.touched"
+                         [class.border-slate-300]="!(form.get('fatherPhone')?.invalid && form.get('fatherPhone')?.touched)">
+                  @if (form.get('fatherPhone')?.invalid && form.get('fatherPhone')?.touched) {
+                    <p class="mt-1 text-xs text-red-600">El celular debe tener exactamente 10 dígitos.</p>
+                  }
                 </div>
 
                 <div>
@@ -502,8 +523,13 @@
                 </div>
                 <div>
                   <label class="block text-xs font-medium text-slate-700 mb-1">Número Celular de Contacto *</label>
-                  <input type="text" formControlName="caregiverPhone" placeholder="Teléfono del cuidador"
-                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
+                  <input type="text" formControlName="caregiverPhone" placeholder="Teléfono del cuidador" maxlength="10"
+                         class="w-full rounded-lg border px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
+                         [class.border-red-400]="form.get('caregiverPhone')?.invalid && form.get('caregiverPhone')?.touched"
+                         [class.border-slate-300]="!(form.get('caregiverPhone')?.invalid && form.get('caregiverPhone')?.touched)">
+                  @if (form.get('caregiverPhone')?.invalid && form.get('caregiverPhone')?.touched) {
+                    <p class="mt-1 text-xs text-red-600">El celular debe tener exactamente 10 dígitos.</p>
+                  }
                 </div>
               </div>
             </section>
@@ -701,6 +727,22 @@
                   <span class="text-xs text-slate-600 leading-tight">
                     Acepto de forma libre, voluntaria y expresa la autorización para el tratamiento de mis datos personales y los de mi hijo(a) menor de edad. *
                   </span>
+                </label>
+
+                <!-- Autorización envío de información -->
+                <label class="flex items-start gap-3 cursor-pointer p-3 rounded-lg border border-slate-200 bg-slate-50">
+                  <input type="checkbox" formControlName="aceptaPublicidad"
+                         class="mt-0.5 text-rose-600 focus:ring-rose-500 rounded flex-shrink-0" />
+                  <div>
+                    <p class="text-sm font-medium text-slate-800 mb-1">Autorización de envío de información (opcional)</p>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                      Autorizo a la Fundación Infantil Santiago Corazón para enviarme información relacionada con
+                      campañas, eventos, convocatorias, marketing, oportunidades de donación y demás comunicaciones
+                      institucionales que la Fundación considere que puedan ser de mi interés como familia beneficiaria
+                      a través de correo electrónico, mensajes de texto, WhatsApp u otros medios autorizados, con base
+                      en la información personal y/o empresarial que he proporcionado.
+                    </p>
+                  </div>
                 </label>
               </div>
             </section>

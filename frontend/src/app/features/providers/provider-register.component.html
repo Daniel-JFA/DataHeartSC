@@ -210,7 +210,7 @@
                   <!-- Fecha de expedición -->
                   <div>
                     <label class="block text-xs font-medium text-slate-700 mb-1">Fecha de expedición</label>
-                    <input formControlName="fechaExpedicion" type="date"
+                    <input formControlName="fechaExpedicion" type="date" max="2099-12-31"
                            class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900
                                   focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
                   </div>
@@ -223,36 +223,13 @@
                                   focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
                   </div>
 
-                  <!-- Primer apellido -->
-                  <div>
-                    <label class="block text-xs font-medium text-slate-700 mb-1">Primer apellido <span class="text-brand-600">*</span></label>
-                    <input formControlName="primerApellido" type="text" placeholder="Ej: Rodríguez"
+                  <!-- Nombre completo -->
+                  <div class="sm:col-span-2 lg:col-span-3">
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Nombre completo <span class="text-brand-600">*</span></label>
+                    <input formControlName="nombreCompleto" type="text" placeholder="Ej: María Camila Rodríguez García"
                            class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
                                   focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
-                  </div>
-
-                  <!-- Segundo apellido -->
-                  <div>
-                    <label class="block text-xs font-medium text-slate-700 mb-1">Segundo apellido</label>
-                    <input formControlName="segundoApellido" type="text" placeholder="Ej: García"
-                           class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
-                                  focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
-                  </div>
-
-                  <!-- Primer nombre -->
-                  <div>
-                    <label class="block text-xs font-medium text-slate-700 mb-1">Primer nombre <span class="text-brand-600">*</span></label>
-                    <input formControlName="primerNombre" type="text" placeholder="Ej: María"
-                           class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
-                                  focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
-                  </div>
-
-                  <!-- Segundo nombre -->
-                  <div>
-                    <label class="block text-xs font-medium text-slate-700 mb-1">Segundo nombre</label>
-                    <input formControlName="segundoNombre" type="text" placeholder="Ej: Camila"
-                           class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
-                                  focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                    <p class="mt-1 text-xs text-slate-400">Ingrese nombre(s) y apellido(s) completos tal como aparecen en el documento.</p>
                   </div>
 
                   <!-- Departamento de residencia -->
@@ -462,37 +439,17 @@
 
                       <div>
                         <label class="block text-xs font-medium text-slate-700 mb-1">Fecha de expedición</label>
-                        <input formControlName="repFechaExpedicion" type="date"
+                        <input formControlName="repFechaExpedicion" type="date" max="2099-12-31"
                                class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900
                                       focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
                       </div>
 
-                      <div>
-                        <label class="block text-xs font-medium text-slate-700 mb-1">Primer apellido</label>
-                        <input formControlName="repPrimerApellido" type="text" placeholder="Ej: Martínez"
+                      <div class="sm:col-span-2 lg:col-span-3">
+                        <label class="block text-xs font-medium text-slate-700 mb-1">Nombre completo</label>
+                        <input formControlName="repNombreCompleto" type="text" placeholder="Ej: Carlos Alberto Martínez López"
                                class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
                                       focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
-                      </div>
-
-                      <div>
-                        <label class="block text-xs font-medium text-slate-700 mb-1">Segundo apellido</label>
-                        <input formControlName="repSegundoApellido" type="text"
-                               class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
-                                      focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
-                      </div>
-
-                      <div>
-                        <label class="block text-xs font-medium text-slate-700 mb-1">Primer nombre</label>
-                        <input formControlName="repPrimerNombre" type="text" placeholder="Ej: Carlos"
-                               class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
-                                      focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
-                      </div>
-
-                      <div>
-                        <label class="block text-xs font-medium text-slate-700 mb-1">Segundo nombre</label>
-                        <input formControlName="repSegundoNombre" type="text"
-                               class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
-                                      focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                        <p class="mt-1 text-xs text-slate-400">Ingrese nombre(s) y apellido(s) completos tal como aparecen en el documento.</p>
                       </div>
 
                       <div>
@@ -703,8 +660,8 @@
               </div>
               <div class="px-5 py-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
-                  <label class="block text-xs font-medium text-slate-700 mb-1">Nombre</label>
-                  <input formControlName="factNombre" type="text" placeholder="Ej: Ana Pérez"
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Nombre completo</label>
+                  <input formControlName="factNombre" type="text" placeholder="Ej: Ana María Pérez García"
                          class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
                                 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
                 </div>
@@ -849,40 +806,70 @@
               </div>
               <div class="px-5 py-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
-                  <label class="block text-xs font-medium text-slate-700 mb-1">Total activos (COP)</label>
-                  <input formControlName="totalActivos" type="text" placeholder="Ej: 50.000.000"
-                         class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
-                                focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Total activos (COP) <span class="text-brand-600">*</span></label>
+                  <input formControlName="totalActivos" type="number" min="0" step="1" placeholder="Ej: 50000000"
+                         class="w-full border rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors"
+                         [class.border-red-400]="isInvalid('totalActivos')"
+                         [class.border-slate-300]="!isInvalid('totalActivos')" />
+                  @if (isInvalid('totalActivos')) {
+                    <p class="mt-1 text-xs text-red-600">Campo obligatorio, solo se permiten valores numéricos.</p>
+                  }
                 </div>
                 <div>
-                  <label class="block text-xs font-medium text-slate-700 mb-1">Total pasivos (COP)</label>
-                  <input formControlName="totalPasivos" type="text" placeholder="Ej: 10.000.000"
-                         class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
-                                focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Total pasivos (COP) <span class="text-brand-600">*</span></label>
+                  <input formControlName="totalPasivos" type="number" min="0" step="1" placeholder="Ej: 10000000"
+                         class="w-full border rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors"
+                         [class.border-red-400]="isInvalid('totalPasivos')"
+                         [class.border-slate-300]="!isInvalid('totalPasivos')" />
+                  @if (isInvalid('totalPasivos')) {
+                    <p class="mt-1 text-xs text-red-600">Campo obligatorio, solo se permiten valores numéricos.</p>
+                  }
                 </div>
                 <div>
-                  <label class="block text-xs font-medium text-slate-700 mb-1">Total patrimonio (COP)</label>
-                  <input formControlName="totalPatrimonio" type="text" placeholder="Ej: 40.000.000"
-                         class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
-                                focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Total patrimonio (COP) <span class="text-brand-600">*</span></label>
+                  <input formControlName="totalPatrimonio" type="number" min="0" step="1" placeholder="Ej: 40000000"
+                         class="w-full border rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors"
+                         [class.border-red-400]="isInvalid('totalPatrimonio')"
+                         [class.border-slate-300]="!isInvalid('totalPatrimonio')" />
+                  @if (isInvalid('totalPatrimonio')) {
+                    <p class="mt-1 text-xs text-red-600">Campo obligatorio, solo se permiten valores numéricos.</p>
+                  }
                 </div>
                 <div>
-                  <label class="block text-xs font-medium text-slate-700 mb-1">Ingresos mensuales (COP)</label>
-                  <input formControlName="ingresosMensuales" type="text" placeholder="Ej: 5.000.000"
-                         class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
-                                focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Ingresos mensuales (COP) <span class="text-brand-600">*</span></label>
+                  <input formControlName="ingresosMensuales" type="number" min="0" step="1" placeholder="Ej: 5000000"
+                         class="w-full border rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors"
+                         [class.border-red-400]="isInvalid('ingresosMensuales')"
+                         [class.border-slate-300]="!isInvalid('ingresosMensuales')" />
+                  @if (isInvalid('ingresosMensuales')) {
+                    <p class="mt-1 text-xs text-red-600">Campo obligatorio, solo se permiten valores numéricos.</p>
+                  }
                 </div>
                 <div>
-                  <label class="block text-xs font-medium text-slate-700 mb-1">Egresos mensuales (COP)</label>
-                  <input formControlName="egresosMensuales" type="text" placeholder="Ej: 3.000.000"
-                         class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
-                                focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Egresos mensuales (COP) <span class="text-brand-600">*</span></label>
+                  <input formControlName="egresosMensuales" type="number" min="0" step="1" placeholder="Ej: 3000000"
+                         class="w-full border rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors"
+                         [class.border-red-400]="isInvalid('egresosMensuales')"
+                         [class.border-slate-300]="!isInvalid('egresosMensuales')" />
+                  @if (isInvalid('egresosMensuales')) {
+                    <p class="mt-1 text-xs text-red-600">Campo obligatorio, solo se permiten valores numéricos.</p>
+                  }
                 </div>
                 <div>
                   <label class="block text-xs font-medium text-slate-700 mb-1">Otros ingresos mensuales (COP)</label>
-                  <input formControlName="otrosIngresosMensuales" type="text" placeholder="Ej: 500.000"
-                         class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
-                                focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                  <input formControlName="otrosIngresosMensuales" type="number" min="0" step="1" placeholder="Ej: 500000"
+                         class="w-full border rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors"
+                         [class.border-red-400]="isInvalid('otrosIngresosMensuales')"
+                         [class.border-slate-300]="!isInvalid('otrosIngresosMensuales')" />
+                  @if (isInvalid('otrosIngresosMensuales')) {
+                    <p class="mt-1 text-xs text-red-600">Solo se permiten valores numéricos.</p>
+                  }
                 </div>
                 <div class="sm:col-span-2 lg:col-span-3">
                   <label class="block text-xs font-medium text-slate-700 mb-1">Concepto de otros ingresos</label>
@@ -956,7 +943,7 @@
                   {{ naturaleza() === 'JURIDICA' ? '11' : '10' }}. Persona Políticamente Expuesta (PPE)
                 </h3>
                 <p class="text-xs text-slate-500 mt-0.5">
-                  PPE: personas que desempeñan o han desempeñado funciones públicas prominentes
+                  Persona Políticamente Expuesta (PPE): personas que desempeñan o han desempeñado funciones públicas prominentes en Colombia o en el exterior.
                 </p>
               </div>
               <div class="px-5 py-5 space-y-4">
@@ -1021,7 +1008,7 @@
                 <!-- Es familiar de PPE -->
                 <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                   <span class="text-sm text-slate-700">
-                    ¿Es familiar hasta segundo grado de consanguinidad de una PPE?
+                    ¿Es familiar hasta segundo grado de consanguinidad de una Persona Políticamente Expuesta?
                   </span>
                   <div class="flex gap-4 flex-shrink-0 ml-4">
                     <label class="flex items-center gap-1.5 cursor-pointer">
@@ -1189,6 +1176,22 @@
                     @if (form.get('aceptaTratamientoDatos')?.invalid && form.get('aceptaTratamientoDatos')?.touched) {
                       <p class="mt-1 text-xs text-red-600">Debe autorizar el tratamiento de datos para continuar.</p>
                     }
+                  </div>
+                </label>
+
+                <!-- Autorización envío de publicidad -->
+                <label class="flex items-start gap-3 cursor-pointer">
+                  <input type="checkbox" formControlName="aceptaPublicidad"
+                         class="mt-0.5 text-brand-600 focus:ring-brand-500 rounded flex-shrink-0" />
+                  <div>
+                    <p class="text-sm text-slate-800 leading-snug">
+                      <strong>Autorización de envío de información (opcional):</strong> Autorizo a la Fundación Infantil
+                      Santiago Corazón para enviarme información relacionada con campañas, eventos, convocatorias,
+                      marketing, oportunidades de donación y demás comunicaciones institucionales que la Fundación
+                      considere que puedan ser de mi interés como proveedor, a través de correo electrónico, mensajes
+                      de texto, WhatsApp u otros medios autorizados, con base en la información personal y/o empresarial
+                      que he proporcionado.
+                    </p>
                   </div>
                 </label>
 

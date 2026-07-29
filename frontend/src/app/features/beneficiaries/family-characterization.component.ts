@@ -7,7 +7,7 @@ type Step = 'form' | 'success' | 'error';
 
 const COLOMBIA_DEPTOS: { value: string; label: string; ciudades: string[] }[] = [
   { value: 'AMAZONAS', label: 'Amazonas', ciudades: ['Leticia', 'Puerto Nariño'] },
-  { value: 'ANTIOQUIA', label: 'Antioquia', ciudades: ['Medellín', 'Bello', 'Itagüí', 'Envigado', 'Sabaneta', 'Rionegro', 'Apartadó', 'Turbo', 'Caucasia', 'La Ceja', 'Caldas', 'Copacabana', 'Girardota', 'Barbosa'] },
+  { value: 'ANTIOQUIA', label: 'Antioquia', ciudades: ['Medellín', 'Abejorral', 'Abriaquí', 'Alejandría', 'Amagá', 'Amalfi', 'Andes', 'Angelópolis', 'Angostura', 'Anorí', 'Anzá', 'Apartadó', 'Arboletes', 'Argelia', 'Armenia', 'Barbosa', 'Bello', 'Betania', 'Betulia', 'Briceño', 'Buriticá', 'Cáceres', 'Caicedo', 'Caldas', 'Campamento', 'Cañasgordas', 'Caracolí', 'Caramanta', 'Carepa', 'Carolina del Príncipe', 'Caucasia', 'Chigorodó', 'Cisneros', 'Ciudad Bolívar', 'Cocorná', 'Concepción', 'Concordia', 'Copacabana', 'Dabeiba', 'Don Matías', 'Ebéjico', 'El Bagre', 'El Carmen de Viboral', 'El Peñol', 'El Retiro', 'El Santuario', 'Entrerríos', 'Envigado', 'Fredonia', 'Frontino', 'Giraldo', 'Girardota', 'Gómez Plata', 'Granada', 'Guadalupe', 'Guarne', 'Guatapé', 'Heliconia', 'Hispania', 'Itagüí', 'Ituango', 'Jardín', 'Jericó', 'La Ceja', 'La Estrella', 'La Pintada', 'La Unión', 'Liborina', 'Maceo', 'Marinilla', 'Montebello', 'Murindó', 'Mutatá', 'Nariño', 'Nechí', 'Necoclí', 'Olaya', 'Peque', 'Puerto Berrío', 'Puerto Nare', 'Puerto Triunfo', 'Remedios', 'Rionegro', 'Sabanalarga', 'Sabaneta', 'Salgar', 'San Andrés de Cuerquia', 'San Carlos', 'San Francisco', 'San Jerónimo', 'San José de la Montaña', 'San Juan de Urabá', 'San Luis', 'San Pedro de los Milagros', 'San Pedro de Urabá', 'San Rafael', 'San Roque', 'San Vicente Ferrer', 'Santa Bárbara', 'Santa Rosa de Osos', 'Santo Domingo', 'Segovia', 'Sonsón', 'Sopetrán', 'Támesis', 'Tarazá', 'Tarso', 'Titiribí', 'Toledo', 'Turbo', 'Uramita', 'Urrao', 'Valdivia', 'Valparaíso', 'Vegachí', 'Venecia', 'Vigía del Fuerte', 'Yalí', 'Yarumal', 'Yolombó', 'Yondó', 'Zaragoza'] },
   { value: 'ARAUCA', label: 'Arauca', ciudades: ['Arauca', 'Saravena', 'Tame', 'Arauquita'] },
   { value: 'ATLANTICO', label: 'Atlántico', ciudades: ['Barranquilla', 'Soledad', 'Malambo', 'Sabanalarga', 'Baranoa'] },
   { value: 'BOGOTA', label: 'Bogotá D.C.', ciudades: ['Bogotá'] },
@@ -153,9 +153,10 @@ export class FamilyCharacterizationComponent {
   receivesGovSubsidyOption = signal<'SI' | 'NO'>('NO');
 
   form = this.fb.group({
+    // FECHA DE ACTUALIZACIÓN (al inicio del formulario)
+    fechaActualizacion:               [new Date().toISOString().split('T')[0], [Validators.required]],
     // PASO 1: Información básica del niño
-    firstName:                  ['', [Validators.required, Validators.minLength(2)]],
-    lastName:                   ['', [Validators.required, Validators.minLength(2)]],
+    nombreCompleto:             ['', [Validators.required, Validators.minLength(2)]],
     docType:                    ['Registro Civil', [Validators.required]],
     docNumber:                  ['', [Validators.required, Validators.minLength(5)]],
     birthDate:                  ['', [Validators.required]],
@@ -181,7 +182,7 @@ export class FamilyCharacterizationComponent {
     // PASO 3: Información familiar
     motherName:                 ['', [Validators.required]],
     motherDocNumber:            [''],
-    motherPhone:                ['', [Validators.required]],
+    motherPhone:                ['', [Validators.required, Validators.pattern(/^\d{10}$/)]],
     motherEducation:            ['Bachiller'],
     motherProfession:           [''],
     motherOccupation:           ['', [Validators.required]], // En qué se desempeña
@@ -190,7 +191,7 @@ export class FamilyCharacterizationComponent {
 
     fatherName:                 ['', [Validators.required]],
     fatherDocNumber:            [''],
-    fatherPhone:                [''],
+    fatherPhone:                ['', [Validators.pattern(/^\d{10}$/)]],
     fatherEducation:            ['Bachiller'],
     fatherProfession:           [''],
     fatherOccupation:           ['', [Validators.required]], // En qué se desempeña
@@ -201,7 +202,7 @@ export class FamilyCharacterizationComponent {
     numSiblings:                [0],
     caregiverName:              ['', [Validators.required]],
     caregiverRelationship:      ['', [Validators.required]],
-    caregiverPhone:             ['', [Validators.required]],
+    caregiverPhone:             ['', [Validators.required, Validators.pattern(/^\d{10}$/)]],
     zone:                       ['Urbano', [Validators.required]],
     housingType:                ['Familiar', [Validators.required]],
     housingStrata:              [1, [Validators.required, Validators.min(1), Validators.max(6)]],
@@ -213,6 +214,7 @@ export class FamilyCharacterizationComponent {
     govSubsidyType:             [''],
     comoSeEntero:               ['', [Validators.required]],
     aceptaTratamientoDatos:     [false, [Validators.requiredTrue]],
+    aceptaPublicidad:           [false],
   });
 
   constructor() {
@@ -347,8 +349,7 @@ export class FamilyCharacterizationComponent {
 
   private prefillForm(d: any) {
     this.form.patchValue({
-      firstName:            d.firstName            ?? '',
-      lastName:             d.lastName             ?? '',
+      nombreCompleto:       [d.firstName, d.lastName].filter(Boolean).join(' '),
       docType:              d.docType              ?? 'Registro Civil',
       birthDate:            d.birthDate ? d.birthDate.split('T')[0] : '',
       nationality:          d.nationality          ?? 'Colombiana',
@@ -427,8 +428,7 @@ export class FamilyCharacterizationComponent {
     const v = this.form.value;
 
     if (stepNum === 1) {
-      if (this.form.controls.firstName.invalid ||
-          this.form.controls.lastName.invalid ||
+      if (this.form.controls.nombreCompleto.invalid ||
           this.form.controls.docType.invalid ||
           this.form.controls.docNumber.invalid ||
           this.form.controls.birthDate.invalid ||
@@ -519,8 +519,8 @@ export class FamilyCharacterizationComponent {
 
     // Estructurar payload para enviar como JSON al backend
     const payload = {
-      firstName:                  v.firstName,
-      lastName:                   v.lastName,
+      firstName:                  v.nombreCompleto ?? '',
+      lastName:                   '',
       docType:                    v.docType,
       docNumber:                  v.docNumber,
       birthDate:                  v.birthDate ? new Date(v.birthDate).toISOString() : null,
@@ -582,6 +582,8 @@ export class FamilyCharacterizationComponent {
       govSubsidyType:             this.receivesGovSubsidyOption() === 'SI' ? v.govSubsidyType : null,
       comoSeEntero:               v.comoSeEntero,
       status:                     'Activo', // Por defecto entra activo
+      fechaActualizacion:         v.fechaActualizacion,
+      aceptaPublicidad:           v.aceptaPublicidad ?? false,
     };
 
     const existing = this.existingBeneficiary();

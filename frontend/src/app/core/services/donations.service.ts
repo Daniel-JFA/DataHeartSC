@@ -83,6 +83,10 @@ export class DonationsService {
     return this.http.get<DonationPagedResult>(this.base, { params: httpParams });
   }
 
+  getOne(id: string) {
+    return this.http.get<Donation>(`${this.base}/${id}`);
+  }
+
   getStats() {
     return this.http.get<DonationStats>(`${this.base}/stats`);
   }

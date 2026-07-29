@@ -41,6 +41,10 @@ export class OrdersService {
       this.base, { params });
   }
 
+  getOne(id: string) {
+    return this.http.get<Order>(`${this.base}/${id}`);
+  }
+
   create(payload: CreateOrderPayload) {
     return this.http.post<Order>(this.base, payload);
   }

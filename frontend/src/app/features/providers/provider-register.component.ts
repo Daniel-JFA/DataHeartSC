@@ -7,7 +7,7 @@ type Step = 'form' | 'success' | 'error';
 
 const COLOMBIA_DEPTOS: { value: string; label: string; ciudades: string[] }[] = [
   { value: 'AMAZONAS', label: 'Amazonas', ciudades: ['Leticia', 'Puerto Nariño'] },
-  { value: 'ANTIOQUIA', label: 'Antioquia', ciudades: ['Medellín', 'Bello', 'Itagüí', 'Envigado', 'Sabaneta', 'Rionegro', 'Apartadó', 'Turbo', 'Caucasia', 'La Ceja', 'Caldas', 'Copacabana', 'Girardota', 'Barbosa'] },
+  { value: 'ANTIOQUIA', label: 'Antioquia', ciudades: ['Medellín', 'Abejorral', 'Abriaquí', 'Alejandría', 'Amagá', 'Amalfi', 'Andes', 'Angelópolis', 'Angostura', 'Anorí', 'Anzá', 'Apartadó', 'Arboletes', 'Argelia', 'Armenia', 'Barbosa', 'Bello', 'Betania', 'Betulia', 'Briceño', 'Buriticá', 'Cáceres', 'Caicedo', 'Caldas', 'Campamento', 'Cañasgordas', 'Caracolí', 'Caramanta', 'Carepa', 'Carolina del Príncipe', 'Caucasia', 'Chigorodó', 'Cisneros', 'Ciudad Bolívar', 'Cocorná', 'Concepción', 'Concordia', 'Copacabana', 'Dabeiba', 'Don Matías', 'Ebéjico', 'El Bagre', 'El Carmen de Viboral', 'El Peñol', 'El Retiro', 'El Santuario', 'Entrerríos', 'Envigado', 'Fredonia', 'Frontino', 'Giraldo', 'Girardota', 'Gómez Plata', 'Granada', 'Guadalupe', 'Guarne', 'Guatapé', 'Heliconia', 'Hispania', 'Itagüí', 'Ituango', 'Jardín', 'Jericó', 'La Ceja', 'La Estrella', 'La Pintada', 'La Unión', 'Liborina', 'Maceo', 'Marinilla', 'Montebello', 'Murindó', 'Mutatá', 'Nariño', 'Nechí', 'Necoclí', 'Olaya', 'Peque', 'Puerto Berrío', 'Puerto Nare', 'Puerto Triunfo', 'Remedios', 'Rionegro', 'Sabanalarga', 'Sabaneta', 'Salgar', 'San Andrés de Cuerquia', 'San Carlos', 'San Francisco', 'San Jerónimo', 'San José de la Montaña', 'San Juan de Urabá', 'San Luis', 'San Pedro de los Milagros', 'San Pedro de Urabá', 'San Rafael', 'San Roque', 'San Vicente Ferrer', 'Santa Bárbara', 'Santa Rosa de Osos', 'Santo Domingo', 'Segovia', 'Sonsón', 'Sopetrán', 'Támesis', 'Tarazá', 'Tarso', 'Titiribí', 'Toledo', 'Turbo', 'Uramita', 'Urrao', 'Valdivia', 'Valparaíso', 'Vegachí', 'Venecia', 'Vigía del Fuerte', 'Yalí', 'Yarumal', 'Yolombó', 'Yondó', 'Zaragoza'] },
   { value: 'ARAUCA', label: 'Arauca', ciudades: ['Arauca', 'Saravena', 'Tame', 'Arauquita'] },
   { value: 'ATLANTICO', label: 'Atlántico', ciudades: ['Barranquilla', 'Soledad', 'Malambo', 'Sabanalarga', 'Baranoa'] },
   { value: 'BOGOTA', label: 'Bogotá D.C.', ciudades: ['Bogotá'] },
@@ -141,10 +141,7 @@ export class ProviderRegisterComponent {
     nationality:                ['Colombiana'],
     departamentoResidencia:     [''],
     ciudadResidencia:           [''],
-    primerApellido:             [''],
-    segundoApellido:            [''],
-    primerNombre:               [''],
-    segundoNombre:              [''],
+    nombreCompleto:             ['', [Validators.required]],
     phone:                      ['', [Validators.pattern(/^\d{7,15}$/)]],
     telefonoDomicilio:          [''],
     address:                    [''],
@@ -164,10 +161,7 @@ export class ProviderRegisterComponent {
     repDocNumber:               [''],
     repLugarExpedicion:         [''],
     repFechaExpedicion:         [''],
-    repPrimerApellido:          [''],
-    repSegundoApellido:         [''],
-    repPrimerNombre:            [''],
-    repSegundoNombre:           [''],
+    repNombreCompleto:          [''],
     repDepartamento:            [''],
     repCiudad:                  [''],
     repDireccion:               [''],
@@ -203,12 +197,12 @@ export class ProviderRegisterComponent {
     // Sección 9 - Accionistas (textarea)
     accionistasTexto:           [''],
     // Sección 10 - Financiero
-    totalActivos:               [''],
-    totalPasivos:               [''],
-    totalPatrimonio:            [''],
-    ingresosMensuales:          [''],
-    egresosMensuales:           [''],
-    otrosIngresosMensuales:     [''],
+    totalActivos:               ['', [Validators.required, Validators.pattern(/^\d+(\.\d+)?$/)]],
+    totalPasivos:               ['', [Validators.required, Validators.pattern(/^\d+(\.\d+)?$/)]],
+    totalPatrimonio:            ['', [Validators.required, Validators.pattern(/^\d+(\.\d+)?$/)]],
+    ingresosMensuales:          ['', [Validators.required, Validators.pattern(/^\d+(\.\d+)?$/)]],
+    egresosMensuales:           ['', [Validators.required, Validators.pattern(/^\d+(\.\d+)?$/)]],
+    otrosIngresosMensuales:     ['', [Validators.pattern(/^\d+(\.\d+)?$/)]],
     conceptoOtrosIngresos:      [''],
     // Sección 11 - Operaciones internacionales
     opImportaciones:            [false],
@@ -226,6 +220,7 @@ export class ProviderRegisterComponent {
     // Sección 13 - Declaraciones
     aceptaDeclaracion:          [false, [Validators.requiredTrue]],
     aceptaTratamientoDatos:     [false, [Validators.requiredTrue]],
+    aceptaPublicidad:           [false],
   });
 
   constructor() {
@@ -275,10 +270,8 @@ export class ProviderRegisterComponent {
     this.usarDatosNatural.set(checked);
     if (!checked) return;
     const v = this.form.value;
-    const nombre = [v.primerNombre, v.segundoNombre, v.primerApellido, v.segundoApellido]
-      .filter(Boolean).join(' ').replace(/\s+/g, ' ').trim();
     this.form.patchValue({
-      factNombre:   nombre,
+      factNombre:   v.nombreCompleto ?? '',
       factCelular:  v.phone            ?? '',
       factTelefono: v.telefonoDomicilio ?? '',
       factEmail:    v.email            ?? '',
@@ -317,8 +310,7 @@ export class ProviderRegisterComponent {
     if (step === 2) {
       if (nat === 'NATURAL') {
         const required = [
-          { field: 'primerNombre',     label: 'Primer nombre' },
-          { field: 'primerApellido',   label: 'Primer apellido' },
+          { field: 'nombreCompleto',   label: 'Nombre completo' },
           { field: 'docNumberNatural', label: 'Número de documento' },
           { field: 'phone',            label: 'Celular/teléfono' },
           { field: 'email',            label: 'Correo electrónico' },
@@ -347,9 +339,22 @@ export class ProviderRegisterComponent {
       if (!v.descripcionActividad?.trim()) return 'La descripción de la actividad económica es requerida.';
     }
 
+    if (step === 4) {
+      const financieros = ['totalActivos', 'totalPasivos', 'totalPatrimonio', 'ingresosMensuales', 'egresosMensuales'];
+      for (const field of financieros) {
+        this.form.get(field)?.markAsTouched();
+        if (!this.form.get(field)?.value?.toString().trim()) return 'Los campos de información financiera (activos, pasivos, patrimonio, ingresos, egresos) son obligatorios.';
+        if (this.form.get(field)?.invalid) return 'Los campos de información financiera deben ser valores numéricos.';
+      }
+    }
+
     if (step === 5) {
       if (!v.aceptaDeclaracion) return 'Debes aceptar la declaración de origen de fondos.';
-      if (!v.aceptaTratamientoDatos) return 'Debes aceptar el tratamiento de datos personales.';
+      // aceptaTratamientoDatos: no mostramos el error en stepErrors sino inline junto al checkbox
+      if (!v.aceptaTratamientoDatos) {
+        this.form.get('aceptaTratamientoDatos')?.markAsTouched();
+        return '';
+      }
     }
 
     return '';
@@ -380,8 +385,7 @@ export class ProviderRegisterComponent {
     // Dynamic required validation
     let hasError = false;
     if (nat === 'NATURAL') {
-      if (!v.primerApellido?.trim()) hasError = true;
-      if (!v.primerNombre?.trim())   hasError = true;
+      if (!v.nombreCompleto?.trim()) hasError = true;
       if (!v.docNumberNatural?.trim()) hasError = true;
       if (!v.phone?.trim()) hasError = true;
       if (!v.email?.trim()) hasError = true;
@@ -404,9 +408,7 @@ export class ProviderRegisterComponent {
     // Determine main identifiers based on naturaleza
     const docNumber = nat === 'NATURAL' ? (v.docNumberNatural ?? '') : (v.nit ?? '');
     const docType   = nat === 'NATURAL' ? (v.docTypeNatural ?? 'CC') : 'NIT';
-    const name      = nat === 'NATURAL'
-      ? `${v.primerNombre ?? ''} ${v.segundoNombre ?? ''} ${v.primerApellido ?? ''} ${v.segundoApellido ?? ''}`.replace(/\s+/g, ' ').trim()
-      : (v.name ?? '');
+    const name      = nat === 'NATURAL' ? (v.nombreCompleto ?? '') : (v.name ?? '');
     const emailVal  = nat === 'NATURAL' ? (v.email ?? '') : (v.correoEmpresa ?? '');
     const phoneVal  = nat === 'NATURAL' ? (v.phone ?? '') : (v.telefonoEmpresa ?? '');
     const addrVal   = nat === 'NATURAL' ? (v.address ?? '') : (v.direccionOficina ?? '');
@@ -435,10 +437,7 @@ export class ProviderRegisterComponent {
     fd.append('nationality',             v.nationality             ?? '');
     fd.append('departamentoResidencia',  v.departamentoResidencia  ?? '');
     fd.append('ciudadResidencia',        v.ciudadResidencia        ?? '');
-    fd.append('primerApellido',          v.primerApellido          ?? '');
-    fd.append('segundoApellido',         v.segundoApellido         ?? '');
-    fd.append('primerNombre',            v.primerNombre            ?? '');
-    fd.append('segundoNombre',           v.segundoNombre           ?? '');
+    fd.append('nombreCompleto',          v.nombreCompleto          ?? '');
     fd.append('telefonoDomicilio',       v.telefonoDomicilio       ?? '');
     // Sección 4
     fd.append('nit',               v.nit               ?? '');
@@ -453,10 +452,7 @@ export class ProviderRegisterComponent {
       docNumber:      v.repDocNumber       ?? '',
       lugarExpedicion: v.repLugarExpedicion ?? '',
       fechaExpedicion: v.repFechaExpedicion ?? '',
-      primerApellido: v.repPrimerApellido  ?? '',
-      segundoApellido: v.repSegundoApellido ?? '',
-      primerNombre:   v.repPrimerNombre    ?? '',
-      segundoNombre:  v.repSegundoNombre   ?? '',
+      nombreCompleto: v.repNombreCompleto  ?? '',
       departamento:   v.repDepartamento    ?? '',
       ciudad:         v.repCiudad          ?? '',
       direccion:      v.repDireccion       ?? '',
@@ -519,6 +515,7 @@ export class ProviderRegisterComponent {
     // Sección 13
     fd.append('aceptaDeclaracion',     String(v.aceptaDeclaracion     ?? false));
     fd.append('aceptaTratamientoDatos', String(v.aceptaTratamientoDatos ?? false));
+    fd.append('aceptaPublicidad',       String(v.aceptaPublicidad       ?? false));
 
     // Files
     if (this.files['rut'])            fd.append('rut',            this.files['rut']!);
