@@ -23,12 +23,24 @@ export class ProductsService {
       this.prisma.product.findMany({
         where, skip, take: limit,
         orderBy: { name: 'asc' },
-        select: { id: true, name: true, sku: true, stock: true, minStock: true, price: true, isActive: true, categoryName: true },
+        select: { id: true, name: true, sku: true, stock: true, minStock: true, price: true, isActive: true, categoryName: true, subcategoryName: true },
       }),
       this.prisma.product.count({ where }),
     ]);
 
     return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
+  }
+
+  async getCategoryStats() {
+    const rows = await this.prisma.product.groupBy({
+      by: ['categoryName'],
+      _count: { id: true },
+      orderBy: { categoryName: 'asc' },
+    });
+    return rows.map(r => ({
+      name: r.categoryName ?? 'Sin categoría',
+      total: r._count.id,
+    }));
   }
 
   async findOne(id: string) {

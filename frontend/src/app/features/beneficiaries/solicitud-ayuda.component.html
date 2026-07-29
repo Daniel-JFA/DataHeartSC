@@ -1,0 +1,580 @@
+<!-- Formulario Solicitud de Ayudas para Beneficiarios — Fundación Infantil Santiago Corazón -->
+<div class="min-h-screen bg-slate-50 flex flex-col">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-slate-200 shadow-sm">
+    <div class="max-w-3xl mx-auto px-6 py-4 flex items-center gap-3">
+      <img src="SC.png" alt="Fundación Infantil Santiago Corazón" class="w-auto h-12 object-contain flex-shrink-0" />
+      <div>
+        <p class="text-xs text-slate-500 leading-none">Fundación Infantil</p>
+        <h1 class="text-sm font-bold text-slate-900 leading-tight">Santiago Corazón</h1>
+      </div>
+      <div class="ml-auto text-right hidden sm:block">
+        <p class="text-xs text-slate-400">Trabajo Social</p>
+        <p class="text-xs font-medium text-slate-600">Solicitud de Ayudas</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 flex items-start justify-center px-4 py-10">
+    <div class="w-full max-w-3xl">
+
+      @if (step() === 'form') {
+
+        <div class="mb-8 text-center">
+          <h2 class="text-2xl font-bold text-slate-900">Solicitud de Ayudas para Beneficiarios</h2>
+          <p class="text-sm text-slate-500 mt-1.5 max-w-xl mx-auto">
+            Diligencie el formulario con la información de la ayuda solicitada.
+            El equipo de Trabajo Social revisará su solicitud y le contactará a la brevedad.
+          </p>
+        </div>
+
+        @if (stepError()) {
+          <div class="flex items-center gap-2 bg-red-50 border border-red-200 rounded-lg px-4 py-2.5 mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-red-500 flex-shrink-0">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
+            </svg>
+            <p class="text-sm text-red-700">{{ stepError() }}</p>
+          </div>
+        }
+
+        <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-6" novalidate>
+
+          <!-- Datos del solicitante -->
+          <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="px-5 py-3.5 border-b border-slate-100 bg-slate-50">
+              <h3 class="text-xs font-semibold text-slate-700 uppercase tracking-wider">1. Datos del solicitante</h3>
+            </div>
+            <div class="px-5 py-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="sm:col-span-2">
+                <label class="block text-xs font-medium text-slate-700 mb-1">Nombre completo del solicitante <span class="text-red-500">*</span></label>
+                <input formControlName="nombreSolicitante" type="text" placeholder="Nombre del padre, madre o cuidador"
+                       class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                              focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors" />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-slate-700 mb-1">Número de documento <span class="text-red-500">*</span></label>
+                <input formControlName="docNumber" type="text" placeholder="Ej: 1001234567"
+                       class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                              focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors" />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-slate-700 mb-1">Celular <span class="text-red-500">*</span></label>
+                <input formControlName="celular" type="tel" maxlength="10" placeholder="Ej: 3001234567"
+                       class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                              focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors" />
+                @if (form.get('celular')?.invalid && form.get('celular')?.touched) {
+                  <p class="mt-1 text-xs text-red-600">El celular debe tener exactamente 10 dígitos.</p>
+                }
+              </div>
+              <div class="sm:col-span-2">
+                <label class="block text-xs font-medium text-slate-700 mb-1">Correo electrónico</label>
+                <input formControlName="correo" type="email" placeholder="correo@ejemplo.com"
+                       class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                              focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors" />
+              </div>
+            </div>
+          </section>
+
+          <!-- Tipo de ayuda -->
+          <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="px-5 py-3.5 border-b border-slate-100 bg-slate-50">
+              <h3 class="text-xs font-semibold text-slate-700 uppercase tracking-wider">2. Tipo de ayuda solicitada <span class="text-red-500">*</span></h3>
+            </div>
+            <div class="px-5 py-5">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                @for (tipo of TIPOS_AYUDA; track tipo.value) {
+                  <label class="flex items-start gap-3 cursor-pointer p-3 rounded-lg border transition-colors"
+                         [class.border-rose-400]="tipoAyuda() === tipo.value"
+                         [class.bg-rose-50]="tipoAyuda() === tipo.value"
+                         [class.border-slate-200]="tipoAyuda() !== tipo.value">
+                    <input type="radio" formControlName="tipoAyuda" [value]="tipo.value"
+                           class="mt-0.5 text-rose-600 focus:ring-rose-500 flex-shrink-0" />
+                    <span class="text-sm text-slate-700">{{ tipo.label }}</span>
+                  </label>
+                }
+              </div>
+              @if (form.get('tipoAyuda')?.invalid && form.get('tipoAyuda')?.touched) {
+                <p class="mt-2 text-xs text-red-600">Debe seleccionar el tipo de ayuda.</p>
+              }
+            </div>
+          </section>
+
+          <!-- Sección dinámica según el tipo seleccionado -->
+
+          <!-- ALOJAMIENTO -->
+          @if (tipoAyuda() === 'ALOJAMIENTO') {
+            <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+              <div class="px-5 py-3.5 border-b border-slate-100 bg-amber-50">
+                <h3 class="text-xs font-semibold text-amber-800 uppercase tracking-wider">Ayuda en Alojamiento</h3>
+                <p class="text-xs text-amber-700 mt-0.5">Aquí va un texto explicando cómo es nuestra ayuda en alojamiento (en construcción)</p>
+              </div>
+              <div class="px-5 py-5 space-y-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Motivo de la solicitud de alojamiento <span class="text-red-500">*</span></label>
+                  <textarea formControlName="motivoSolicitud" rows="3" placeholder="Explique el motivo..."
+                            class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                   focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors resize-none"></textarea>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-2">¿Ya solicitó el alojamiento a su EPS?</label>
+                  <div class="flex gap-4">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                      <input type="radio" [checked]="form.get('solicitudEps')?.value === 'SI'" (click)="setSolicitudEps('SI')"
+                             class="text-rose-600 focus:ring-rose-500" />
+                      <span class="text-sm text-slate-700">Sí</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                      <input type="radio" [checked]="form.get('solicitudEps')?.value === 'NO'" (click)="setSolicitudEps('NO')"
+                             class="text-rose-600 focus:ring-rose-500" />
+                      <span class="text-sm text-slate-700">No</span>
+                    </label>
+                  </div>
+                  @if (form.get('solicitudEps')?.value === 'SI') {
+                    <div class="mt-2">
+                      <label class="block text-xs font-medium text-slate-700 mb-1">¿Cuál fue la respuesta de la EPS?</label>
+                      <input formControlName="respuestaEps" type="text" placeholder="Respuesta de la EPS"
+                             class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                    focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors" />
+                    </div>
+                  }
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">N.° de personas para el alojamiento</label>
+                    <input formControlName="numPersonasAlojamiento" type="number" min="1" placeholder="Ej: 2"
+                           class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                  focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors" />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">N.° de documento de las personas</label>
+                    <input formControlName="docPersonasAlojamiento" type="text" placeholder="Ej: 1234567, 7654321"
+                           class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                  focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors" />
+                  </div>
+                  <div class="sm:col-span-2">
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Nombres de las personas que se van a alojar</label>
+                    <input formControlName="nombresPersonasAlojamiento" type="text" placeholder="Ej: Juan García, Ana García"
+                           class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                  focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors" />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Fecha de ingreso</label>
+                    <input formControlName="fechaIngresoAlojamiento" type="date" max="2099-12-31"
+                           class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900
+                                  focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors" />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Fecha probable de salida</label>
+                    <input formControlName="fechaSalidaAlojamiento" type="date" max="2099-12-31"
+                           class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900
+                                  focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors" />
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Adjunte soporte de la cita u hospitalización</label>
+                  <label class="flex items-center gap-2.5 w-full border border-dashed border-slate-300 rounded-lg px-3 py-2.5
+                                cursor-pointer hover:border-rose-400 hover:bg-rose-50 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-slate-400 flex-shrink-0">
+                      <path d="M9.25 13.25a.75.75 0 001.5 0V4.636l2.955 3.129a.75.75 0 001.09-1.03l-4.25-4.5a.75.75 0 00-1.09 0l-4.25 4.5a.75.75 0 101.09 1.03L9.25 4.636v8.614z"/>
+                      <path d="M3.5 12.75a.75.75 0 00-1.5 0v2.5A2.75 2.75 0 004.75 18h10.5A2.75 2.75 0 0018 15.25v-2.5a.75.75 0 00-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5z"/>
+                    </svg>
+                    <span class="text-xs text-slate-500 truncate">{{ adjuntoOrdenName() || 'Seleccionar archivo (PDF, JPG, PNG)' }}</span>
+                    <input type="file" class="hidden" accept=".pdf,.jpg,.jpeg,.png" (change)="onAdjuntoOrden($event)" />
+                  </label>
+                </div>
+              </div>
+            </section>
+          }
+
+          <!-- TRANSPORTE -->
+          @if (tipoAyuda() === 'TRANSPORTE') {
+            <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+              <div class="px-5 py-3.5 border-b border-slate-100 bg-amber-50">
+                <h3 class="text-xs font-semibold text-amber-800 uppercase tracking-wider">Ayuda en Transporte</h3>
+                <p class="text-xs text-amber-700 mt-0.5">Aquí va un texto explicando cómo es nuestra ayuda en transporte (en construcción)</p>
+              </div>
+              <div class="px-5 py-5 space-y-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Motivo de la solicitud de transporte <span class="text-red-500">*</span></label>
+                  <textarea formControlName="motivoSolicitud" rows="3" placeholder="Explique el motivo..."
+                            class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                   focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors resize-none"></textarea>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-2">¿Ya solicitó el transporte a su EPS?</label>
+                  <div class="flex gap-4">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                      <input type="radio" [checked]="form.get('solicitudEps')?.value === 'SI'" (click)="setSolicitudEps('SI')"
+                             class="text-rose-600 focus:ring-rose-500" />
+                      <span class="text-sm text-slate-700">Sí</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                      <input type="radio" [checked]="form.get('solicitudEps')?.value === 'NO'" (click)="setSolicitudEps('NO')"
+                             class="text-rose-600 focus:ring-rose-500" />
+                      <span class="text-sm text-slate-700">No</span>
+                    </label>
+                  </div>
+                  @if (form.get('solicitudEps')?.value === 'SI') {
+                    <div class="mt-2">
+                      <label class="block text-xs font-medium text-slate-700 mb-1">¿Cuál fue la respuesta de la EPS?</label>
+                      <input formControlName="respuestaEps" type="text" placeholder="Respuesta de la EPS"
+                             class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                    focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors" />
+                    </div>
+                  }
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">N.° de personas a transportar</label>
+                    <input formControlName="numPersonasTransporte" type="number" min="1" placeholder="Ej: 2"
+                           class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                  focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors" />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">N.° de documento de las personas</label>
+                    <input formControlName="docPersonasTransporte" type="text" placeholder="Ej: 1234567, 7654321"
+                           class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                  focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors" />
+                  </div>
+                  <div class="sm:col-span-2">
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Nombres de las personas a transportar</label>
+                    <input formControlName="nombresPersonasTransporte" type="text" placeholder="Ej: Juan García, Ana García"
+                           class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                  focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors" />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Fechas de nacimiento de las personas</label>
+                    <input formControlName="fechasNacimientoTransporte" type="text" placeholder="Ej: 2010-05-12, 2015-03-20"
+                           class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                  focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors" />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">N.° celular de las personas</label>
+                    <input formControlName="celularesTransporte" type="text" placeholder="Ej: 3001234567"
+                           class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                  focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors" />
+                  </div>
+                  <div class="sm:col-span-2">
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Nombre de dos transportadores desde su lugar de residencia</label>
+                    <input formControlName="transportadores" type="text" placeholder="Ej: Transportes El Rápido, Flota Occidental"
+                           class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                  focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors" />
+                  </div>
+                </div>
+                <div class="border border-slate-200 rounded-lg p-4 space-y-3">
+                  <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Ida</p>
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label class="block text-xs font-medium text-slate-700 mb-1">Fecha de ida</label>
+                      <input formControlName="fechaIdaTransporte" type="date" max="2099-12-31"
+                             class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900
+                                    focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors" />
+                    </div>
+                    <div>
+                      <label class="block text-xs font-medium text-slate-700 mb-1">Ciudad de salida</label>
+                      <input formControlName="ciudadSalidaIda" type="text" placeholder="Ej: Turbo"
+                             class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                    focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors" />
+                    </div>
+                    <div>
+                      <label class="block text-xs font-medium text-slate-700 mb-1">Ciudad de llegada</label>
+                      <input formControlName="ciudadLlegadaIda" type="text" placeholder="Ej: Medellín"
+                             class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                    focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors" />
+                    </div>
+                  </div>
+                </div>
+                <div class="border border-slate-200 rounded-lg p-4 space-y-3">
+                  <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Regreso</p>
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label class="block text-xs font-medium text-slate-700 mb-1">Fecha de regreso</label>
+                      <input formControlName="fechaRegresoTransporte" type="date" max="2099-12-31"
+                             class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900
+                                    focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors" />
+                    </div>
+                    <div>
+                      <label class="block text-xs font-medium text-slate-700 mb-1">Ciudad de salida</label>
+                      <input formControlName="ciudadSalidaRegreso" type="text" placeholder="Ej: Medellín"
+                             class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                    focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors" />
+                    </div>
+                    <div>
+                      <label class="block text-xs font-medium text-slate-700 mb-1">Ciudad de llegada</label>
+                      <input formControlName="ciudadLlegadaRegreso" type="text" placeholder="Ej: Turbo"
+                             class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                    focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors" />
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Adjunte soporte de la cita u hospitalización</label>
+                  <label class="flex items-center gap-2.5 w-full border border-dashed border-slate-300 rounded-lg px-3 py-2.5
+                                cursor-pointer hover:border-rose-400 hover:bg-rose-50 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-slate-400 flex-shrink-0">
+                      <path d="M9.25 13.25a.75.75 0 001.5 0V4.636l2.955 3.129a.75.75 0 001.09-1.03l-4.25-4.5a.75.75 0 00-1.09 0l-4.25 4.5a.75.75 0 101.09 1.03L9.25 4.636v8.614z"/>
+                      <path d="M3.5 12.75a.75.75 0 00-1.5 0v2.5A2.75 2.75 0 004.75 18h10.5A2.75 2.75 0 0018 15.25v-2.5a.75.75 0 00-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5z"/>
+                    </svg>
+                    <span class="text-xs text-slate-500 truncate">{{ adjuntoOrdenName() || 'Seleccionar archivo (PDF, JPG, PNG)' }}</span>
+                    <input type="file" class="hidden" accept=".pdf,.jpg,.jpeg,.png" (change)="onAdjuntoOrden($event)" />
+                  </label>
+                </div>
+              </div>
+            </section>
+          }
+
+          <!-- CITAS MÉDICAS -->
+          @if (tipoAyuda() === 'CITAS_MEDICAS') {
+            <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+              <div class="px-5 py-3.5 border-b border-slate-100 bg-amber-50">
+                <h3 class="text-xs font-semibold text-amber-800 uppercase tracking-wider">Citas Médicas y/o Ayudas Diagnósticas</h3>
+                <p class="text-xs text-amber-700 mt-0.5">Aquí va un texto explicando cómo es nuestra ayuda en Citas Médicas y/o Ayudas Diagnósticas (en construcción)</p>
+              </div>
+              <div class="px-5 py-5 space-y-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Motivo de la solicitud <span class="text-red-500">*</span></label>
+                  <textarea formControlName="motivoSolicitud" rows="3" placeholder="Explique el motivo..."
+                            class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                   focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors resize-none"></textarea>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-2">¿Ya solicitó la cita/ayuda diagnóstica a su EPS?</label>
+                  <div class="flex gap-4">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                      <input type="radio" [checked]="form.get('solicitudEps')?.value === 'SI'" (click)="setSolicitudEps('SI')"
+                             class="text-rose-600 focus:ring-rose-500" />
+                      <span class="text-sm text-slate-700">Sí</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                      <input type="radio" [checked]="form.get('solicitudEps')?.value === 'NO'" (click)="setSolicitudEps('NO')"
+                             class="text-rose-600 focus:ring-rose-500" />
+                      <span class="text-sm text-slate-700">No</span>
+                    </label>
+                  </div>
+                  @if (form.get('solicitudEps')?.value === 'SI') {
+                    <div class="mt-2">
+                      <label class="block text-xs font-medium text-slate-700 mb-1">¿Cuál fue la respuesta de la EPS?</label>
+                      <input formControlName="respuestaEps" type="text" placeholder="Respuesta de la EPS"
+                             class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                    focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors" />
+                    </div>
+                  }
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Adjunte la orden correspondiente</label>
+                  <label class="flex items-center gap-2.5 w-full border border-dashed border-slate-300 rounded-lg px-3 py-2.5
+                                cursor-pointer hover:border-rose-400 hover:bg-rose-50 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-slate-400 flex-shrink-0">
+                      <path d="M9.25 13.25a.75.75 0 001.5 0V4.636l2.955 3.129a.75.75 0 001.09-1.03l-4.25-4.5a.75.75 0 00-1.09 0l-4.25 4.5a.75.75 0 101.09 1.03L9.25 4.636v8.614z"/>
+                      <path d="M3.5 12.75a.75.75 0 00-1.5 0v2.5A2.75 2.75 0 004.75 18h10.5A2.75 2.75 0 0018 15.25v-2.5a.75.75 0 00-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5z"/>
+                    </svg>
+                    <span class="text-xs text-slate-500 truncate">{{ adjuntoOrdenName() || 'Seleccionar archivo (PDF, JPG, PNG)' }}</span>
+                    <input type="file" class="hidden" accept=".pdf,.jpg,.jpeg,.png" (change)="onAdjuntoOrden($event)" />
+                  </label>
+                </div>
+              </div>
+            </section>
+          }
+
+          <!-- MEDICAMENTOS Y/O ARTÍCULOS DE ASEO -->
+          @if (tipoAyuda() === 'MEDICAMENTOS_ASEO') {
+            <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+              <div class="px-5 py-3.5 border-b border-slate-100 bg-amber-50">
+                <h3 class="text-xs font-semibold text-amber-800 uppercase tracking-wider">Medicamentos y/o Artículos de Aseo</h3>
+                <p class="text-xs text-amber-700 mt-0.5">Aquí va un texto explicando cómo es nuestra ayuda en Medicamentos y/o Artículos de Aseo (en construcción)</p>
+              </div>
+              <div class="px-5 py-5 space-y-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Motivo de la solicitud <span class="text-red-500">*</span></label>
+                  <textarea formControlName="motivoSolicitud" rows="3" placeholder="Explique el motivo..."
+                            class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                   focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors resize-none"></textarea>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-2">¿Ya solicitó los medicamentos/artículos a su EPS?</label>
+                  <div class="flex gap-4">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                      <input type="radio" [checked]="form.get('solicitudEps')?.value === 'SI'" (click)="setSolicitudEps('SI')"
+                             class="text-rose-600 focus:ring-rose-500" />
+                      <span class="text-sm text-slate-700">Sí</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                      <input type="radio" [checked]="form.get('solicitudEps')?.value === 'NO'" (click)="setSolicitudEps('NO')"
+                             class="text-rose-600 focus:ring-rose-500" />
+                      <span class="text-sm text-slate-700">No</span>
+                    </label>
+                  </div>
+                  @if (form.get('solicitudEps')?.value === 'SI') {
+                    <div class="mt-2">
+                      <label class="block text-xs font-medium text-slate-700 mb-1">¿Cuál fue la respuesta de la EPS?</label>
+                      <input formControlName="respuestaEps" type="text" placeholder="Respuesta de la EPS"
+                             class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                    focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors" />
+                    </div>
+                  }
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Etapa de pañales solicitada (si aplica)</label>
+                  <input formControlName="etapaPanales" type="text" placeholder="Ej: Etapa 3, RN, 1, 2..."
+                         class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors" />
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Adjunte soporte correspondiente</label>
+                  <label class="flex items-center gap-2.5 w-full border border-dashed border-slate-300 rounded-lg px-3 py-2.5
+                                cursor-pointer hover:border-rose-400 hover:bg-rose-50 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-slate-400 flex-shrink-0">
+                      <path d="M9.25 13.25a.75.75 0 001.5 0V4.636l2.955 3.129a.75.75 0 001.09-1.03l-4.25-4.5a.75.75 0 00-1.09 0l-4.25 4.5a.75.75 0 101.09 1.03L9.25 4.636v8.614z"/>
+                      <path d="M3.5 12.75a.75.75 0 00-1.5 0v2.5A2.75 2.75 0 004.75 18h10.5A2.75 2.75 0 0018 15.25v-2.5a.75.75 0 00-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5z"/>
+                    </svg>
+                    <span class="text-xs text-slate-500 truncate">{{ adjuntoOrdenName() || 'Seleccionar archivo (PDF, JPG, PNG)' }}</span>
+                    <input type="file" class="hidden" accept=".pdf,.jpg,.jpeg,.png" (change)="onAdjuntoOrden($event)" />
+                  </label>
+                </div>
+              </div>
+            </section>
+          }
+
+          <!-- OTRAS -->
+          @if (tipoAyuda() === 'OTRAS') {
+            <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+              <div class="px-5 py-3.5 border-b border-slate-100 bg-amber-50">
+                <h3 class="text-xs font-semibold text-amber-800 uppercase tracking-wider">Otros tipos de ayuda</h3>
+                <p class="text-xs text-amber-700 mt-0.5">Aquí va un texto explicando cómo es nuestra ayuda en Apoyo a emprendimientos, alimentación, capacitaciones, copagos, empleo, servicios funerarios, otros. (en construcción)</p>
+              </div>
+              <div class="px-5 py-5">
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Motivo de la solicitud <span class="text-red-500">*</span></label>
+                  <textarea formControlName="motivoSolicitud" rows="4" placeholder="Explique detalladamente el motivo y el tipo de ayuda que necesita..."
+                            class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                   focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors resize-none"></textarea>
+                </div>
+              </div>
+            </section>
+          }
+
+          <!-- RECREACIÓN, ROPA Y JUGUETES -->
+          @if (tipoAyuda() === 'RECREACION') {
+            <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+              <div class="px-5 py-3.5 border-b border-slate-100 bg-amber-50">
+                <h3 class="text-xs font-semibold text-amber-800 uppercase tracking-wider">Recreación, Ropa y Juguetes</h3>
+                <p class="text-xs text-amber-700 mt-0.5">Aquí va un texto explicando cómo es nuestra ayuda en Recreación, Ropa y Juguetes (en construcción)</p>
+              </div>
+              <div class="px-5 py-5 space-y-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Motivo de la solicitud <span class="text-red-500">*</span></label>
+                  <textarea formControlName="motivoSolicitud" rows="3" placeholder="Explique el motivo..."
+                            class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                   focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors resize-none"></textarea>
+                </div>
+                <div>
+                  <p class="text-xs font-medium text-slate-700 mb-2">Adjunte foto del niño y carta del Niño Dios</p>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <label class="flex items-center gap-2.5 w-full border border-dashed border-slate-300 rounded-lg px-3 py-2.5
+                                  cursor-pointer hover:border-rose-400 hover:bg-rose-50 transition-colors">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-slate-400 flex-shrink-0">
+                        <path d="M9.25 13.25a.75.75 0 001.5 0V4.636l2.955 3.129a.75.75 0 001.09-1.03l-4.25-4.5a.75.75 0 00-1.09 0l-4.25 4.5a.75.75 0 101.09 1.03L9.25 4.636v8.614z"/>
+                        <path d="M3.5 12.75a.75.75 0 00-1.5 0v2.5A2.75 2.75 0 004.75 18h10.5A2.75 2.75 0 0018 15.25v-2.5a.75.75 0 00-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5z"/>
+                      </svg>
+                      <span class="text-xs text-slate-500 truncate">{{ fotoNinoName() || 'Foto del niño (JPG, PNG)' }}</span>
+                      <input type="file" class="hidden" accept=".jpg,.jpeg,.png" (change)="onFotoNino($event)" />
+                    </label>
+                    <label class="flex items-center gap-2.5 w-full border border-dashed border-slate-300 rounded-lg px-3 py-2.5
+                                  cursor-pointer hover:border-rose-400 hover:bg-rose-50 transition-colors">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-slate-400 flex-shrink-0">
+                        <path d="M9.25 13.25a.75.75 0 001.5 0V4.636l2.955 3.129a.75.75 0 001.09-1.03l-4.25-4.5a.75.75 0 00-1.09 0l-4.25 4.5a.75.75 0 101.09 1.03L9.25 4.636v8.614z"/>
+                        <path d="M3.5 12.75a.75.75 0 00-1.5 0v2.5A2.75 2.75 0 004.75 18h10.5A2.75 2.75 0 0018 15.25v-2.5a.75.75 0 00-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5z"/>
+                      </svg>
+                      <span class="text-xs text-slate-500 truncate">{{ cartaNinoName() || 'Carta del Niño Dios (PDF, JPG, PNG)' }}</span>
+                      <input type="file" class="hidden" accept=".pdf,.jpg,.jpeg,.png" (change)="onCartaNino($event)" />
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </section>
+          }
+
+          <!-- Declaración y autorización -->
+          <section class="bg-white rounded-xl border border-amber-200 shadow-sm overflow-hidden">
+            <div class="px-5 py-3.5 border-b border-amber-100 bg-amber-50">
+              <h3 class="text-xs font-semibold text-amber-800 uppercase tracking-wider">3. Autorización <span class="text-red-600">*</span></h3>
+            </div>
+            <div class="px-5 py-5">
+              <label class="flex items-start gap-3 cursor-pointer">
+                <input type="checkbox" formControlName="aceptaTratamientoDatos"
+                       class="mt-0.5 text-rose-600 focus:ring-rose-500 rounded flex-shrink-0" />
+                <div>
+                  <p class="text-sm text-slate-800 leading-snug">
+                    <strong>Autorización de tratamiento de datos personales:</strong> Autorizo a la Fundación Infantil
+                    Santiago Corazón para recopilar, almacenar y procesar mis datos personales con el fin de gestionar
+                    esta solicitud de ayuda, de acuerdo con la Ley 1581 de 2012 (Ley de Protección de Datos Personales
+                    de Colombia).
+                  </p>
+                  @if (form.get('aceptaTratamientoDatos')?.invalid && form.get('aceptaTratamientoDatos')?.touched) {
+                    <p class="mt-1 text-xs text-red-600">Debe autorizar el tratamiento de datos para continuar.</p>
+                  }
+                </div>
+              </label>
+            </div>
+          </section>
+
+          <!-- Botón de envío -->
+          <div class="flex justify-end pt-2">
+            <button type="submit" [disabled]="loading()"
+                    class="flex items-center gap-2 bg-rose-600 hover:bg-rose-700 text-white font-semibold px-6 py-2.5 rounded-lg text-sm
+                           transition-colors disabled:opacity-60 disabled:cursor-not-allowed shadow-sm">
+              @if (loading()) {
+                <span class="text-sm">Enviando…</span>
+              } @else {
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+                  <path d="M3.105 2.289a.75.75 0 00-.826.95l1.414 4.925A1.5 1.5 0 005.135 9.25h6.115a.75.75 0 010 1.5H5.135a1.5 1.5 0 00-1.442 1.086l-1.414 4.926a.75.75 0 00.826.95 28.896 28.896 0 0015.293-7.154.75.75 0 000-1.115A28.897 28.897 0 003.105 2.289z"/>
+                </svg>
+                Enviar solicitud
+              }
+            </button>
+          </div>
+
+        </form>
+
+      }
+
+      @if (step() === 'success') {
+        <div class="bg-white rounded-2xl border border-green-200 shadow-sm p-10 text-center">
+          <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-5">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-8 h-8 text-green-600">
+              <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <h2 class="text-xl font-bold text-slate-900 mb-2">Solicitud enviada con éxito</h2>
+          <p class="text-sm text-slate-600 max-w-sm mx-auto mb-6">
+            Recibimos su solicitud. El equipo de Trabajo Social la revisará y le contactará a la brevedad.
+          </p>
+          <p class="text-xs font-semibold text-rose-700">Cordialmente, Fundación Infantil Santiago Corazón</p>
+        </div>
+      }
+
+      @if (step() === 'error') {
+        <div class="bg-white rounded-2xl border border-red-200 shadow-sm p-10 text-center">
+          <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-5">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-8 h-8 text-red-600">
+              <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <h2 class="text-xl font-bold text-slate-900 mb-2">Error al enviar</h2>
+          <p class="text-sm text-red-600 max-w-sm mx-auto mb-6">{{ errorMsg() }}</p>
+          <button (click)="retry()"
+                  class="bg-rose-600 hover:bg-rose-700 text-white font-semibold px-6 py-2.5 rounded-lg text-sm transition-colors">
+            Intentar de nuevo
+          </button>
+        </div>
+      }
+
+    </div>
+  </main>
+
+  <footer class="border-t border-slate-200 bg-white py-4 text-center">
+    <p class="text-xs text-slate-400">Fundación Infantil Santiago Corazón &middot; Sistema interno de gestión</p>
+  </footer>
+
+</div>

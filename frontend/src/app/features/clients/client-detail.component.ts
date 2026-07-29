@@ -19,7 +19,10 @@ export class ClientDetailComponent implements OnInit {
   activeTab = signal<'orders' | 'donations'>('orders');
 
   ngOnInit() {
-    const id = this.route.snapshot.paramMap.get('id')!;
+    const id  = this.route.snapshot.paramMap.get('id')!;
+    const tab = this.route.snapshot.queryParamMap.get('tab');
+    if (tab === 'donations') this.activeTab.set('donations');
+
     this.svc.getOne(id).subscribe({
       next: c  => { this.client.set(c); this.loading.set(false); },
       error: () => { this.error.set('No se pudo cargar el cliente'); this.loading.set(false); },

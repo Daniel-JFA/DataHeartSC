@@ -73,7 +73,8 @@
           </thead>
           <tbody class="divide-y divide-slate-100">
             @for (p of providers(); track p.id) {
-              <tr class="hover:bg-slate-50 transition-colors">
+              <tr class="hover:bg-slate-50 transition-colors cursor-pointer"
+                  [routerLink]="['/providers', p.id]">
 
                 <!-- Nombre -->
                 <td class="px-4 py-3">
@@ -134,7 +135,7 @@
                 </td>
 
                 <!-- Acciones -->
-                <td class="px-4 py-3">
+                <td class="px-4 py-3" (click)="$event.stopPropagation()">
                   <div class="flex items-center justify-center gap-2">
                     @if (p.status === 'Pendiente') {
                       <button

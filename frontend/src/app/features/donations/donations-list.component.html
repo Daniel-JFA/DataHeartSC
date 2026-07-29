@@ -222,15 +222,19 @@
           </thead>
           <tbody class="divide-y divide-slate-100">
             @for (d of donations(); track d.id) {
-              <tr class="hover:bg-slate-50/70 transition-colors">
+              <tr class="hover:bg-slate-50/70 transition-colors cursor-pointer" [routerLink]="['/donations', d.id]">
                 <!-- Fecha -->
                 <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap text-xs">
                   {{ formatDate(d.date) }}
                 </td>
-                <!-- Donante -->
-                <td class="px-5 py-3.5">
+                <!-- Donante — click en nombre navega al historial del cliente -->
+                <td class="px-5 py-3.5" (click)="$event.stopPropagation()">
                   @if (d.client) {
-                    <div class="font-medium text-slate-900">{{ d.client.name }}</div>
+                    <a [routerLink]="['/clients', d.client.id]"
+                       [queryParams]="{tab:'donations'}"
+                       class="font-medium text-slate-900 hover:text-brand-600 transition-colors">
+                      {{ d.client.name }}
+                    </a>
                     <div class="text-xs text-slate-400 mt-0.5">{{ d.client.docNumber }}</div>
                   } @else {
                     <span class="text-slate-400">—</span>
@@ -264,7 +268,7 @@
                   {{ d.concept || d.campaign || '—' }}
                 </td>
                 <!-- Certificado -->
-                <td class="px-5 py-3.5 text-center">
+                <td class="px-5 py-3.5 text-center" (click)="$event.stopPropagation()">
                   @if (d.certificates && d.certificates.length > 0) {
                     <button
                       (click)="downloadCert(d.certificates![0].id, d.certificates![0].certificateNumber)"

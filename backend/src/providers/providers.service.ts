@@ -138,6 +138,10 @@ export class ProvidersService {
     return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
+  async findOne(id: string) {
+    return this.prisma.provider.findUnique({ where: { id } });
+  }
+
   async updateStatus(id: string, status: string) {
     return this.prisma.provider.update({
       where: { id },

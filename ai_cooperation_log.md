@@ -1124,3 +1124,61 @@ Before starting any work, read the last 15-20 lines to understand the latest cha
 - **Pending Tasks / Notes for next agent:**
   - El endpoint devuelve emails solo de la pagina actual (20 registros). Si se necesita "copiar todos los emails del segmento completo", agregar endpoint `GET /clients/segment/emails` que retorne solo los emails sin paginacion.
   - Ruta ya registrada en app.routes.ts (permissionGuard con 'segmentacion:read' existia antes).
+
+---
+**Timestamp:** 2026-07-28
+**Agent:** Claude (Sonnet 4.6)
+**Task:** Multi-change frontend update — municipios Antioquia, formulario proveedores, formulario familias, nuevo formulario solicitud-ayuda
+**Files Changed:**
+- `frontend/src/app/features/providers/provider-register.component.ts` — Lista completa municipios Antioquia; campos nombreCompleto/repNombreCompleto (reemplaza 4 campos separados); financieros obligatorios con pattern numérico; aceptaPublicidad; validateStep step 4 financiero; copiarDatosNatural; submit actualizado
+- `frontend/src/app/features/providers/provider-register.component.html` — max en fechaExpedicion/repFechaExpedicion; nombreCompleto/repNombreCompleto UI; campos financieros type=number con error inline; PPE texto completo; checkbox aceptaPublicidad
+- `frontend/src/app/features/beneficiaries/family-characterization.component.ts` — Lista completa municipios Antioquia; fechaActualizacion; phones con pattern /^\d{10}$/; aceptaPublicidad; payload actualizado
+- `frontend/src/app/features/beneficiaries/family-characterization.component.html` — Sección fechaActualizacion; reorden docType/docNumber primero; max en birthDate; validación inline phones; checkbox aceptaPublicidad
+- `frontend/src/app/app.routes.ts` — Ruta pública `beneficiarios/solicitud-ayuda`
+- `frontend/src/app/features/beneficiaries/solicitud-ayuda.component.ts` — Nuevo componente (CREADO)
+- `frontend/src/app/features/beneficiaries/solicitud-ayuda.component.html` — Nuevo template (CREADO)
+**Status:** ✅ Completado
+**Next Steps:**
+- Backend: implementar endpoint `POST /beneficiaries/solicitud-ayuda` para recibir el formulario de solicitud de ayudas (multipart/form-data)
+- Backend: agregar campos `fechaActualizacion` y `aceptaPublicidad` al modelo Beneficiary en Prisma
+- Backend: agregar campo `aceptaPublicidad` al modelo Provider en Prisma
+
+---
+**Timestamp:** 2026-07-28
+**Agent:** Claude (Sonnet 4.6)
+**Task:** historial-ayudas — navegar al detalle del beneficiario al hacer click en una fila
+**Files Changed:**
+- `frontend/src/app/features/labor-social/historial-ayudas.component.ts` — Eliminados: interfaz BeneficiarioFiltro, señal beneficiarioFiltro, métodos seleccionarBeneficiario/limpiarBeneficiario. Añadido RouterLink a imports. Simplificado execLoad (sin parámetro bf).
+- `frontend/src/app/features/labor-social/historial-ayudas.component.html` — Eliminado banner de filtro por beneficiario. La fila <tr> ahora usa [routerLink]="['/beneficiaries', a.beneficiary.id]" con cursor-pointer, igual que donations-list y orders-list. El nombre del beneficiario ya no es un <button> que filtraba.
+**Status:** ✅ Completado
+**Next Steps:**
+- Ninguno pendiente para este flujo. Al hacer click en una fila del historial de ayudas se navega directamente a la página de detalle del beneficiario, donde se muestra su perfil completo y todo su historial de ayudas entregadas.
+
+---
+**Timestamp:** 2026-07-28
+**Agent:** Claude (Sonnet 4.6)
+**Task:** Línea financiera — nombre de cliente clickeable en listas de pedidos y donaciones
+**Files Changed:**
+- `frontend/src/app/features/donations/donations-list.component.html` — Celda "Donante": envuelta en (click)="$event.stopPropagation()"; nombre del donante es ahora <a [routerLink]="['/clients', d.client.id]"> con hover color. La fila sigue navegando a /donations/:id.
+- `frontend/src/app/features/orders/orders-list.component.html` — Celda "Cliente": misma estrategia; nombre es <a [routerLink]="['/clients', o.client.id]">. La fila sigue navegando a /orders/:id.
+**Status:** ✅ Completado
+**Next Steps:**
+- Verificar visualmente que al hacer clic en "Ana María Betancourt" en la lista de donaciones/pedidos navega a /clients/:id mostrando las 4 transacciones. La fila completa (clic fuera del nombre) sigue abriendo el detalle de la donación/pedido individual.
+
+---
+**Timestamp:** 2026-07-28
+**Agent:** Claude (Sonnet 4.6)
+**Task:** Shell responsive (mobile sidebar) + Detalle de proveedor + KPIs y filtros responsive
+**Files Changed:**
+- `frontend/src/app/shared/layout/shell/shell.component.html` — Reescrito con sidebar mobile-first: overlay backdrop, `fixed lg:static`, `translate-x-0/−full` controlado por `sidebarOpen()`. Mobile top bar con hamburger + brand. `(click)="closeSidebar()"` en todos los nav-links. Main area con `flex-1 overflow-auto min-w-0`.
+- `backend/src/providers/providers.service.ts` — Añadido `findOne(id)`.
+- `backend/src/providers/providers.controller.ts` — Añadido `GET :id` (antes de `PATCH :id/status`).
+- `frontend/src/app/features/providers/provider-detail.component.ts` — Nuevo componente standalone. Carga `GET /providers/:id`, gestiona estado (aprobar/rechazar), helpers `statusBadge`, `fileUrl`, `val`.
+- `frontend/src/app/features/providers/provider-detail.component.html` — Vista completa: header con badge de estado, botones aprobar/rechazar, info básica, pago, actividad económica, info financiera, contacto facturación, SAGRILAFT/PEP, documentos adjuntos, aceptaciones.
+- `frontend/src/app/app.routes.ts` — Añadida ruta `providers/:id` → ProviderDetailComponent.
+- `frontend/src/app/features/providers/providers-list.component.html` — Filas con `[routerLink]="/providers/:id"` y `cursor-pointer`. Celda acciones con `(click)="$event.stopPropagation()"` para que aprobar/rechazar no navegue.
+**Status:** ✅ Completado
+**Next Steps:**
+- Aplicar responsive a páginas individuales: padding `px-4 sm:px-8`, grids `grid-cols-1 sm:grid-cols-3`, filtros `flex-col sm:flex-row`, `overflow-x-auto` en tablas.
+- Backend: endpoint `POST /beneficiaries/solicitud-ayuda` (multipart).
+- Prisma migration: `fechaActualizacion`, `aceptaPublicidad` en Beneficiary y Provider.

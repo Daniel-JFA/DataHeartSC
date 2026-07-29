@@ -1,6 +1,7 @@
 import { Component, inject, signal, computed, effect } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { CurrencyPipe, DecimalPipe, SlicePipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { environment } from '../../../environments/environment';
 
 interface Ayuda {
@@ -70,7 +71,7 @@ const TIPO_COLOR_MAP: Record<string, string> = {
 @Component({
   selector: 'app-historial-ayudas',
   standalone: true,
-  imports: [CurrencyPipe, DecimalPipe, SlicePipe],
+  imports: [CurrencyPipe, DecimalPipe, SlicePipe, RouterLink],
   templateUrl: './historial-ayudas.component.html',
 })
 export class HistorialAyudasComponent {
@@ -78,14 +79,14 @@ export class HistorialAyudasComponent {
 
   readonly tiposSolicitud = TIPOS_SOLICITUD;
 
-  ayudas      = signal<Ayuda[]>([]);
-  total       = signal(0);
-  totalPages  = signal(0);
-  page        = signal(1);
-  loading     = signal(false);
-  tipoFilter  = signal('');
+  ayudas       = signal<Ayuda[]>([]);
+  total        = signal(0);
+  totalPages   = signal(0);
+  page         = signal(1);
+  loading      = signal(false);
+  tipoFilter   = signal('');
   estadoFilter = signal('');
-  kpis        = signal<AyudasStats | null>(null);
+  kpis         = signal<AyudasStats | null>(null);
 
   valorTotal = computed(() =>
     this.ayudas().reduce((sum, a) => sum + (a.valor ?? 0), 0)
@@ -97,23 +98,23 @@ export class HistorialAyudasComponent {
 
   constructor() {
     effect(() => {
-      this.page();
-      this.tipoFilter();
-      this.estadoFilter();
-      this.load();
+      const page   = this.page();
+      const tipo   = this.tipoFilter();
+      const estado = this.estadoFilter();
+      this.execLoad(page, tipo, estado);
     }, { allowSignalWrites: true });
 
     this.loadStats();
   }
 
-  load() {
+  private execLoad(page: number, tipo: string, estado: string) {
     this.loading.set(true);
     let params = new HttpParams()
-      .set('page', this.page())
+      .set('page', page)
       .set('limit', 20);
 
-    if (this.tipoFilter()) params = params.set('tipoSolicitud', this.tipoFilter());
-    if (this.estadoFilter()) params = params.set('estado', this.estadoFilter());
+    if (tipo)   params = params.set('tipoSolicitud', tipo);
+    if (estado) params = params.set('estado', estado);
 
     this.http.get<AyudasResponse>(`${environment.apiUrl}/ayudas`, { params })
       .subscribe({
@@ -125,6 +126,10 @@ export class HistorialAyudasComponent {
         },
         error: () => this.loading.set(false),
       });
+  }
+
+  load() {
+    this.execLoad(this.page(), this.tipoFilter(), this.estadoFilter());
   }
 
   private loadStats() {

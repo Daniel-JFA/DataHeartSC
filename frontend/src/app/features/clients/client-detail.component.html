@@ -138,46 +138,55 @@
             <p class="text-sm font-medium">Sin pedidos registrados</p>
           </div>
         } @else {
-          <div class="overflow-x-auto">
-            <table class="w-full text-sm">
-              <thead class="bg-slate-50 border-b border-slate-200">
-                <tr>
-                  <th class="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Fecha</th>
-                  <th class="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Estado</th>
-                  <th class="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Origen</th>
-                  <th class="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">Productos</th>
-                  <th class="text-right px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Total</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-100">
-                @for (o of c.orders; track o.id) {
-                  <tr class="hover:bg-slate-50/70 transition-colors">
-                    <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap">
-                      {{ o.orderDate | date:'dd/MM/yyyy' }}
-                    </td>
-                    <td class="px-5 py-3.5">
-                      <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold {{ orderStatusBadge(o.status) }}">
-                        {{ o.status }}
-                      </span>
-                    </td>
-                    <td class="px-5 py-3.5 text-slate-600">{{ o.source || '—' }}</td>
-                    <td class="px-5 py-3.5 text-slate-500 hidden lg:table-cell">
-                      @if (o.items && o.items.length > 0) {
-                        <span class="text-xs">{{ o.items[0].product.name }}</span>
-                        @if (o.items.length > 1) {
-                          <span class="text-xs text-slate-400"> +{{ o.items.length - 1 }} más</span>
-                        }
-                      } @else {
-                        <span class="text-xs text-slate-300">—</span>
+          <div class="divide-y divide-slate-100">
+            @for (o of c.orders; track o.id) {
+              <a [routerLink]="['/orders', o.id]"
+                 class="flex flex-col sm:flex-row sm:items-start gap-3 px-5 py-4 hover:bg-slate-50/70 transition-colors group">
+                <!-- Fecha + estado -->
+                <div class="flex-shrink-0 w-32">
+                  <p class="text-xs text-slate-400">{{ o.orderDate | date:'dd/MM/yyyy' }}</p>
+                  <span class="inline-flex items-center mt-1 px-2 py-0.5 rounded-full text-xs font-semibold {{ orderStatusBadge(o.status) }}">
+                    {{ o.status }}
+                  </span>
+                </div>
+                <!-- Productos -->
+                <div class="flex-1 min-w-0">
+                  @if (o.items && o.items.length > 0) {
+                    <div class="space-y-0.5">
+                      @for (item of o.items; track $index) {
+                        <div class="flex items-center gap-2 text-xs">
+                          <span class="w-4 h-4 rounded bg-slate-100 text-slate-500 flex items-center justify-center font-bold text-[10px] flex-shrink-0">
+                            {{ item.quantity }}
+                          </span>
+                          <span class="text-slate-700 truncate">{{ item.product.name }}</span>
+                          <span class="text-slate-400 flex-shrink-0">
+                            {{ +item.unitPrice | currency:'COP':'symbol-narrow':'1.0-0' }} c/u
+                          </span>
+                        </div>
                       }
-                    </td>
-                    <td class="px-5 py-3.5 text-right font-semibold text-slate-900 whitespace-nowrap">
-                      {{ +o.totalAmount | currency:'COP':'symbol-narrow':'1.0-0' }}
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
+                    </div>
+                  } @else {
+                    <span class="text-xs text-slate-300">Sin ítems</span>
+                  }
+                  <p class="text-xs text-slate-400 mt-1.5">{{ o.source }}</p>
+                </div>
+                <!-- Total + flecha -->
+                <div class="flex items-center gap-3 sm:flex-col sm:items-end flex-shrink-0">
+                  <p class="text-sm font-bold text-slate-900">
+                    {{ +o.totalAmount | currency:'COP':'symbol-narrow':'1.0-0' }}
+                  </p>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                       class="w-4 h-4 text-slate-300 group-hover:text-brand-500 transition-colors">
+                    <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+                  </svg>
+                </div>
+              </a>
+            }
+          </div>
+          <!-- Suma total -->
+          <div class="px-5 py-3 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Total acumulado · {{ c.orders.length }} pedidos</span>
+            <span class="text-sm font-bold text-slate-900">{{ totalPedidos() | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
           </div>
         }
       }
@@ -192,39 +201,40 @@
             <p class="text-sm font-medium">Sin donaciones registradas</p>
           </div>
         } @else {
-          <div class="overflow-x-auto">
-            <table class="w-full text-sm">
-              <thead class="bg-slate-50 border-b border-slate-200">
-                <tr>
-                  <th class="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Fecha</th>
-                  <th class="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Gateway</th>
-                  <th class="text-right px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Monto</th>
-                  <th class="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Estado</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-100">
-                @for (d of c.donations; track d.id) {
-                  <tr class="hover:bg-slate-50/70 transition-colors">
-                    <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap">
-                      {{ d.date | date:'dd/MM/yyyy' }}
-                    </td>
-                    <td class="px-5 py-3.5">
-                      <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold {{ gatewayBadge(d.paymentGateway) }}">
-                        {{ d.paymentGateway || '—' }}
-                      </span>
-                    </td>
-                    <td class="px-5 py-3.5 text-right font-semibold text-slate-900 whitespace-nowrap">
-                      {{ +d.amount | currency:'COP':'symbol-narrow':'1.0-0' }}
-                    </td>
-                    <td class="px-5 py-3.5">
-                      <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold {{ donationStatusBadge(d.status) }}">
-                        {{ d.status }}
-                      </span>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
+          <div class="divide-y divide-slate-100">
+            @for (d of c.donations; track d.id) {
+              <a [routerLink]="['/donations', d.id]"
+                 class="flex items-center gap-4 px-5 py-4 hover:bg-slate-50/70 transition-colors group">
+                <!-- Fecha -->
+                <div class="flex-shrink-0 w-24">
+                  <p class="text-xs text-slate-400">{{ d.date | date:'dd/MM/yyyy' }}</p>
+                </div>
+                <!-- Gateway + estado -->
+                <div class="flex-1 flex items-center gap-2 flex-wrap">
+                  <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold {{ gatewayBadge(d.paymentGateway) }}">
+                    {{ d.paymentGateway || '—' }}
+                  </span>
+                  <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold {{ donationStatusBadge(d.status) }}">
+                    {{ d.status }}
+                  </span>
+                </div>
+                <!-- Monto + flecha -->
+                <div class="flex items-center gap-3 flex-shrink-0">
+                  <p class="text-sm font-bold text-slate-900">
+                    {{ +d.amount | currency:'COP':'symbol-narrow':'1.0-0' }}
+                  </p>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                       class="w-4 h-4 text-slate-300 group-hover:text-rose-400 transition-colors">
+                    <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+                  </svg>
+                </div>
+              </a>
+            }
+          </div>
+          <!-- Suma total -->
+          <div class="px-5 py-3 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Total acumulado · {{ c.donations.length }} donaciones</span>
+            <span class="text-sm font-bold text-rose-600">{{ totalDonaciones() | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
           </div>
         }
       }

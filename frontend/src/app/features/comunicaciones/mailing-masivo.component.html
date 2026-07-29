@@ -1,27 +1,51 @@
-<div class="p-6 space-y-6">
-
-  <!-- Header -->
+<!-- Header -->
+<header class="px-4 sm:px-8 py-5 border-b border-slate-200 bg-white flex items-center justify-between">
   <div>
-    <h2 class="text-2xl font-bold text-slate-800">Mailing Masivo</h2>
-    <p class="text-sm text-slate-500 mt-1">Envío de campañas de correo electrónico a clientes y donantes</p>
+    <h1 class="text-xl font-bold text-slate-900">Mailing Masivo</h1>
+    <p class="text-sm text-slate-500 mt-0.5">Envío de campañas de correo electrónico a clientes y donantes</p>
   </div>
+  <!-- Step indicator -->
+  <div class="hidden sm:flex items-center gap-2 text-xs">
+    <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full font-semibold
+                {{ step() === 'compose' ? 'bg-brand-600 text-white' : 'bg-emerald-100 text-emerald-700' }}">
+      @if (step() === 'confirm') {
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5">
+          <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/>
+        </svg>
+      } @else {
+        <span>1</span>
+      }
+      Componer
+    </div>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5 text-slate-300">
+      <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/>
+    </svg>
+    <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full font-semibold
+                {{ step() === 'confirm' ? 'bg-brand-600 text-white' : 'bg-slate-100 text-slate-400' }}">
+      <span>2</span>
+      Confirmar y enviar
+    </div>
+  </div>
+</header>
 
-  <!-- Alert éxito -->
+<div class="px-4 sm:px-8 py-6">
+
+  <!-- Toast éxito -->
   @if (sent()) {
-    <div class="flex items-start gap-3 p-4 bg-green-50 border border-green-200 rounded-xl">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 text-green-600 shrink-0 mt-0.5">
+    <div class="flex items-start gap-3 p-4 mb-6 bg-emerald-50 border border-emerald-200 rounded-xl">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 text-emerald-600 shrink-0 mt-0.5">
         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd"/>
       </svg>
       <div>
-        <p class="text-sm font-semibold text-green-800">Correo enviado correctamente</p>
-        <p class="text-xs text-green-700 mt-0.5">La campaña fue enviada a todos los destinatarios que coinciden con los filtros.</p>
+        <p class="text-sm font-semibold text-emerald-800">Campaña enviada correctamente</p>
+        <p class="text-xs text-emerald-700 mt-0.5">El correo fue enviado a los destinatarios que coinciden con los filtros.</p>
       </div>
     </div>
   }
 
-  <!-- Alert error -->
+  <!-- Toast error -->
   @if (error()) {
-    <div class="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-xl">
+    <div class="flex items-start gap-3 p-4 mb-6 bg-red-50 border border-red-200 rounded-xl">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 text-red-600 shrink-0 mt-0.5">
         <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
       </svg>
@@ -32,102 +56,354 @@
     </div>
   }
 
-  <!-- Formulario en 2 columnas -->
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- ═══════════════════════════════════════════
+       PASO 1 — COMPOSICIÓN
+  ═══════════════════════════════════════════ -->
+  @if (step() === 'compose') {
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-    <!-- Columna izquierda: Composición del correo -->
-    <div class="lg:col-span-2 bg-white border border-slate-200 rounded-xl p-6 space-y-5">
-      <h3 class="text-sm font-semibold text-slate-700 uppercase tracking-wide">Composición del correo</h3>
+      <!-- Columna principal: compositor -->
+      <div class="lg:col-span-2 space-y-5">
 
-      <!-- Asunto -->
-      <div class="space-y-1.5">
-        <label class="block text-sm font-medium text-slate-700">
-          Asunto <span class="text-red-500">*</span>
-        </label>
-        <input type="text"
-               placeholder="Ej: Novedades de Fundación Santiago Corazón"
-               [ngModel]="form().subject"
-               (ngModelChange)="updateForm({ subject: $event })"
-               class="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white placeholder:text-slate-400">
+        <!-- Card: Configuración de la campaña -->
+        <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+          <div class="px-5 py-4 border-b border-slate-100 bg-slate-50 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-slate-400">
+              <path d="M3 4a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L19 7.162V6a2 2 0 00-2-2H3z"/>
+              <path d="M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z"/>
+            </svg>
+            <h2 class="text-sm font-semibold text-slate-700">Composición del correo</h2>
+          </div>
+          <div class="p-5 space-y-4">
+
+            <!-- Nombre interno de la campaña -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
+                Nombre interno de la campaña
+              </label>
+              <input type="text"
+                     placeholder="Ej: Newsletter julio 2026"
+                     [ngModel]="form().campaignLabel"
+                     (ngModelChange)="updateForm({ campaignLabel: $event })"
+                     class="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors placeholder:text-slate-400"/>
+              <p class="text-xs text-slate-400 mt-1">Solo visible internamente, no aparece en el correo.</p>
+            </div>
+
+            <!-- Asunto -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
+                Asunto <span class="text-red-400 normal-case font-normal">requerido</span>
+              </label>
+              <input type="text"
+                     placeholder="Ej: Novedades de la Fundación Santiago Corazón"
+                     [ngModel]="form().subject"
+                     (ngModelChange)="updateForm({ subject: $event })"
+                     class="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors placeholder:text-slate-400"/>
+              <p class="text-xs text-slate-400 mt-1">
+                {{ form().subject.length }} caracteres
+                @if (form().subject.length > 70) {
+                  <span class="text-amber-500 ml-1">— los asuntos largos se truncan en bandeja de entrada</span>
+                }
+              </p>
+            </div>
+
+            <!-- Remitente (informativo) -->
+            <div class="flex items-center gap-2 px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-slate-400 flex-shrink-0">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-5.5-2.5a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0zM10 12a5.99 5.99 0 00-4.793 2.39A6.483 6.483 0 0010 16.5a6.483 6.483 0 004.793-2.11A5.99 5.99 0 0010 12z" clip-rule="evenodd"/>
+              </svg>
+              <div class="text-xs text-slate-500 min-w-0">
+                <span class="font-medium text-slate-700">Remitente:</span>
+                Fundación Infantil Santiago Corazón
+                <span class="text-slate-400 ml-1">&lt;contacto&#64;santiagocorazon.org&gt;</span>
+              </div>
+            </div>
+
+            <!-- Toolbar de formato -->
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                  Mensaje <span class="text-red-400 normal-case font-normal">requerido</span>
+                </label>
+                <button (click)="previewMode.set(!previewMode())"
+                        class="flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-md transition-colors
+                               {{ previewMode() ? 'bg-brand-100 text-brand-700' : 'text-slate-500 hover:bg-slate-100' }}">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5">
+                    <path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z"/>
+                    <path fill-rule="evenodd" d="M.664 10.59a1.651 1.651 0 010-1.186A10.004 10.004 0 0110 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0110 17c-4.257 0-7.893-2.66-9.336-6.41zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
+                  </svg>
+                  {{ previewMode() ? 'Editar' : 'Vista previa' }}
+                </button>
+              </div>
+
+              @if (!previewMode()) {
+                <!-- Barra de herramientas -->
+                <div class="flex items-center gap-1 mb-2 p-1.5 bg-slate-50 border border-slate-200 border-b-0 rounded-t-lg flex-wrap">
+                  <button (click)="bold()" title="Negrita (**texto**)"
+                          class="px-2.5 py-1.5 rounded text-xs font-bold text-slate-600 hover:bg-white hover:shadow-sm transition-all">
+                    B
+                  </button>
+                  <button (click)="italic()" title="Cursiva (*texto*)"
+                          class="px-2.5 py-1.5 rounded text-xs italic font-semibold text-slate-600 hover:bg-white hover:shadow-sm transition-all">
+                    I
+                  </button>
+                  <div class="w-px h-4 bg-slate-200 mx-1"></div>
+                  <span class="text-xs text-slate-400 font-medium px-1">Variables:</span>
+                  @for (v of variables; track v) {
+                    <button (click)="insertVar(v)"
+                            class="px-2 py-1 rounded text-xs font-mono bg-white border border-slate-200 text-brand-700 hover:border-brand-400 hover:bg-brand-50 transition-all shadow-sm">
+                      {{ v }}
+                    </button>
+                  }
+                </div>
+
+                <!-- Textarea -->
+                <textarea #bodyRef
+                          rows="14"
+                          placeholder="Escribe el contenido del correo...
+
+Puedes usar **negrita** o *cursiva*.
+Las variables como [nombre] se reemplazan automáticamente por los datos de cada destinatario."
+                          [ngModel]="form().body"
+                          (ngModelChange)="updateForm({ body: $event })"
+                          class="w-full px-3.5 py-3 border border-slate-200 rounded-b-lg text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors placeholder:text-slate-300 resize-y">
+                </textarea>
+                <p class="text-xs text-slate-400 mt-1">
+                  {{ form().body.length }} caracteres · {{ form().body.split('\n').length }} líneas
+                </p>
+              } @else {
+                <!-- Vista previa del correo -->
+                <div class="border border-slate-200 rounded-lg overflow-hidden">
+                  <!-- Mock email header -->
+                  <div class="bg-slate-50 border-b border-slate-200 px-4 py-3 space-y-1.5">
+                    <div class="flex items-center gap-2 text-xs text-slate-500">
+                      <span class="font-medium w-10">De:</span>
+                      <span>Fundación Infantil Santiago Corazón &lt;contacto&#64;santiagocorazon.org&gt;</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs text-slate-500">
+                      <span class="font-medium w-10">Para:</span>
+                      <span class="italic">destinatario&#64;ejemplo.com</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs">
+                      <span class="font-medium w-10 text-slate-500">Asunto:</span>
+                      <span class="font-semibold text-slate-800">
+                        {{ form().subject || '(sin asunto)' }}
+                      </span>
+                    </div>
+                  </div>
+                  <!-- Cuerpo del email -->
+                  <div class="bg-white px-6 py-5 min-h-48">
+                    @if (form().body.trim()) {
+                      <div class="text-sm text-slate-800 leading-relaxed prose max-w-none"
+                           [innerHTML]="previewHtml()">
+                      </div>
+                    } @else {
+                      <p class="text-sm text-slate-300 italic">El mensaje aparecerá aquí…</p>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+
+          </div>
+        </div>
+
       </div>
 
-      <!-- Mensaje -->
-      <div class="space-y-1.5">
-        <label class="block text-sm font-medium text-slate-700">
-          Mensaje <span class="text-red-500">*</span>
-        </label>
-        <textarea rows="12"
-                  placeholder="Escribe aquí el cuerpo del correo..."
-                  [ngModel]="form().body"
-                  (ngModelChange)="updateForm({ body: $event })"
-                  class="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white placeholder:text-slate-400 resize-y">
-        </textarea>
+      <!-- Columna derecha: Audiencia + CTA -->
+      <div class="space-y-5">
+
+        <!-- Card: Audiencia -->
+        <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+          <div class="px-5 py-4 border-b border-slate-100 bg-slate-50 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-slate-400">
+              <path d="M7 8a3 3 0 100-6 3 3 0 000 6zM14.5 9a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM1.615 16.428a1.224 1.224 0 01-.569-1.175 6.002 6.002 0 0111.908 0c.058.467-.172.92-.57 1.174A9.953 9.953 0 017 18a9.953 9.953 0 01-5.385-1.572zM14.5 16h-.106c.07-.297.088-.611.048-.933a7.47 7.47 0 00-1.588-3.755 4.502 4.502 0 015.874 2.636.818.818 0 01-.36.98A7.465 7.465 0 0114.5 16z"/>
+            </svg>
+            <h2 class="text-sm font-semibold text-slate-700">Audiencia</h2>
+          </div>
+          <div class="p-5 space-y-4">
+
+            <!-- Contador de destinatarios -->
+            <div class="flex items-center justify-between p-3.5 rounded-xl border-2
+                        {{ (recipientCount() ?? 0) > 0 ? 'border-brand-200 bg-brand-50' : 'border-slate-200 bg-slate-50' }}">
+              <div>
+                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Destinatarios</p>
+                @if (loadingCount()) {
+                  <div class="flex items-center gap-1.5 mt-1">
+                    <svg class="w-3.5 h-3.5 animate-spin text-slate-400" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                    </svg>
+                    <span class="text-xs text-slate-400">Contando…</span>
+                  </div>
+                } @else {
+                  <p class="text-2xl font-bold {{ (recipientCount() ?? 0) > 0 ? 'text-brand-700' : 'text-slate-400' }} mt-0.5">
+                    {{ recipientCount() ?? '—' }}
+                  </p>
+                }
+              </div>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                   class="w-8 h-8 {{ (recipientCount() ?? 0) > 0 ? 'text-brand-300' : 'text-slate-200' }}">
+                <path d="M3 4a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L19 7.162V6a2 2 0 00-2-2H3z"/>
+                <path d="M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z"/>
+              </svg>
+            </div>
+            <p class="text-xs text-slate-400 -mt-2">
+              Solo se incluyen contactos con correo registrado.
+            </p>
+
+            <!-- Ciudad -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
+                Ciudad
+              </label>
+              <input type="text"
+                     placeholder="Todas (dejar vacío)"
+                     [ngModel]="form().filterCity"
+                     (ngModelChange)="updateForm({ filterCity: $event })"
+                     class="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors placeholder:text-slate-400"/>
+            </div>
+
+            <!-- Estado -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
+                Estado del cliente
+              </label>
+              <select [ngModel]="form().filterStatus"
+                      (ngModelChange)="updateForm({ filterStatus: $event })"
+                      class="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors bg-white text-slate-700">
+                <option value="Todos">Todos los estados</option>
+                <option value="Activo">Solo activos</option>
+                <option value="Inactivo">Solo inactivos</option>
+              </select>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- CTA -->
+        <button (click)="goToConfirm()"
+                [disabled]="!canConfirm()"
+                class="w-full flex items-center justify-center gap-2.5 px-6 py-3.5 bg-brand-600 hover:bg-brand-700
+                       disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-semibold
+                       rounded-xl transition-colors shadow-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+            <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/>
+          </svg>
+          Revisar y enviar
+        </button>
+
+        @if (!canConfirm()) {
+          <p class="text-xs text-slate-400 text-center -mt-2">
+            Completa el asunto y el mensaje para continuar
+          </p>
+        }
+
+        <!-- Tip -->
+        <div class="bg-blue-50 border border-blue-100 rounded-xl p-4">
+          <div class="flex items-start gap-2.5">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clip-rule="evenodd"/>
+            </svg>
+            <div class="space-y-1">
+              <p class="text-xs font-semibold text-blue-800">Consejo</p>
+              <p class="text-xs text-blue-700 leading-relaxed">
+                Usa <span class="font-mono bg-blue-100 px-1 rounded">{{ '{nombre}' }}</span> para personalizar cada correo. El sistema lo reemplaza con el nombre real de cada destinatario.
+              </p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  }
+
+  <!-- ═══════════════════════════════════════════
+       PASO 2 — CONFIRMACIÓN
+  ═══════════════════════════════════════════ -->
+  @if (step() === 'confirm') {
+    <div class="max-w-2xl mx-auto space-y-5">
+
+      <!-- Resumen de la campaña -->
+      <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+        <div class="px-6 py-5 border-b border-slate-100 bg-slate-50">
+          <h2 class="text-base font-bold text-slate-800">Resumen antes de enviar</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Verifica los datos de la campaña. Una vez enviada no se puede deshacer.</p>
+        </div>
+
+        <div class="p-6 space-y-4">
+          <!-- Filas de resumen -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Campaña</p>
+              <p class="text-sm text-slate-800 font-medium">{{ form().campaignLabel || '(sin nombre)' }}</p>
+            </div>
+            <div>
+              <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Destinatarios</p>
+              <div class="flex items-center gap-1.5">
+                <span class="text-sm font-bold text-brand-700">{{ recipientCount() ?? '—' }}</span>
+                <span class="text-sm text-slate-500">personas con email</span>
+              </div>
+            </div>
+            <div class="sm:col-span-2">
+              <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Asunto</p>
+              <p class="text-sm text-slate-800 font-medium">{{ form().subject }}</p>
+            </div>
+            <div>
+              <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Ciudad</p>
+              <p class="text-sm text-slate-800">{{ form().filterCity || 'Todas' }}</p>
+            </div>
+            <div>
+              <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Estado</p>
+              <p class="text-sm text-slate-800">{{ form().filterStatus }}</p>
+            </div>
+          </div>
+
+          <!-- Preview del mensaje -->
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Vista previa del mensaje</p>
+            <div class="bg-slate-50 border border-slate-200 rounded-lg px-4 py-4 text-sm text-slate-700 leading-relaxed max-h-48 overflow-y-auto"
+                 [innerHTML]="previewHtml()">
+            </div>
+          </div>
+        </div>
       </div>
 
-      <!-- Botón Enviar -->
-      <div class="pt-2">
-        <button (click)="send()"
-                [disabled]="sending() || !form().subject.trim() || !form().body.trim()"
-                class="inline-flex items-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-lg transition-colors">
+      <!-- Acciones -->
+      <div class="flex flex-col sm:flex-row items-center gap-3">
+        <button (click)="backToCompose()"
+                class="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 border border-slate-300 text-slate-700
+                       hover:bg-slate-50 text-sm font-semibold rounded-xl transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+            <path fill-rule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clip-rule="evenodd"/>
+          </svg>
+          Volver a editar
+        </button>
+
+        <button (click)="send()" [disabled]="sending()"
+                class="w-full sm:flex-1 flex items-center justify-center gap-2.5 px-6 py-3 bg-brand-600 hover:bg-brand-700
+                       disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold
+                       rounded-xl transition-colors shadow-sm">
           @if (sending()) {
             <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
             </svg>
-            Enviando...
+            Enviando campaña…
           } @else {
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
               <path d="M3.105 2.289a.75.75 0 00-.826.95l1.414 4.925A1.5 1.5 0 005.135 9.25h6.115a.75.75 0 010 1.5H5.135a1.5 1.5 0 00-1.442 1.086l-1.414 4.926a.75.75 0 00.826.95 28.896 28.896 0 0015.293-7.154.75.75 0 000-1.115A28.897 28.897 0 003.105 2.289z"/>
             </svg>
-            Enviar campaña
+            Confirmar y enviar a {{ recipientCount() ?? '—' }} personas
           }
         </button>
       </div>
+
+      <p class="text-xs text-slate-400 text-center">
+        Esta acción enviará un correo a cada destinatario. Asegúrate de revisar el mensaje antes de continuar.
+      </p>
+
     </div>
-
-    <!-- Columna derecha: Filtros de destinatarios -->
-    <div class="space-y-5">
-      <div class="bg-white border border-slate-200 rounded-xl p-6 space-y-5">
-        <h3 class="text-sm font-semibold text-slate-700 uppercase tracking-wide">Filtrar destinatarios</h3>
-
-        <!-- Ciudad -->
-        <div class="space-y-1.5">
-          <label class="block text-sm font-medium text-slate-700">Ciudad</label>
-          <input type="text"
-                 placeholder="Ej: Bogotá (vacío = todas)"
-                 [ngModel]="form().filterCity"
-                 (ngModelChange)="updateForm({ filterCity: $event })"
-                 class="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white placeholder:text-slate-400">
-        </div>
-
-        <!-- Estado -->
-        <div class="space-y-1.5">
-          <label class="block text-sm font-medium text-slate-700">Estado</label>
-          <select [ngModel]="form().filterStatus"
-                  (ngModelChange)="updateForm({ filterStatus: $event })"
-                  class="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white text-slate-700">
-            <option value="Todos">Todos</option>
-            <option value="Activo">Activo</option>
-            <option value="Inactivo">Inactivo</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Nota informativa -->
-      <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-2">
-        <div class="flex items-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-amber-600 shrink-0">
-            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clip-rule="evenodd"/>
-          </svg>
-          <p class="text-xs font-semibold text-amber-800">Sobre los destinatarios</p>
-        </div>
-        <p class="text-xs text-amber-700 leading-relaxed">
-          El correo se enviará a todos los clientes/donantes que coincidan con los filtros seleccionados y tengan una dirección de correo registrada.
-          Deja los filtros en blanco para enviar a todos.
-        </p>
-      </div>
-    </div>
-
-  </div>
+  }
 
 </div>

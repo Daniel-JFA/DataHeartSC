@@ -1,0 +1,367 @@
+<!-- Header -->
+<header class="px-4 sm:px-8 py-5 border-b border-slate-200 bg-white flex items-center gap-4">
+  <a routerLink="/providers"
+     class="p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors flex-shrink-0">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+      <path fill-rule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clip-rule="evenodd" />
+    </svg>
+  </a>
+  <div class="min-w-0 flex-1">
+    <h1 class="text-xl font-bold text-slate-900 truncate">
+      @if (loading()) { Cargando... }
+      @else if (p) { {{ p.name }} }
+    </h1>
+    @if (p) {
+      <p class="text-sm text-slate-500 mt-0.5">{{ p.docType }} {{ p.docNumber }}</p>
+    }
+  </div>
+  @if (p) {
+    <span class="text-xs font-semibold px-3 py-1.5 rounded-full border flex-shrink-0 {{ statusBadge(p.status) }}">
+      {{ p.status }}
+    </span>
+  }
+</header>
+
+<div class="px-4 sm:px-8 py-6 space-y-6 max-w-5xl">
+
+  <!-- Error -->
+  @if (error()) {
+    <div class="bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3">
+      {{ error() }}
+    </div>
+  }
+
+  <!-- Success toast -->
+  @if (successMsg()) {
+    <div class="flex items-center gap-2.5 bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm rounded-xl px-4 py-3">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-emerald-600 flex-shrink-0">
+        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
+      </svg>
+      {{ successMsg() }}
+    </div>
+  }
+
+  <!-- Loading -->
+  @if (loading()) {
+    <div class="flex items-center justify-center py-20 text-slate-400">
+      <svg class="animate-spin w-5 h-5 mr-3" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+      </svg>
+      <span class="text-sm">Cargando proveedor…</span>
+    </div>
+  }
+
+  @if (p && !loading()) {
+
+    <!-- Acciones de estado -->
+    @if (p.status === 'Pendiente') {
+      <div class="bg-amber-50 border border-amber-200 rounded-xl px-5 py-4 flex flex-col sm:flex-row items-start sm:items-center gap-3 justify-between">
+        <div>
+          <p class="text-sm font-semibold text-amber-800">Pendiente de revisión</p>
+          <p class="text-xs text-amber-600 mt-0.5">Revisa la información del proveedor antes de aprobar o rechazar</p>
+        </div>
+        <div class="flex gap-2 flex-shrink-0">
+          <button (click)="updateStatus('Aprobado')" [disabled]="updating()"
+            class="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-colors">
+            @if (updating()) {
+              <svg class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+              </svg>
+            } @else {
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+                <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/>
+              </svg>
+            }
+            Aprobar
+          </button>
+          <button (click)="updateStatus('Rechazado')" [disabled]="updating()"
+            class="inline-flex items-center gap-1.5 px-4 py-2 bg-white hover:bg-red-50 border border-red-300 text-red-600 text-sm font-semibold rounded-lg transition-colors disabled:opacity-50">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+              <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z"/>
+            </svg>
+            Rechazar
+          </button>
+        </div>
+      </div>
+    } @else {
+      <div class="flex gap-2">
+        @if (p.status === 'Aprobado') {
+          <button (click)="updateStatus('Rechazado')" [disabled]="updating()"
+            class="px-3 py-1.5 text-xs font-semibold text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50">
+            Cambiar a Rechazado
+          </button>
+        } @else {
+          <button (click)="updateStatus('Aprobado')" [disabled]="updating()"
+            class="px-3 py-1.5 text-xs font-semibold text-emerald-700 border border-emerald-200 rounded-lg hover:bg-emerald-50 transition-colors disabled:opacity-50">
+            Cambiar a Aprobado
+          </button>
+        }
+      </div>
+    }
+
+    <!-- Información básica -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div class="px-5 py-4 border-b border-slate-100 bg-slate-50">
+        <h2 class="text-sm font-semibold text-slate-700">Información básica</h2>
+      </div>
+      <div class="p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div>
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Razón social / Nombre</p>
+          <p class="text-sm text-slate-800 font-medium">{{ val(p.name) }}</p>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Documento</p>
+          <p class="text-sm text-slate-800">{{ p.docType }} {{ p.docNumber }}</p>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Persona de contacto</p>
+          <p class="text-sm text-slate-800">{{ val(p.contactName) }}</p>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Teléfono</p>
+          <p class="text-sm text-slate-800">{{ val(p.phone) }}</p>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Correo electrónico</p>
+          <p class="text-sm text-slate-800 break-all">{{ val(p.email) }}</p>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Ciudad / Departamento</p>
+          <p class="text-sm text-slate-800">{{ val(p.city) }}@if (p.department) {, {{ p.department }}}</p>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Dirección</p>
+          <p class="text-sm text-slate-800">{{ val(p.address) }}</p>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Tipo de solicitud</p>
+          <p class="text-sm text-slate-800">{{ val(p.tipoSolicitud) }}@if (p.tipoSolicitudOtro) { — {{ p.tipoSolicitudOtro }}}</p>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Fecha de registro</p>
+          <p class="text-sm text-slate-800">{{ p.createdAt | slice:0:10 }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Naturaleza y pago -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div class="px-5 py-4 border-b border-slate-100 bg-slate-50">
+        <h2 class="text-sm font-semibold text-slate-700">Naturaleza y condiciones de pago</h2>
+      </div>
+      <div class="p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div>
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Naturaleza</p>
+          <p class="text-sm text-slate-800">{{ val(p.naturaleza) }}</p>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Forma de pago</p>
+          <p class="text-sm text-slate-800">{{ val(p.formaPago) }}</p>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Tipo de cuenta</p>
+          <p class="text-sm text-slate-800">{{ val(p.tipoCuenta) }}</p>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Número de cuenta</p>
+          <p class="text-sm text-slate-800 font-mono">{{ val(p.numeroCuenta) }}</p>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Días de pago</p>
+          <p class="text-sm text-slate-800">{{ val(p.diasPago) }}</p>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Días de crédito</p>
+          <p class="text-sm text-slate-800">{{ val(p.diasCredito) }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actividad económica -->
+    @if (p.actividadTipo || p.codigoCIIU || p.descripcionActividad) {
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="px-5 py-4 border-b border-slate-100 bg-slate-50">
+          <h2 class="text-sm font-semibold text-slate-700">Actividad económica</h2>
+        </div>
+        <div class="p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Tipo de actividad</p>
+            <p class="text-sm text-slate-800">{{ val(p.actividadTipo) }}@if (p.actividadOtro) { — {{ p.actividadOtro }}}</p>
+          </div>
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Código CIIU</p>
+            <p class="text-sm text-slate-800 font-mono">{{ val(p.codigoCIIU) }}</p>
+          </div>
+          <div class="sm:col-span-2 lg:col-span-1">
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Descripción</p>
+            <p class="text-sm text-slate-800">{{ val(p.descripcionActividad) }}</p>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Información financiera -->
+    @if (p.totalActivos || p.ingresosMensuales) {
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="px-5 py-4 border-b border-slate-100 bg-slate-50">
+          <h2 class="text-sm font-semibold text-slate-700">Información financiera</h2>
+        </div>
+        <div class="p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Total activos</p>
+            <p class="text-sm text-slate-800 font-mono">{{ val(p.totalActivos) }}</p>
+          </div>
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Total pasivos</p>
+            <p class="text-sm text-slate-800 font-mono">{{ val(p.totalPasivos) }}</p>
+          </div>
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Patrimonio</p>
+            <p class="text-sm text-slate-800 font-mono">{{ val(p.totalPatrimonio) }}</p>
+          </div>
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Ingresos mensuales</p>
+            <p class="text-sm text-slate-800 font-mono">{{ val(p.ingresosMensuales) }}</p>
+          </div>
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Egresos mensuales</p>
+            <p class="text-sm text-slate-800 font-mono">{{ val(p.egresosMensuales) }}</p>
+          </div>
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Otros ingresos</p>
+            <p class="text-sm text-slate-800 font-mono">{{ val(p.otrosIngresosMensuales) }}</p>
+            @if (p.conceptoOtrosIngresos) {
+              <p class="text-xs text-slate-400 mt-0.5">{{ p.conceptoOtrosIngresos }}</p>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Contacto facturación -->
+    @if (p.factNombre || p.factEmail) {
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="px-5 py-4 border-b border-slate-100 bg-slate-50">
+          <h2 class="text-sm font-semibold text-slate-700">Contacto de facturación</h2>
+        </div>
+        <div class="p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Nombre</p>
+            <p class="text-sm text-slate-800">{{ val(p.factNombre) }}</p>
+          </div>
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Cargo</p>
+            <p class="text-sm text-slate-800">{{ val(p.factCargo) }}</p>
+          </div>
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Teléfono / Ext.</p>
+            <p class="text-sm text-slate-800">{{ val(p.factTelefono) }}@if (p.factExt) { ext. {{ p.factExt }}}</p>
+          </div>
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Celular</p>
+            <p class="text-sm text-slate-800">{{ val(p.factCelular) }}</p>
+          </div>
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Email facturación</p>
+            <p class="text-sm text-slate-800 break-all">{{ val(p.factEmail) }}</p>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- SAGRILAFT / PEP -->
+    @if (p.manejaRecursosPublicos || p.tieneReconocimientoPublico || p.ejercePoder || p.esFamiliarPPE) {
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="px-5 py-4 border-b border-slate-100 bg-slate-50">
+          <h2 class="text-sm font-semibold text-slate-700">SAGRILAFT / Personas Expuestas Políticamente</h2>
+        </div>
+        <div class="p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Maneja recursos públicos</p>
+            <p class="text-sm text-slate-800">{{ val(p.manejaRecursosPublicos) }}</p>
+          </div>
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Reconocimiento público</p>
+            <p class="text-sm text-slate-800">{{ val(p.tieneReconocimientoPublico) }}</p>
+          </div>
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Ejerce poder público</p>
+            <p class="text-sm text-slate-800">{{ val(p.ejercePoder) }}</p>
+          </div>
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Es familiar de PEP</p>
+            <p class="text-sm text-slate-800">{{ val(p.esFamiliarPPE) }}</p>
+            @if (p.familiarPPEInfo) {
+              <p class="text-xs text-slate-500 mt-0.5">{{ p.familiarPPEInfo }}</p>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Documentos adjuntos -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div class="px-5 py-4 border-b border-slate-100 bg-slate-50">
+        <h2 class="text-sm font-semibold text-slate-700">Documentos adjuntos</h2>
+      </div>
+      <div class="p-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
+        @for (doc of [
+          { label: 'RUT', path: p.rutPath },
+          { label: 'Cámara de comercio', path: p.camaraComercioPath },
+          { label: 'Certificación bancaria', path: p.certBancariaPath },
+          { label: 'Formato proveedor', path: p.formatoProveedorPath }
+        ]; track doc.label) {
+          <div class="flex items-center gap-3 p-3 rounded-lg border border-slate-200">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                 class="w-5 h-5 flex-shrink-0 {{ doc.path ? 'text-indigo-500' : 'text-slate-300' }}">
+              <path fill-rule="evenodd" d="M4.5 2A2.5 2.5 0 002 4.5v11A2.5 2.5 0 004.5 18h11a2.5 2.5 0 002.5-2.5v-7a2.5 2.5 0 00-.732-1.768L13.5 2.732A2.5 2.5 0 0011.732 2H4.5zm7 2.25v2.5a.75.75 0 00.75.75h2.5L11.5 4.25z" clip-rule="evenodd" />
+            </svg>
+            <div class="min-w-0 flex-1">
+              <p class="text-xs font-semibold text-slate-600">{{ doc.label }}</p>
+              @if (doc.path) {
+                <a [href]="fileUrl(doc.path)" target="_blank"
+                   class="text-xs text-indigo-600 hover:text-indigo-800 truncate block">
+                  Ver documento
+                </a>
+              } @else {
+                <p class="text-xs text-slate-400">No adjuntado</p>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Aceptaciones -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div class="px-5 py-4 border-b border-slate-100 bg-slate-50">
+        <h2 class="text-sm font-semibold text-slate-700">Aceptaciones y declaraciones</h2>
+      </div>
+      <div class="p-5 space-y-3">
+        <div class="flex items-center gap-2.5">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+               class="w-4 h-4 flex-shrink-0 {{ p.aceptaDeclaracion ? 'text-emerald-500' : 'text-slate-300' }}">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
+          </svg>
+          <p class="text-sm text-slate-700">Acepta declaración SAGRILAFT</p>
+          <span class="text-xs font-semibold {{ p.aceptaDeclaracion ? 'text-emerald-600' : 'text-red-500' }}">
+            {{ p.aceptaDeclaracion ? 'Sí' : 'No' }}
+          </span>
+        </div>
+        <div class="flex items-center gap-2.5">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+               class="w-4 h-4 flex-shrink-0 {{ p.aceptaTratamientoDatos ? 'text-emerald-500' : 'text-slate-300' }}">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
+          </svg>
+          <p class="text-sm text-slate-700">Acepta tratamiento de datos</p>
+          <span class="text-xs font-semibold {{ p.aceptaTratamientoDatos ? 'text-emerald-600' : 'text-red-500' }}">
+            {{ p.aceptaTratamientoDatos ? 'Sí' : 'No' }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+  }
+</div>

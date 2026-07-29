@@ -17,6 +17,10 @@ export const routes: Routes = [
     loadComponent: () => import('./features/beneficiaries/family-characterization.component').then(m => m.FamilyCharacterizationComponent),
   },
   {
+    path: 'beneficiarios/solicitud-ayuda',
+    loadComponent: () => import('./features/beneficiaries/solicitud-ayuda.component').then(m => m.SolicitudAyudaComponent),
+  },
+  {
     path: '',
     loadComponent: () => import('./shared/layout/shell/shell.component').then(m => m.ShellComponent),
     canActivate: [authGuard],
@@ -56,8 +60,20 @@ export const routes: Routes = [
         data: { permission: 'ventas_donaciones:write' },
       },
       {
+        path: 'orders/:id',
+        loadComponent: () => import('./features/orders/order-detail.component').then(m => m.OrderDetailComponent),
+        canActivate: [permissionGuard],
+        data: { permission: 'ventas_donaciones:read' },
+      },
+      {
         path: 'donations',
         loadComponent: () => import('./features/donations/donations-list.component').then(m => m.DonationsListComponent),
+        canActivate: [permissionGuard],
+        data: { permission: 'ventas_donaciones:read' },
+      },
+      {
+        path: 'donations/:id',
+        loadComponent: () => import('./features/donations/donation-detail.component').then(m => m.DonationDetailComponent),
         canActivate: [permissionGuard],
         data: { permission: 'ventas_donaciones:read' },
       },
@@ -76,6 +92,12 @@ export const routes: Routes = [
       {
         path: 'providers',
         loadComponent: () => import('./features/providers/providers-list.component').then(m => m.ProvidersListComponent),
+        canActivate: [permissionGuard],
+        data: { permission: 'inventario:read' },
+      },
+      {
+        path: 'providers/:id',
+        loadComponent: () => import('./features/providers/provider-detail.component').then(m => m.ProviderDetailComponent),
         canActivate: [permissionGuard],
         data: { permission: 'inventario:read' },
       },

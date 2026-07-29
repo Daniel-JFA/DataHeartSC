@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 
@@ -10,8 +10,9 @@ import { AuthService } from '../../../core/services/auth.service';
 })
 export class ShellComponent {
   auth = inject(AuthService);
+  sidebarOpen = signal(false);
 
-  logout() {
-    this.auth.logout();
-  }
+  toggleSidebar() { this.sidebarOpen.update(v => !v); }
+  closeSidebar()  { this.sidebarOpen.set(false); }
+  logout()        { this.auth.logout(); }
 }

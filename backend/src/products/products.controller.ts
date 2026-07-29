@@ -27,6 +27,12 @@ export class ProductsController {
     return this.productsService.findAll(page, limit, search, onlyActive, categoryName);
   }
 
+  @Get('categories')
+  @RequirePermission('inventario:read')
+  getCategoryStats() {
+    return this.productsService.getCategoryStats();
+  }
+
   @Get(':id')
   @RequirePermission('inventario:read')
   findOne(@Param('id') id: string) {

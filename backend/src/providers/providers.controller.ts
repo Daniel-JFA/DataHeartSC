@@ -71,6 +71,14 @@ export class ProvidersController {
     return this.service.findAll(page, limit, search);
   }
 
+  /** Detalle de un proveedor — protegida */
+  @Get(':id')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermission('inventario:read')
+  findOne(@Param('id') id: string) {
+    return this.service.findOne(id);
+  }
+
   /** Actualizar estado (Pendiente → Aprobado | Rechazado) — protegida */
   @Patch(':id/status')
   @UseGuards(JwtAuthGuard, PermissionsGuard)

@@ -11,6 +11,12 @@ export interface Product {
   price: string;
   isActive: boolean;
   categoryName: string | null;
+  subcategoryName: string | null;
+}
+
+export interface CategoryStat {
+  name: string;
+  total: number;
 }
 
 export interface PagedResult<T> {
@@ -34,5 +40,9 @@ export class ProductsService {
       .set('onlyActive', onlyActive);
     if (categoryName) params = params.set('categoryName', categoryName);
     return this.http.get<PagedResult<Product>>(this.base, { params });
+  }
+
+  getCategoryStats() {
+    return this.http.get<CategoryStat[]>(`${this.base}/categories`);
   }
 }
