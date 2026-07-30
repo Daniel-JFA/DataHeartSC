@@ -153,8 +153,6 @@ export class FamilyCharacterizationComponent {
   receivesGovSubsidyOption = signal<'SI' | 'NO'>('NO');
 
   form = this.fb.group({
-    // FECHA DE ACTUALIZACIÓN (al inicio del formulario)
-    fechaActualizacion:               [new Date().toISOString().split('T')[0], [Validators.required]],
     // PASO 1: Información básica del niño
     nombreCompleto:             ['', [Validators.required, Validators.minLength(2)]],
     docType:                    ['Registro Civil', [Validators.required]],
@@ -582,7 +580,7 @@ export class FamilyCharacterizationComponent {
       govSubsidyType:             this.receivesGovSubsidyOption() === 'SI' ? v.govSubsidyType : null,
       comoSeEntero:               v.comoSeEntero,
       status:                     'Activo', // Por defecto entra activo
-      fechaActualizacion:         v.fechaActualizacion,
+      fechaActualizacion:         new Date().toISOString(),
       aceptaPublicidad:           v.aceptaPublicidad ?? false,
     };
 
