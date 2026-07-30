@@ -1182,3 +1182,50 @@ Before starting any work, read the last 15-20 lines to understand the latest cha
 - Aplicar responsive a páginas individuales: padding `px-4 sm:px-8`, grids `grid-cols-1 sm:grid-cols-3`, filtros `flex-col sm:flex-row`, `overflow-x-auto` en tablas.
 - Backend: endpoint `POST /beneficiaries/solicitud-ayuda` (multipart).
 - Prisma migration: `fechaActualizacion`, `aceptaPublicidad` en Beneficiary y Provider.
+
+---
+**Timestamp:** 2026-07-28
+**Agent:** Claude (Sonnet 4.6)
+**Task:** Commit y push de cambios pendientes — formularios beneficiarios y proveedores + servicios
+**Files Changed:**
+- `frontend/src/app/core/services/donations.service.ts` — Añadido método `getOne(id)`.
+- `frontend/src/app/core/services/orders.service.ts` — Añadido método `getOne(id)`.
+- `frontend/src/app/features/beneficiaries/beneficiary-detail.component.html` — Vista de detalle ampliada: campos adicionales de madre/padre (doc, vive con el niño, responsable económico), sección hermanos, nueva sección "Vivienda y Situación Socioeconómica" (zona, tipo vivienda, estrato, personas en hogar, transporte, fuente ingresos, subsidio, etnia, condición).
+- `frontend/src/app/features/beneficiaries/family-characterization.component.html` — Campo `fechaActualizacion` al inicio del formulario, campo `nombreCompleto` unificado (reemplaza `firstName`/`lastName`), validación inline de teléfonos (10 dígitos, madre/padre/cuidador), checkbox `aceptaPublicidad` (opcional), municipios Antioquia completos.
+- `frontend/src/app/features/beneficiaries/family-characterization.component.ts` — Control `fechaActualizacion` (required, default hoy), control `nombreCompleto`, validators `pattern(/^\d{10}$/)` en teléfonos, control `aceptaPublicidad`, lógica `prefillForm` y `submit` adaptada, municipios Antioquia completos.
+- `frontend/src/app/features/providers/provider-register.component.html` — Campo `nombreCompleto` unificado para persona natural y representante legal (reemplaza los 4 campos separados), campos financieros con `type="number"` y validación requerida + mensajes inline, checkbox `aceptaPublicidad` (opcional), texto PPE ampliado, `max="2099-12-31"` en inputs de fecha.
+- `frontend/src/app/features/providers/provider-register.component.ts` — `nombreCompleto`/`repNombreCompleto` en formulario y payload, validators requeridos en financieros, validación en step 4 de campos financieros, `aceptaPublicidad` en payload, municipios Antioquia completos.
+**Status:** ✅ Completado — commit `28be9cc` pusheado a `main`
+**Next Steps:**
+- Prisma migration: añadir `fechaActualizacion` y `aceptaPublicidad` en modelos `Beneficiary` y `Provider` en schema.prisma.
+- Backend: recibir y persistir `fechaActualizacion`, `aceptaPublicidad`, `nombreCompleto` (para Provider) en los respectivos endpoints.
+- Verificar que el detalle de beneficiario muestre correctamente los nuevos campos una vez el backend los retorne.
+
+---
+**Timestamp:** 2026-07-30
+**Agent:** Claude (Sonnet 4.6)
+**Task:** Eliminar campo fechaActualizacion del formulario de caracterización — debe ser automático
+**Files Changed:**
+- `frontend/src/app/features/beneficiaries/family-characterization.component.html` — Eliminada sección "Fecha de actualización" (input type=date visible al usuario).
+- `frontend/src/app/features/beneficiaries/family-characterization.component.ts` — Eliminado control `fechaActualizacion` del FormBuilder; en `submit()` se genera con `new Date().toISOString()`.
+**Status:** ✅ Completado — commit `d64e2ad` pusheado a `main`
+**Next Steps:**
+- Pendiente: resolver 404 en producción para `/familias/caracterizacion` (el container nginx principal no tiene los archivos del frontend montados; el container frontend usa nginx por defecto sin `try_files`).
+- Pendiente: migración Prisma para `fechaActualizacion` y `aceptaPublicidad` en modelos `Beneficiary` y `Provider`.
+
+---
+**Timestamp:** 2026-07-30
+**Agent:** Claude (Sonnet 4.6)
+**Task:** Backfill category_name en productos sin categoría — local y producción
+**Files Changed:**
+- `scripts/etl/migrate_excel.py` — Corregido para hacer UPDATE de category_name/subcategory_name cuando el producto ya existe (antes lo saltaba sin actualizar).
+- `scripts/etl/run_prod.py` — Script temporal de ejecución en producción (no commitear, es de uso único).
+**Acciones en BD (local + producción):**
+- Detectado que 113 productos con SKU `HIST-*` (del ETL de Supabase) tenían `category_name = NULL` porque el script `migrate.js` no incluía ese campo.
+- Aplicado backfill por keyword matching sobre el nombre del producto: 54 reglas ILIKE.
+- Resultado: 0 productos sin categoría. Todos los HIST-* categorizados: Productos/Bonos de Pésame (16), Productos/Bonos de Toda Ocasión (31), Otros Productos/Línea de Corazón (25), Otros Productos/Consumibles (20), Otros Productos/Plantas (10), Otros Productos/Velas (8), Otros Productos/Objetos (2), Donaciones/En Efectivo (1).
+**Status:** ✅ Completado en local y producción
+**Next Steps:**
+- Pendiente: resolver 404 en producción para rutas SPA directas (`/familias/caracterizacion`, etc.) — el container nginx principal no sirve los archivos del frontend (necesita proxy_pass a `frontend:80` o volumen compartido, y el frontend necesita nginx.conf con `try_files`).
+- Pendiente: migración Prisma para `fechaActualizacion` y `aceptaPublicidad` en modelos `Beneficiary` y `Provider`.
+- Cambiar credenciales del servidor (fueron compartidas en chat).
