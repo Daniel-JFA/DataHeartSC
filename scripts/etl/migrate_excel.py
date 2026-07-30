@@ -200,15 +200,33 @@ for _, row in df_prod.iterrows():
     sku    = f"EXT-{ext_id}"
 
     if ext_id in product_map:
+        pid = product_map[ext_id]
         if category == DONATION_CATEGORY:
-            donation_product_ids.add(product_map[ext_id])
+            donation_product_ids.add(pid)
+        # Backfill categoría si el producto entró sin ella (ej. ETL de Supabase)
+        if category or subcat:
+            cur.execute("""
+                UPDATE products
+                   SET category_name    = COALESCE(category_name, %s),
+                       subcategory_name = COALESCE(subcategory_name, %s)
+                 WHERE id = %s
+            """, (category, subcat, pid))
         report["skip_prod"] += 1
         continue
 
     if sku in existing_skus:
-        product_map[ext_id] = existing_skus[sku]
+        pid = existing_skus[sku]
+        product_map[ext_id] = pid
         if category == DONATION_CATEGORY:
-            donation_product_ids.add(existing_skus[sku])
+            donation_product_ids.add(pid)
+        # Backfill categoría si el producto entró sin ella
+        if category or subcat:
+            cur.execute("""
+                UPDATE products
+                   SET category_name    = COALESCE(category_name, %s),
+                       subcategory_name = COALESCE(subcategory_name, %s)
+                 WHERE id = %s
+            """, (category, subcat, pid))
         report["skip_prod"] += 1
         continue
 
