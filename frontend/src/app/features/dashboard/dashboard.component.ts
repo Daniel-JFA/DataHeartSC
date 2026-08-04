@@ -166,6 +166,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
       gradientDonations = g2;
     }
 
+    const days = this.periodo();
+    const tension  = days <= 30 ? 0.35 : 0.45;
+    const ptRadius = days <= 30 ? 3    : days <= 90 ? 2 : 0;
+
     this.revenueChart = new Chart(canvas, {
       type: 'line',
       data: {
@@ -177,8 +181,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
             borderColor: '#4f46e5',
             backgroundColor: gradientSales,
             fill: true,
-            tension: 0.35,
+            tension,
             borderWidth: 3,
+            pointRadius: ptRadius,
             pointBackgroundColor: '#4f46e5',
             pointHoverRadius: 6,
           },
@@ -188,8 +193,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
             borderColor: '#e11d48',
             backgroundColor: gradientDonations,
             fill: true,
-            tension: 0.35,
+            tension,
             borderWidth: 3,
+            pointRadius: ptRadius,
             pointBackgroundColor: '#e11d48',
             pointHoverRadius: 6,
           }
@@ -246,12 +252,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   formatShortDate(dateStr: string): string {
     const parts = dateStr.split('-');
-    if (parts.length === 3) {
-      const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-      const monthIdx = parseInt(parts[1], 10) - 1;
-      return `${parts[2]} ${monthNames[monthIdx]}`;
-    }
-    return dateStr;
+    if (parts.length !== 3) return dateStr;
+    const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    const monthIdx = parseInt(parts[1], 10) - 1;
+    const days = this.periodo();
+    if (days > 90) return `${monthNames[monthIdx]} ${parts[0].slice(2)}`; // "Ene 25"
+    if (days > 30) return `Sem ${parts[2]} ${monthNames[monthIdx]}`;      // "Sem 07 Jul"
+    return `${parts[2]} ${monthNames[monthIdx]}`;                          // "14 Jul"
   }
 
   private initStatusChart(canvas: HTMLCanvasElement, stats: DashboardStats): void {

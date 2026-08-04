@@ -59,42 +59,44 @@ export class DashboardService {
       count: sc._count.id,
     }));
 
-    // 3. Revenue by day (configurable period)
+    // 3. Revenue by period — day ≤30d, week ≤90d, month >90d
+    const granularity = days <= 30 ? 'day' : days <= 90 ? 'week' : 'month';
+
     const revenueByDayRaw = await this.prisma.$queryRaw<Array<{ date: string; total: number }>>`
       SELECT
-        gs.date::date::text as date,
-        COALESCE(SUM(o.total_amount), 0)::float as total
+        DATE_TRUNC(${granularity}, gs.period)::date::text AS date,
+        COALESCE(SUM(o.total_amount), 0)::float AS total
       FROM generate_series(
         CURRENT_DATE - (${days - 1} || ' days')::interval,
         CURRENT_DATE,
         '1 day'::interval
-      ) gs(date)
+      ) gs(period)
       LEFT JOIN orders o ON
-        TO_CHAR(o.order_date, 'YYYY-MM-DD') = TO_CHAR(gs.date, 'YYYY-MM-DD')
+        DATE_TRUNC(${granularity}, o.order_date) = DATE_TRUNC(${granularity}, gs.period)
         AND o.status != 'Cancelado'
-      GROUP BY gs.date
-      ORDER BY gs.date ASC
+      GROUP BY DATE_TRUNC(${granularity}, gs.period)
+      ORDER BY DATE_TRUNC(${granularity}, gs.period) ASC
     `;
     const revenueByDay = revenueByDayRaw.map((r) => ({
       date: r.date,
       total: r.total,
     }));
 
-    // 3b. Donations by day (configurable period)
+    // 3b. Donations by period
     const donationsByDayRaw = await this.prisma.$queryRaw<Array<{ date: string; total: number }>>`
       SELECT
-        gs.date::date::text as date,
-        COALESCE(SUM(d.amount), 0)::float as total
+        DATE_TRUNC(${granularity}, gs.period)::date::text AS date,
+        COALESCE(SUM(d.amount), 0)::float AS total
       FROM generate_series(
         CURRENT_DATE - (${days - 1} || ' days')::interval,
         CURRENT_DATE,
         '1 day'::interval
-      ) gs(date)
+      ) gs(period)
       LEFT JOIN donations d ON
-        TO_CHAR(d.date, 'YYYY-MM-DD') = TO_CHAR(gs.date, 'YYYY-MM-DD')
+        DATE_TRUNC(${granularity}, d.date) = DATE_TRUNC(${granularity}, gs.period)
         AND d.status = 'Approved'
-      GROUP BY gs.date
-      ORDER BY gs.date ASC
+      GROUP BY DATE_TRUNC(${granularity}, gs.period)
+      ORDER BY DATE_TRUNC(${granularity}, gs.period) ASC
     `;
     const donationsByDay = donationsByDayRaw.map((r) => ({
       date: r.date,
