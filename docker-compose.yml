@@ -7,12 +7,10 @@ services:
       POSTGRES_USER: dataheart
       POSTGRES_PASSWORD: dataheart_dev_2026
       POSTGRES_DB: dataheart_sc
-    ports:
-      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
-      - dataheart_net
+      - dataheart-private
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U dataheart -d dataheart_sc"]
       interval: 10s
@@ -27,18 +25,61 @@ services:
     ports:
       - "6379:6379"
     networks:
-      - dataheart_net
+      - dataheart-private
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
 
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sc-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://dataheart:dataheart_dev_2026@dataheart_postgres:5432/dataheart_sc?schema=public
+      REDIS_HOST: dataheart_redis
+      REDIS_PORT: 6379
+      JWT_SECRET: ${JWT_SECRET:-dataheart_sc_super_secret_jwt_key_2026}
+      NODE_ENV: production
+      PORT: 3000
+      SHOPIFY_WEBHOOK_SECRET: ${SHOPIFY_WEBHOOK_SECRET:-e8a7dae6edf92c4ea496d50304ee42ef7ed7cff2a3ff86f7f948d3b886d0159d}
+    command: ["sh", "-c", "npx prisma migrate deploy && node dist/src/main.js"]
+    expose:
+      - "3000"
+    networks:
+      - dataheart-private
+      - proxy
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: sc-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    volumes:
+      - ./docs:/usr/share/nginx/html/board:ro
+    networks:
+      - proxy
+
 volumes:
   postgres_data:
     name: dataheart_postgres_data
 
 networks:
-  dataheart_net:
-    name: dataheart_net
+  dataheart-private:
+    name: dataheart-private
     driver: bridge
+    internal: true
+  proxy:
+    name: proxy
+    external: true

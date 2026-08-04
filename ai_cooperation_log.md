@@ -1202,6 +1202,24 @@ Before starting any work, read the last 15-20 lines to understand the latest cha
 - Verificar que el detalle de beneficiario muestre correctamente los nuevos campos una vez el backend los retorne.
 
 ---
+
+## 2026-07-29 — Antigravity (AGY) — Sincronización Remota, Corrección Prisma v7 y Despliegue Local
+
+- **Task:** Traer los cambios remotos (`git pull origin main`), corregir configuración de Docker y despliegue de Prisma v7, compilar, migrar y desplegar contenedores.
+- **Files Modified:**
+  - `docker-compose.yml` — Configurado con los 4 servicios locales (`dataheart_postgres`, `dataheart_redis`, `sc-backend`, `sc-frontend`) bajo las redes `dataheart-private` y `proxy`.
+  - `backend/Dockerfile` — Copia explícita de `prisma.config.ts` en la imagen `runner` para habilitar `npx prisma migrate deploy` en Prisma v7.
+  - `ai_cooperation_log.md` — Registro de actividades de despliegue.
+- **Current Status:**
+  - ✅ 11 commits sincronizados desde `origin/main` (módulos de voluntariado, proveedores, colas Redis/BullMQ, segmentación, sala lúdica, listas de difusión y mailing masivo).
+  - ✅ Imágenes de Docker compiladas (`docker compose up -d --build`).
+  - ✅ Migración de esquema `20260723203839_add_volunteer_fields_and_supports` aplicada exitosamente en la BD Postgres.
+  - ✅ Seed ejecutado en contenedor backend: 14 permisos, 10 roles, 67 relaciones rol-permiso y 7 usuarios reales actualizados.
+  - ✅ Aplicación web y API activas en `https://sc.danielflorez.dev` (Frontend HTTP 200 OK, Backend REST API 401 Unauthorized por JWT).
+- **Pending Tasks / Notes for next agent:**
+  - Ejecutar `scripts/deploy_to_server.sh` desde la terminal del administrador si se requiere sincronización en el servidor VPS de producción.
+
+---
 **Timestamp:** 2026-07-30
 **Agent:** Claude (Sonnet 4.6)
 **Task:** Eliminar campo fechaActualizacion del formulario de caracterización — debe ser automático
@@ -1347,3 +1365,24 @@ Before starting any work, read the last 15-20 lines to understand the latest cha
 - Renombrar "Productos" → "Bonos" en UI (pendiente aclaración con Ana)
 - Párrafos explicativos por tipo de ayuda (esperar textos)
 - Historial de ayudas → Solicitud de ayudas en menú
+
+---
+**Timestamp:** 2026-08-04
+**Agent:** Claude (Sonnet 5)
+**Task:** Backup/restore de BD local + sincronización con remoto
+**Files Changed:**
+- `docker-compose.yml` — Servicios `backend`/`frontend` añadidos, red privada `dataheart-private` (antes `dataheart_net`), puerto 5432 de Postgres ya no expuesto al host, red `proxy` externa para el frontend.
+- `backend/Dockerfile` — `COPY prisma.config.ts` en la imagen `runner` (requerido por Prisma v7) y `CMD` corregido a `node dist/src/main.js` (antes apuntaba a `dist/main`, ruta inexistente).
+- `frontend/nginx.conf` — Fusionadas dos versiones divergentes (local vs. la traída del remoto): `try_files` + gzip/mime types + cache headers para assets estáticos.
+- `ai_cooperation_log.md` — Este registro.
+**Acciones en BD (local):**
+- Backup completo con `pg_dump -F c` de `dataheart_sc` → `backups/dataheart_sc_20260804_044036.dump` (excluido de git vía `*.dump`).
+- Restaurada la BD local desde un dump actualizado subido por el usuario (`backups/dataheart_sc_local_20260803_234954.dump`) con `pg_restore --clean --if-exists`.
+- Detectado que el dump restaurado no incluía la migración `20260803171732_add_observaciones_privadas_motivo_rechazo` (llegada por `git pull` tras la restauración). Aplicada manualmente (`ALTER TABLE` en `beneficiaries.observaciones_privadas` y `providers.motivo_rechazo`) y registrada en `_prisma_migrations` con checksum verificado — `npx` no disponible en el host para usar `prisma migrate deploy` directamente.
+**Git:**
+- `git pull origin main` (fast-forward `0af4932..0be1326`, incluye módulos de admin, ETL multi-archivo y validaciones de `4568d74`).
+- Reaplicados cambios locales via stash; conflicto solo en `frontend/nginx.conf` (archivo nuevo en ambos lados con contenido distinto), resuelto por fusión manual.
+**Status:** ✅ Completado
+**Next Steps:**
+- `scripts/etl/run_prod.py` sigue sin trackear (script de uso único, no commitear salvo que se decida conservarlo).
+- Verificar que `docker compose up -d --build` levante correctamente con los cambios de `docker-compose.yml`/Dockerfiles antes de desplegar a producción.
