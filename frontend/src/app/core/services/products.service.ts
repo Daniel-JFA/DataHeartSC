@@ -42,7 +42,16 @@ export class ProductsService {
     return this.http.get<PagedResult<Product>>(this.base, { params });
   }
 
-  getCategoryStats() {
-    return this.http.get<CategoryStat[]>(`${this.base}/categories`);
+  getCategoryStats(onlyActive = true) {
+    const params = new HttpParams().set('onlyActive', onlyActive);
+    return this.http.get<CategoryStat[]>(`${this.base}/categories`, { params });
+  }
+
+  toggleActive(id: string) {
+    return this.http.patch<{ id: string; isActive: boolean }>(`${this.base}/${id}/toggle-active`, {});
+  }
+
+  stockMovement(id: string, body: { movementType: 'Entrada' | 'Salida'; quantity: number; description?: string }) {
+    return this.http.post<Product>(`${this.base}/${id}/stock-movement`, body);
   }
 }

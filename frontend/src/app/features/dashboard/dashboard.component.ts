@@ -17,6 +17,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
   loading = signal(true);
   error   = signal('');
 
+  readonly PERIODOS = [
+    { label: '1 mes',   days: 30  },
+    { label: '3 meses', days: 90  },
+    { label: '6 meses', days: 180 },
+    { label: '1 año',   days: 365 },
+  ];
+  periodo = signal(90);
+
   revenueChart:    Chart | null = null;
   statusChart:     Chart | null = null;
   categoryChart:   Chart | null = null;
@@ -76,7 +84,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
   };
 
   ngOnInit(): void {
-    this.svc.getStats().subscribe({
+    this.loadStats();
+  }
+
+  loadStats(): void {
+    this.loading.set(true);
+    this.error.set('');
+    this.svc.getStats(this.periodo()).subscribe({
       next: data => {
         this.stats.set(data);
         this.loading.set(false);
@@ -87,6 +101,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.loading.set(false);
       },
     });
+  }
+
+  setPeriodo(days: number): void {
+    this.periodo.set(days);
+    this.revenueChart?.destroy();    this.revenueChart = null;
+    this.statusChart?.destroy();     this.statusChart = null;
+    this.categoryChart?.destroy();   this.categoryChart = null;
+    this.gatewayChart?.destroy();    this.gatewayChart = null;
+    this.ayudasTipoChart?.destroy(); this.ayudasTipoChart = null;
+    this.ayudasMesChart?.destroy();  this.ayudasMesChart = null;
+    this.loadStats();
   }
 
   ngOnDestroy(): void {

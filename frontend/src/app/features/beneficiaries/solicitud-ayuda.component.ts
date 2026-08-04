@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
@@ -31,120 +31,141 @@ export class SolicitudAyudaComponent {
 
   readonly TIPOS_AYUDA = TIPOS_AYUDA;
 
-  // Tipo de ayuda seleccionado
-  tipoAyuda = signal<string>('');
+  // Tipos de ayuda seleccionados (checkboxes múltiples)
+  tiposSeleccionados = signal<string[]>([]);
+
+  toggleTipo(v: string) {
+    this.tiposSeleccionados.update(arr =>
+      arr.includes(v) ? arr.filter(x => x !== v) : [...arr, v]
+    );
+  }
+
+  hasTipo(v: string): boolean {
+    return this.tiposSeleccionados().includes(v);
+  }
 
   form = this.fb.group({
     // Datos del solicitante
-    nombreSolicitante:        ['', [Validators.required]],
-    docNumber:                ['', [Validators.required]],
-    celular:                  ['', [Validators.required, Validators.pattern(/^\d{10}$/)]],
-    correo:                   ['', [Validators.email]],
-    tipoAyuda:                ['', [Validators.required]],
-
-    // Campos comunes a varios tipos
-    motivoSolicitud:          ['', [Validators.required]],
-    solicitudEps:             ['NO'],
-    respuestaEps:             [''],
-    adjuntoSoporte:           [''],
+    nombreSolicitante:           ['', [Validators.required]],
+    docNumber:                   ['', [Validators.required]],
+    celular:                     ['', [Validators.required, Validators.pattern(/^\d{10}$/)]],
+    correo:                      ['', [Validators.email]],
 
     // Alojamiento
-    numPersonasAlojamiento:   [null as number | null],
-    docPersonasAlojamiento:   [''],
-    nombresPersonasAlojamiento: [''],
-    fechaIngresoAlojamiento:  [''],
-    fechaSalidaAlojamiento:   [''],
+    motivoAlojamiento:           [''],
+    epsAlojamiento:              ['NO'],
+    respEpsAlojamiento:          [''],
+    numPersonasAlojamiento:      [null as number | null],
+    docPersonasAlojamiento:      [''],
+    nombresPersonasAlojamiento:  [''],
+    fechaIngresoAlojamiento:     [''],
+    fechaSalidaAlojamiento:      [''],
 
     // Transporte
-    numPersonasTransporte:    [null as number | null],
-    docPersonasTransporte:    [''],
-    nombresPersonasTransporte: [''],
-    fechasNacimientoTransporte: [''],
-    celularesTransporte:      [''],
-    transportadores:          [''],
-    fechaIdaTransporte:       [''],
-    ciudadSalidaIda:          [''],
-    ciudadLlegadaIda:         [''],
-    fechaRegresoTransporte:   [''],
-    ciudadSalidaRegreso:      [''],
-    ciudadLlegadaRegreso:     [''],
+    motivoTransporte:            [''],
+    epsTransporte:               ['NO'],
+    respEpsTransporte:           [''],
+    numPersonasTransporte:       [null as number | null],
+    docPersonasTransporte:       [''],
+    nombresPersonasTransporte:   [''],
+    fechasNacimientoTransporte:  [''],
+    celularesTransporte:         [''],
+    transportadores:             [''],
+    fechaIdaTransporte:          [''],
+    ciudadSalidaIda:             [''],
+    ciudadLlegadaIda:            [''],
+    fechaRegresoTransporte:      [''],
+    ciudadSalidaRegreso:         [''],
+    ciudadLlegadaRegreso:        [''],
+
+    // Citas Médicas
+    motivoCitasMedicas:          [''],
+    epsCitasMedicas:             ['NO'],
+    respEpsCitasMedicas:         [''],
 
     // Medicamentos
-    etapaPanales:             [''],
+    motivoMedicamentos:          [''],
+    epsMedicamentos:             ['NO'],
+    respEpsMedicamentos:         [''],
+    etapaPanales:                [''],
 
-    // Autorización datos
-    aceptaTratamientoDatos:   [false, [Validators.requiredTrue]],
+    // Otras
+    motivoOtras:                 [''],
+
+    // Recreación
+    motivoRecreacion:            [''],
+
+    // Autorización
+    aceptaTratamientoDatos:      [false, [Validators.requiredTrue]],
   });
 
-  constructor() {
-    this.form.get('tipoAyuda')?.valueChanges.subscribe(v => {
-      this.tipoAyuda.set(v ?? '');
-      // Reset motivo cuando cambia el tipo
-      this.form.patchValue({ motivoSolicitud: '' });
-    });
-  }
-
-  setSolicitudEps(val: 'SI' | 'NO') {
-    this.form.patchValue({ solicitudEps: val });
+  setEps(tipo: string, val: 'SI' | 'NO') {
+    const map: Record<string, string> = {
+      ALOJAMIENTO:       'epsAlojamiento',
+      TRANSPORTE:        'epsTransporte',
+      CITAS_MEDICAS:     'epsCitasMedicas',
+      MEDICAMENTOS_ASEO: 'epsMedicamentos',
+    };
+    const ctrl = map[tipo];
+    if (ctrl) this.form.patchValue({ [ctrl]: val });
     if (val === 'NO') {
-      this.form.patchValue({ respuestaEps: '' });
+      const respMap: Record<string, string> = {
+        ALOJAMIENTO:       'respEpsAlojamiento',
+        TRANSPORTE:        'respEpsTransporte',
+        CITAS_MEDICAS:     'respEpsCitasMedicas',
+        MEDICAMENTOS_ASEO: 'respEpsMedicamentos',
+      };
+      const rCtrl = respMap[tipo];
+      if (rCtrl) this.form.patchValue({ [rCtrl]: '' });
     }
   }
 
-  onFile(event: Event) {
-    const input = event.target as HTMLInputElement;
-    const file  = input.files?.[0];
-    if (file) {
-      this.form.patchValue({ adjuntoSoporte: file.name });
-    }
-  }
-
-  private _adjuntoFile: File | null = null;
-  onFileChange(event: Event, field: 'soporte') {
-    const input = event.target as HTMLInputElement;
-    this._adjuntoFile = input.files?.[0] ?? null;
-    if (this._adjuntoFile) {
-      this.form.patchValue({ adjuntoSoporte: this._adjuntoFile.name });
-    }
-  }
-
-  private _fotoNino: File | null = null;
-  private _cartaNino: File | null = null;
-  fotoNinoName  = signal('');
-  cartaNinoName = signal('');
-
-  onFotoNino(event: Event) {
-    const input = event.target as HTMLInputElement;
-    this._fotoNino = input.files?.[0] ?? null;
-    this.fotoNinoName.set(this._fotoNino?.name ?? '');
-  }
-
-  onCartaNino(event: Event) {
-    const input = event.target as HTMLInputElement;
-    this._cartaNino = input.files?.[0] ?? null;
-    this.cartaNinoName.set(this._cartaNino?.name ?? '');
+  getEps(tipo: string): string {
+    const map: Record<string, string> = {
+      ALOJAMIENTO:       'epsAlojamiento',
+      TRANSPORTE:        'epsTransporte',
+      CITAS_MEDICAS:     'epsCitasMedicas',
+      MEDICAMENTOS_ASEO: 'epsMedicamentos',
+    };
+    return this.form.get(map[tipo] ?? '')?.value as string ?? 'NO';
   }
 
   private _adjuntoOrden: File | null = null;
+  private _fotoNino:     File | null = null;
+  private _cartaNino:    File | null = null;
   adjuntoOrdenName = signal('');
-  onAdjuntoOrden(event: Event) {
-    const input = event.target as HTMLInputElement;
-    this._adjuntoOrden = input.files?.[0] ?? null;
-    this.adjuntoOrdenName.set(this._adjuntoOrden?.name ?? '');
+  fotoNinoName     = signal('');
+  cartaNinoName    = signal('');
+
+  onAdjuntoOrden(e: Event) {
+    const f = (e.target as HTMLInputElement).files?.[0] ?? null;
+    this._adjuntoOrden = f;
+    this.adjuntoOrdenName.set(f?.name ?? '');
+  }
+  onFotoNino(e: Event) {
+    const f = (e.target as HTMLInputElement).files?.[0] ?? null;
+    this._fotoNino = f;
+    this.fotoNinoName.set(f?.name ?? '');
+  }
+  onCartaNino(e: Event) {
+    const f = (e.target as HTMLInputElement).files?.[0] ?? null;
+    this._cartaNino = f;
+    this.cartaNinoName.set(f?.name ?? '');
   }
 
   submit() {
     this.stepError.set('');
     this.form.markAllAsTouched();
 
+    if (!this.tiposSeleccionados().length) {
+      this.stepError.set('Debe seleccionar al menos un tipo de ayuda.');
+      return;
+    }
+    if (this.form.get('celular')?.invalid) {
+      this.stepError.set('El celular debe tener exactamente 10 dígitos.');
+      return;
+    }
     if (this.form.invalid) {
-      if (this.form.get('aceptaTratamientoDatos')?.invalid) {
-        // Error inline ya se muestra
-      }
-      if (this.form.get('celular')?.invalid) {
-        this.stepError.set('El celular debe tener exactamente 10 dígitos.');
-        return;
-      }
       this.stepError.set('Por favor complete todos los campos obligatorios.');
       return;
     }
@@ -152,40 +173,60 @@ export class SolicitudAyudaComponent {
     this.loading.set(true);
     const v = this.form.value;
 
+    // Construir objeto de motivaciones por tipo
+    const motivaciones: Record<string, string> = {};
+    if (this.hasTipo('ALOJAMIENTO'))       motivaciones['ALOJAMIENTO']       = v.motivoAlojamiento ?? '';
+    if (this.hasTipo('TRANSPORTE'))        motivaciones['TRANSPORTE']         = v.motivoTransporte ?? '';
+    if (this.hasTipo('CITAS_MEDICAS'))     motivaciones['CITAS_MEDICAS']      = v.motivoCitasMedicas ?? '';
+    if (this.hasTipo('MEDICAMENTOS_ASEO')) motivaciones['MEDICAMENTOS_ASEO']  = v.motivoMedicamentos ?? '';
+    if (this.hasTipo('OTRAS'))             motivaciones['OTRAS']              = v.motivoOtras ?? '';
+    if (this.hasTipo('RECREACION'))        motivaciones['RECREACION']         = v.motivoRecreacion ?? '';
+
     const fd = new FormData();
     fd.append('nombreSolicitante', v.nombreSolicitante ?? '');
-    fd.append('docNumber',         v.docNumber         ?? '');
-    fd.append('celular',           v.celular           ?? '');
-    fd.append('correo',            v.correo            ?? '');
-    fd.append('tipoAyuda',         v.tipoAyuda         ?? '');
-    fd.append('motivoSolicitud',   v.motivoSolicitud   ?? '');
-    fd.append('solicitudEps',      v.solicitudEps      ?? 'NO');
-    fd.append('respuestaEps',      v.respuestaEps      ?? '');
+    fd.append('docNumber',         v.docNumber ?? '');
+    fd.append('celular',           v.celular ?? '');
+    fd.append('correo',            v.correo ?? '');
+    fd.append('tiposAyuda',        JSON.stringify(this.tiposSeleccionados()));
+    fd.append('motivaciones',      JSON.stringify(motivaciones));
 
-    // Campos específicos por tipo
-    if (v.tipoAyuda === 'ALOJAMIENTO') {
-      fd.append('numPersonasAlojamiento',    String(v.numPersonasAlojamiento ?? ''));
-      fd.append('docPersonasAlojamiento',    v.docPersonasAlojamiento ?? '');
+    // Alojamiento
+    if (this.hasTipo('ALOJAMIENTO')) {
+      fd.append('epsAlojamiento',             v.epsAlojamiento ?? 'NO');
+      fd.append('respEpsAlojamiento',         v.respEpsAlojamiento ?? '');
+      fd.append('numPersonasAlojamiento',     String(v.numPersonasAlojamiento ?? ''));
+      fd.append('docPersonasAlojamiento',     v.docPersonasAlojamiento ?? '');
       fd.append('nombresPersonasAlojamiento', v.nombresPersonasAlojamiento ?? '');
-      fd.append('fechaIngresoAlojamiento',   v.fechaIngresoAlojamiento ?? '');
-      fd.append('fechaSalidaAlojamiento',    v.fechaSalidaAlojamiento ?? '');
+      fd.append('fechaIngresoAlojamiento',    v.fechaIngresoAlojamiento ?? '');
+      fd.append('fechaSalidaAlojamiento',     v.fechaSalidaAlojamiento ?? '');
     }
-    if (v.tipoAyuda === 'TRANSPORTE') {
-      fd.append('numPersonasTransporte',    String(v.numPersonasTransporte ?? ''));
-      fd.append('docPersonasTransporte',    v.docPersonasTransporte ?? '');
+    // Transporte
+    if (this.hasTipo('TRANSPORTE')) {
+      fd.append('epsTransporte',             v.epsTransporte ?? 'NO');
+      fd.append('respEpsTransporte',         v.respEpsTransporte ?? '');
+      fd.append('numPersonasTransporte',     String(v.numPersonasTransporte ?? ''));
+      fd.append('docPersonasTransporte',     v.docPersonasTransporte ?? '');
       fd.append('nombresPersonasTransporte', v.nombresPersonasTransporte ?? '');
-      fd.append('fechasNacimientoTransporte', v.fechasNacimientoTransporte ?? '');
-      fd.append('celularesTransporte',      v.celularesTransporte ?? '');
-      fd.append('transportadores',          v.transportadores ?? '');
-      fd.append('fechaIdaTransporte',       v.fechaIdaTransporte ?? '');
-      fd.append('ciudadSalidaIda',          v.ciudadSalidaIda ?? '');
-      fd.append('ciudadLlegadaIda',         v.ciudadLlegadaIda ?? '');
-      fd.append('fechaRegresoTransporte',   v.fechaRegresoTransporte ?? '');
-      fd.append('ciudadSalidaRegreso',      v.ciudadSalidaRegreso ?? '');
-      fd.append('ciudadLlegadaRegreso',     v.ciudadLlegadaRegreso ?? '');
+      fd.append('fechasNacimientoTransporte',v.fechasNacimientoTransporte ?? '');
+      fd.append('celularesTransporte',       v.celularesTransporte ?? '');
+      fd.append('transportadores',           v.transportadores ?? '');
+      fd.append('fechaIdaTransporte',        v.fechaIdaTransporte ?? '');
+      fd.append('ciudadSalidaIda',           v.ciudadSalidaIda ?? '');
+      fd.append('ciudadLlegadaIda',          v.ciudadLlegadaIda ?? '');
+      fd.append('fechaRegresoTransporte',    v.fechaRegresoTransporte ?? '');
+      fd.append('ciudadSalidaRegreso',       v.ciudadSalidaRegreso ?? '');
+      fd.append('ciudadLlegadaRegreso',      v.ciudadLlegadaRegreso ?? '');
     }
-    if (v.tipoAyuda === 'MEDICAMENTOS_ASEO') {
-      fd.append('etapaPanales', v.etapaPanales ?? '');
+    // Medicamentos
+    if (this.hasTipo('MEDICAMENTOS_ASEO')) {
+      fd.append('epsMedicamentos',    v.epsMedicamentos ?? 'NO');
+      fd.append('respEpsMedicamentos',v.respEpsMedicamentos ?? '');
+      fd.append('etapaPanales',       v.etapaPanales ?? '');
+    }
+    // Citas médicas
+    if (this.hasTipo('CITAS_MEDICAS')) {
+      fd.append('epsCitasMedicas',    v.epsCitasMedicas ?? 'NO');
+      fd.append('respEpsCitasMedicas',v.respEpsCitasMedicas ?? '');
     }
 
     fd.append('aceptaTratamientoDatos', String(v.aceptaTratamientoDatos ?? false));

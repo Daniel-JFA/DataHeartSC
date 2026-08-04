@@ -5,7 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 export class DashboardService {
   constructor(private prisma: PrismaService) {}
 
-  async getStats() {
+  async getStats(days = 90) {
     // 1. KPIs count
     const totalClients = await this.prisma.clientDonor.count();
     const activeClients = await this.prisma.clientDonor.count({
@@ -59,17 +59,17 @@ export class DashboardService {
       count: sc._count.id,
     }));
 
-    // 3. Revenue by day (last 30 days)
+    // 3. Revenue by day (configurable period)
     const revenueByDayRaw = await this.prisma.$queryRaw<Array<{ date: string; total: number }>>`
-      SELECT 
+      SELECT
         gs.date::date::text as date,
         COALESCE(SUM(o.total_amount), 0)::float as total
       FROM generate_series(
-        CURRENT_DATE - INTERVAL '29 days',
+        CURRENT_DATE - (${days - 1} || ' days')::interval,
         CURRENT_DATE,
         '1 day'::interval
       ) gs(date)
-      LEFT JOIN orders o ON 
+      LEFT JOIN orders o ON
         TO_CHAR(o.order_date, 'YYYY-MM-DD') = TO_CHAR(gs.date, 'YYYY-MM-DD')
         AND o.status != 'Cancelado'
       GROUP BY gs.date
@@ -80,17 +80,17 @@ export class DashboardService {
       total: r.total,
     }));
 
-    // 3b. Donations by day (last 30 days)
+    // 3b. Donations by day (configurable period)
     const donationsByDayRaw = await this.prisma.$queryRaw<Array<{ date: string; total: number }>>`
-      SELECT 
+      SELECT
         gs.date::date::text as date,
         COALESCE(SUM(d.amount), 0)::float as total
       FROM generate_series(
-        CURRENT_DATE - INTERVAL '29 days',
+        CURRENT_DATE - (${days - 1} || ' days')::interval,
         CURRENT_DATE,
         '1 day'::interval
       ) gs(date)
-      LEFT JOIN donations d ON 
+      LEFT JOIN donations d ON
         TO_CHAR(d.date, 'YYYY-MM-DD') = TO_CHAR(gs.date, 'YYYY-MM-DD')
         AND d.status = 'Approved'
       GROUP BY gs.date

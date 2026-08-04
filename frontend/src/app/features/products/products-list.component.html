@@ -4,16 +4,28 @@
     <h1 class="text-xl font-bold text-slate-900">Catálogo de Productos</h1>
     <p class="text-sm text-slate-500 mt-0.5">Inventario organizado por categoría</p>
   </div>
-  <!-- Search -->
-  <div class="relative w-full sm:w-72">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
-         class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-      <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd"/>
-    </svg>
-    <input type="text" placeholder="Buscar por nombre o SKU…"
-           [value]="search()"
-           (input)="onSearch($event)"
-           class="w-full border border-slate-300 rounded-lg pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors"/>
+  <div class="flex items-center gap-3 flex-wrap">
+    <!-- Toggle inactivos -->
+    <button (click)="showInactive.set(!showInactive())"
+            class="flex items-center gap-2 px-3 py-2 rounded-lg border text-sm transition-colors
+                   {{ showInactive() ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50' }}">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+        <path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z"/>
+        <path fill-rule="evenodd" d="M.664 10.59a1.651 1.651 0 010-1.186A10.004 10.004 0 0110 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0110 17c-4.257 0-7.893-2.66-9.336-6.41zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
+      </svg>
+      {{ showInactive() ? 'Ocultando inactivos' : 'Mostrar inactivos' }}
+    </button>
+    <!-- Search -->
+    <div class="relative w-full sm:w-72">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+           class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+        <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd"/>
+      </svg>
+      <input type="text" placeholder="Buscar por nombre o SKU…"
+             [value]="search()"
+             (input)="onSearch($event)"
+             class="w-full border border-slate-300 rounded-lg pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors"/>
+    </div>
   </div>
 </header>
 
@@ -71,6 +83,11 @@
           {{ categoryView()!.lowStockCount }} con stock bajo
         </span>
       }
+      @if (showInactive()) {
+        <span class="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full bg-slate-100 text-slate-500 border border-slate-200">
+          Mostrando activos e inactivos
+        </span>
+      }
     </div>
 
     <!-- Subcategory sections -->
@@ -111,11 +128,14 @@
                   <th class="px-5 py-2.5 text-right text-xs font-semibold text-slate-400 uppercase tracking-wider">Precio</th>
                   <th class="px-5 py-2.5 text-right text-xs font-semibold text-slate-400 uppercase tracking-wider">Stock</th>
                   <th class="px-5 py-2.5 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Estado</th>
+                  <th class="px-5 py-2.5 text-right text-xs font-semibold text-slate-400 uppercase tracking-wider">Acciones</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-50">
                 @for (p of sub.products; track p.id) {
-                  <tr class="hover:bg-slate-50/70 transition-colors" [class.bg-red-50]="lowStock(p)">
+                  <tr class="hover:bg-slate-50/70 transition-colors"
+                      [class.bg-red-50]="lowStock(p)"
+                      [class.opacity-50]="!p.isActive">
                     <td class="px-5 py-3 font-medium text-slate-900">{{ p.name }}</td>
                     <td class="px-5 py-3">
                       <span class="font-mono text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded">{{ p.sku }}</span>
@@ -128,7 +148,11 @@
                       <span class="text-slate-400 text-xs ml-1.5">/ mín {{ p.minStock }}</span>
                     </td>
                     <td class="px-5 py-3">
-                      @if (lowStock(p)) {
+                      @if (!p.isActive) {
+                        <span class="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-500 border border-slate-200">
+                          Inactivo
+                        </span>
+                      } @else if (lowStock(p)) {
                         <span class="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-red-100 text-red-700 border border-red-200">
                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3 h-3">
                             <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
@@ -141,6 +165,28 @@
                           OK
                         </span>
                       }
+                    </td>
+                    <td class="px-5 py-3">
+                      <div class="flex items-center justify-end gap-2">
+                        <!-- Movimiento stock (solo activos) -->
+                        @if (p.isActive) {
+                          <button (click)="openMovement(p)"
+                                  class="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-lg bg-brand-50 text-brand-700 border border-brand-200 hover:bg-brand-100 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5">
+                              <path d="M10 1a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0110 1zM5.05 3.05a.75.75 0 011.06 0l1.062 1.06A.75.75 0 016.11 5.173L5.05 4.11a.75.75 0 010-1.06zM14.95 3.05a.75.75 0 010 1.06l-1.06 1.062a.75.75 0 01-1.062-1.061l1.06-1.06a.75.75 0 011.062 0zM3 10a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5h-1.5A.75.75 0 013 10zM14.75 10a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5h-1.5a.75.75 0 01-.75-.75zM5.05 14.95a.75.75 0 010-1.06l1.062-1.062a.75.75 0 111.061 1.062L6.11 14.95a.75.75 0 01-1.06 0zM13.888 13.889a.75.75 0 011.061 0l1.062 1.062a.75.75 0 01-1.062 1.061l-1.06-1.06a.75.75 0 010-1.062zM10 15a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0110 15z"/>
+                            </svg>
+                            Movimiento
+                          </button>
+                        }
+                        <!-- Activar / Desactivar -->
+                        <button (click)="toggleActive(p)"
+                                class="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-lg border transition-colors
+                                       {{ p.isActive
+                                          ? 'bg-white text-slate-600 border-slate-300 hover:bg-red-50 hover:text-red-600 hover:border-red-300'
+                                          : 'bg-white text-emerald-600 border-emerald-300 hover:bg-emerald-50' }}">
+                          {{ p.isActive ? 'Desactivar' : 'Activar' }}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 }
@@ -155,3 +201,90 @@
   }
 
 </div>
+
+<!-- ── MODAL: Movimiento de stock ───────────────────────────── -->
+@if (movementProduct()) {
+  <!-- Backdrop -->
+  <div class="fixed inset-0 z-40 bg-black/40" (click)="closeMovement()"></div>
+
+  <!-- Panel -->
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm">
+      <!-- Header -->
+      <div class="px-6 pt-5 pb-4 border-b border-slate-100">
+        <h2 class="text-base font-bold text-slate-900">Movimiento de inventario</h2>
+        <p class="text-sm text-slate-500 mt-0.5 truncate">{{ movementProduct()!.name }}</p>
+      </div>
+
+      <!-- Body -->
+      <div class="px-6 py-5 space-y-4">
+
+        <!-- Tipo -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wide">Tipo</label>
+          <div class="flex rounded-lg overflow-hidden border border-slate-300">
+            <button (click)="movementType.set('Entrada')"
+                    class="flex-1 py-2.5 text-sm font-semibold transition-colors
+                           {{ movementType() === 'Entrada' ? 'bg-emerald-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50' }}">
+              ↑ Entrada
+            </button>
+            <button (click)="movementType.set('Salida')"
+                    class="flex-1 py-2.5 text-sm font-semibold border-l border-slate-300 transition-colors
+                           {{ movementType() === 'Salida' ? 'bg-red-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50' }}">
+              ↓ Salida
+            </button>
+          </div>
+        </div>
+
+        <!-- Cantidad -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">
+            Cantidad
+            <span class="ml-2 normal-case text-slate-400 font-normal">Stock actual: {{ movementProduct()!.stock }}</span>
+          </label>
+          <input type="number" min="1"
+                 [ngModel]="movementQty()"
+                 (ngModelChange)="movementQty.set($event)"
+                 placeholder="0"
+                 class="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"/>
+        </div>
+
+        <!-- Descripción -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">Descripción <span class="font-normal text-slate-400">(opcional)</span></label>
+          <input type="text"
+                 [ngModel]="movementNote()"
+                 (ngModelChange)="movementNote.set($event)"
+                 placeholder="Ej: Recepción donación octubre"
+                 class="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"/>
+        </div>
+
+        @if (movementError()) {
+          <p class="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-2.5">{{ movementError() }}</p>
+        }
+      </div>
+
+      <!-- Footer -->
+      <div class="px-6 pb-5 flex gap-3">
+        <button (click)="closeMovement()"
+                class="flex-1 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors">
+          Cancelar
+        </button>
+        <button (click)="submitMovement()"
+                [disabled]="movementLoading()"
+                class="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-colors
+                       {{ movementType() === 'Entrada' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-red-600 hover:bg-red-700' }}
+                       disabled:opacity-50">
+          @if (movementLoading()) {
+            <svg class="animate-spin w-4 h-4 mx-auto" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+            </svg>
+          } @else {
+            {{ movementType() === 'Entrada' ? 'Registrar entrada' : 'Registrar salida' }}
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

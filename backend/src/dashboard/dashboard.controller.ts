@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { DashboardService } from './dashboard.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/permissions.guard';
@@ -11,7 +11,8 @@ export class DashboardController {
 
   @Get('stats')
   @RequirePermission('dashboards:read')
-  async getStats() {
-    return this.dashboardService.getStats();
+  async getStats(@Query('days') days?: string) {
+    const d = Math.min(365, Math.max(7, parseInt(days ?? '90', 10) || 90));
+    return this.dashboardService.getStats(d);
   }
 }

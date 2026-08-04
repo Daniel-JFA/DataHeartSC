@@ -1,6 +1,8 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { DecimalPipe, DatePipe, CurrencyPipe } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 import { BeneficiariesService, BeneficiaryDetail } from '../../core/services/beneficiaries.service';
 
 @Component({
@@ -12,16 +14,37 @@ import { BeneficiariesService, BeneficiaryDetail } from '../../core/services/ben
 export class BeneficiaryDetailComponent implements OnInit {
   private svc   = inject(BeneficiariesService);
   private route = inject(ActivatedRoute);
+  private http  = inject(HttpClient);
 
-  beneficiary = signal<BeneficiaryDetail | null>(null);
-  loading     = signal(true);
-  error       = signal('');
+  beneficiary  = signal<BeneficiaryDetail | null>(null);
+  loading      = signal(true);
+  error        = signal('');
+  notasInternas = signal('');
+  notasSaving  = signal(false);
+  notasSaved   = signal(false);
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id')!;
     this.svc.getOne(id).subscribe({
-      next: b => { this.beneficiary.set(b); this.loading.set(false); },
+      next: b => {
+        this.beneficiary.set(b);
+        this.notasInternas.set(b.observacionesPrivadas ?? '');
+        this.loading.set(false);
+      },
       error: () => { this.error.set('No se pudo cargar el beneficiario'); this.loading.set(false); },
+    });
+  }
+
+  saveNotas() {
+    const id = this.beneficiary()?.id;
+    if (!id) return;
+    this.notasSaving.set(true);
+    this.notasSaved.set(false);
+    this.http.put(`${environment.apiUrl}/beneficiaries/${id}`, {
+      observacionesPrivadas: this.notasInternas(),
+    }).subscribe({
+      next: () => { this.notasSaving.set(false); this.notasSaved.set(true); },
+      error: () => { this.notasSaving.set(false); },
     });
   }
 

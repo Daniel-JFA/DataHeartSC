@@ -314,11 +314,12 @@ model Beneficiary {
   // -- Meta --
   comoSeEntero   String?  @map("como_se_entero")
   status         String   @default("Activo") // Activo, Inactivo, Fallecido
-  historicalId   String?  @map("historical_id")
-  enrollDate     DateTime @default(now()) @map("enroll_date")
-  lastUpdatedAt  DateTime? @map("last_updated_at") // Fecha de Actualización del Excel
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
+  historicalId           String?  @map("historical_id")
+  enrollDate             DateTime @default(now()) @map("enroll_date")
+  lastUpdatedAt          DateTime? @map("last_updated_at") // Fecha de Actualización del Excel
+  observacionesPrivadas  String?  @map("observaciones_privadas") // Notas internas — no visibles al beneficiario
+  createdAt              DateTime @default(now()) @map("created_at")
+  updatedAt              DateTime @updatedAt @map("updated_at")
 
   ayudas         Ayuda[]
 
@@ -473,6 +474,8 @@ model Provider {
   // Sección 13 - Declaraciones
   aceptaDeclaracion          Boolean?  @map("acepta_declaracion")
   aceptaTratamientoDatos     Boolean?  @map("acepta_tratamiento_datos")
+  // Estado y rechazo
+  motivoRechazo              String?   @map("motivo_rechazo") // Solo aplica cuando status = 'Rechazado'
   // Rutas de archivos adjuntos
   rutPath                    String?   @map("rut_path")
   camaraComercioPath         String?   @map("camara_comercio_path")

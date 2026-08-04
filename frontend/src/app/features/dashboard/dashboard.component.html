@@ -179,7 +179,24 @@
 
         <!-- Revenue bar chart -->
         <div class="col-span-1 lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm p-5">
-          <h2 class="text-sm font-semibold text-slate-700 mb-4">Ingresos — últimos 30 días</h2>
+          <div class="flex items-center justify-between mb-4 gap-3 flex-wrap">
+            <h2 class="text-sm font-semibold text-slate-700">Ingresos y Donaciones</h2>
+            <div class="flex gap-1">
+              @for (p of PERIODOS; track p.days) {
+                <button (click)="setPeriodo(p.days)" [disabled]="loading()"
+                  class="px-3 py-1 text-xs font-semibold rounded-lg border transition-colors disabled:opacity-40"
+                  [class.bg-brand-600]="periodo() === p.days"
+                  [class.text-white]="periodo() === p.days"
+                  [class.border-brand-600]="periodo() === p.days"
+                  [class.bg-white]="periodo() !== p.days"
+                  [class.text-slate-600]="periodo() !== p.days"
+                  [class.border-slate-300]="periodo() !== p.days"
+                  [class.hover:bg-slate-50]="periodo() !== p.days">
+                  {{ p.label }}
+                </button>
+              }
+            </div>
+          </div>
           <div class="relative h-80">
             <canvas #revenueChart class="w-full h-full"></canvas>
           </div>

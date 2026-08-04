@@ -1,11 +1,13 @@
 import {
-  Controller, Get, Post, Put, Delete,
-  Body, Param, Query, UseGuards,
+  Controller, Get, Post, Put, Patch, Delete,
+  Body, Param, Query, Req, UseGuards,
   ParseIntPipe, DefaultValuePipe, ParseBoolPipe,
 } from '@nestjs/common';
+
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { CreateStockMovementDto } from './dto/create-stock-movement.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/permissions.guard';
 import { RequirePermission } from '../auth/require-permission.decorator';
@@ -29,8 +31,10 @@ export class ProductsController {
 
   @Get('categories')
   @RequirePermission('inventario:read')
-  getCategoryStats() {
-    return this.productsService.getCategoryStats();
+  getCategoryStats(
+    @Query('onlyActive', new DefaultValuePipe(true), ParseBoolPipe) onlyActive: boolean,
+  ) {
+    return this.productsService.getCategoryStats(onlyActive);
   }
 
   @Get(':id')
@@ -49,6 +53,23 @@ export class ProductsController {
   @RequirePermission('inventario:write')
   update(@Param('id') id: string, @Body() dto: UpdateProductDto) {
     return this.productsService.update(id, dto);
+  }
+
+  @Patch(':id/toggle-active')
+  @RequirePermission('inventario:write')
+  toggleActive(@Param('id') id: string) {
+    return this.productsService.toggleActive(id);
+  }
+
+  @Post(':id/stock-movement')
+  @RequirePermission('inventario:write')
+  stockMovement(
+    @Param('id') id: string,
+    @Body() dto: CreateStockMovementDto,
+    @Req() req: any,
+  ) {
+    const userId = (req as any).user?.sub as string;
+    return this.productsService.stockMovement(id, dto, userId);
   }
 
   @Delete(':id')

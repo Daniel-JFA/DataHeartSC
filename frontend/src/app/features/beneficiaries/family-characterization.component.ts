@@ -2,44 +2,10 @@ import { Component, inject, signal, computed, effect } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
+import { COLOMBIA_DEPTOS } from '../../shared/data/colombia-geo';
 
 type Step = 'form' | 'success' | 'error';
 
-const COLOMBIA_DEPTOS: { value: string; label: string; ciudades: string[] }[] = [
-  { value: 'AMAZONAS', label: 'Amazonas', ciudades: ['Leticia', 'Puerto Nariño'] },
-  { value: 'ANTIOQUIA', label: 'Antioquia', ciudades: ['Medellín', 'Abejorral', 'Abriaquí', 'Alejandría', 'Amagá', 'Amalfi', 'Andes', 'Angelópolis', 'Angostura', 'Anorí', 'Anzá', 'Apartadó', 'Arboletes', 'Argelia', 'Armenia', 'Barbosa', 'Bello', 'Betania', 'Betulia', 'Briceño', 'Buriticá', 'Cáceres', 'Caicedo', 'Caldas', 'Campamento', 'Cañasgordas', 'Caracolí', 'Caramanta', 'Carepa', 'Carolina del Príncipe', 'Caucasia', 'Chigorodó', 'Cisneros', 'Ciudad Bolívar', 'Cocorná', 'Concepción', 'Concordia', 'Copacabana', 'Dabeiba', 'Don Matías', 'Ebéjico', 'El Bagre', 'El Carmen de Viboral', 'El Peñol', 'El Retiro', 'El Santuario', 'Entrerríos', 'Envigado', 'Fredonia', 'Frontino', 'Giraldo', 'Girardota', 'Gómez Plata', 'Granada', 'Guadalupe', 'Guarne', 'Guatapé', 'Heliconia', 'Hispania', 'Itagüí', 'Ituango', 'Jardín', 'Jericó', 'La Ceja', 'La Estrella', 'La Pintada', 'La Unión', 'Liborina', 'Maceo', 'Marinilla', 'Montebello', 'Murindó', 'Mutatá', 'Nariño', 'Nechí', 'Necoclí', 'Olaya', 'Peque', 'Puerto Berrío', 'Puerto Nare', 'Puerto Triunfo', 'Remedios', 'Rionegro', 'Sabanalarga', 'Sabaneta', 'Salgar', 'San Andrés de Cuerquia', 'San Carlos', 'San Francisco', 'San Jerónimo', 'San José de la Montaña', 'San Juan de Urabá', 'San Luis', 'San Pedro de los Milagros', 'San Pedro de Urabá', 'San Rafael', 'San Roque', 'San Vicente Ferrer', 'Santa Bárbara', 'Santa Rosa de Osos', 'Santo Domingo', 'Segovia', 'Sonsón', 'Sopetrán', 'Támesis', 'Tarazá', 'Tarso', 'Titiribí', 'Toledo', 'Turbo', 'Uramita', 'Urrao', 'Valdivia', 'Valparaíso', 'Vegachí', 'Venecia', 'Vigía del Fuerte', 'Yalí', 'Yarumal', 'Yolombó', 'Yondó', 'Zaragoza'] },
-  { value: 'ARAUCA', label: 'Arauca', ciudades: ['Arauca', 'Saravena', 'Tame', 'Arauquita'] },
-  { value: 'ATLANTICO', label: 'Atlántico', ciudades: ['Barranquilla', 'Soledad', 'Malambo', 'Sabanalarga', 'Baranoa'] },
-  { value: 'BOGOTA', label: 'Bogotá D.C.', ciudades: ['Bogotá'] },
-  { value: 'BOLIVAR', label: 'Bolívar', ciudades: ['Cartagena', 'Magangué', 'Mompox', 'El Carmen de Bolívar'] },
-  { value: 'BOYACA', label: 'Boyacá', ciudades: ['Tunja', 'Duitama', 'Sogamoso', 'Chiquinquirá', 'Paipa'] },
-  { value: 'CALDAS', label: 'Caldas', ciudades: ['Manizales', 'Villamaría', 'La Dorada', 'Chinchiná', 'Riosucio'] },
-  { value: 'CAQUETA', label: 'Caquetá', ciudades: ['Florencia', 'San Vicente del Caguán', 'Puerto Rico', 'El Paujil'] },
-  { value: 'CASANARE', label: 'Casanare', ciudades: ['Yopal', 'Aguazul', 'Villanueva', 'Tauramena', 'Monterrey'] },
-  { value: 'CAUCA', label: 'Cauca', ciudades: ['Popayán', 'Santander de Quilichao', 'Puerto Tejada', 'Corinto', 'Miranda'] },
-  { value: 'CESAR', label: 'Cesar', ciudades: ['Valledupar', 'Aguachica', 'Agustín Codazzi', 'La Paz'] },
-  { value: 'CHOCO', label: 'Chocó', ciudades: ['Quibdó', 'Istmina', 'Condoto', 'Riosucio'] },
-  { value: 'CORDOBA', label: 'Córdoba', ciudades: ['Montería', 'Lorica', 'Sahagún', 'Cereté', 'Planeta Rica'] },
-  { value: 'CUNDINAMARCA', label: 'Cundinamarca', ciudades: ['Soacha', 'Facatativá', 'Zipaquirá', 'Chía', 'Fusagasugá', 'Girardot', 'Madrid', 'Mosquera', 'Cajicá', 'Tocancipá'] },
-  { value: 'GUAINIA', label: 'Guainía', ciudades: ['Inírida'] },
-  { value: 'GUAVIARE', label: 'Guaviare', ciudades: ['San José del Guaviare', 'El Retorno', 'Calamar'] },
-  { value: 'HUILA', label: 'Huila', ciudades: ['Neiva', 'Pitalito', 'Garzón', 'La Plata', 'Campoalegre'] },
-  { value: 'LA_GUAJIRA', label: 'La Guajira', ciudades: ['Riohacha', 'Maicao', 'Uribia', 'Manaure'] },
-  { value: 'MAGDALENA', label: 'Magdalena', ciudades: ['Santa Marta', 'Ciénaga', 'Fundación', 'Plato', 'El Banco'] },
-  { value: 'META', label: 'Meta', ciudades: ['Villavicencio', 'Acacías', 'Granada', 'La Macarena', 'Puerto López'] },
-  { value: 'NARINO', label: 'Nariño', ciudades: ['Pasto', 'Tumaco', 'Ipiales', 'La Unión', 'Samaniego'] },
-  { value: 'NORTE_SANTANDER', label: 'Norte de Santander', ciudades: ['Cúcuta', 'Ocaña', 'Pamplona', 'Tibú', 'Villa del Rosario'] },
-  { value: 'PUTUMAYO', label: 'Putumayo', ciudades: ['Mocoa', 'Puerto Asís', 'Orito', 'Valle del Guamuez'] },
-  { value: 'QUINDIO', label: 'Quindío', ciudades: ['Armenia', 'Calarcá', 'Montenegro', 'Quimbaya', 'La Tebaida'] },
-  { value: 'RISARALDA', label: 'Risaralda', ciudades: ['Pereira', 'Dosquebradas', 'Santa Rosa de Cabal', 'La Virginia'] },
-  { value: 'SAN_ANDRES', label: 'San Andrés y Providencia', ciudades: ['San Andrés', 'Providencia'] },
-  { value: 'SANTANDER', label: 'Santander', ciudades: ['Bucaramanga', 'Floridablanca', 'Girón', 'Piedecuesta', 'Barrancabermeja', 'Socorro'] },
-  { value: 'SUCRE', label: 'Sucre', ciudades: ['Sincelejo', 'Corozal', 'Sampués', 'Toluviejo'] },
-  { value: 'TOLIMA', label: 'Tolima', ciudades: ['Ibagué', 'Espinal', 'Melgar', 'Honda', 'Chaparral'] },
-  { value: 'VALLE_CAUCA', label: 'Valle del Cauca', ciudades: ['Cali', 'Buenaventura', 'Palmira', 'Tuluá', 'Buga', 'Cartago', 'Yumbo', 'Jamundí', 'Florida', 'Candelaria'] },
-  { value: 'VAUPES', label: 'Vaupés', ciudades: ['Mitú'] },
-  { value: 'VICHADA', label: 'Vichada', ciudades: ['Puerto Carreño', 'La Primavera'] },
-];
 
 const DOC_TYPES = [
   { value: 'Registro Civil', label: 'Registro Civil' },

@@ -86,7 +86,8 @@ export class ProvidersController {
   updateStatus(
     @Param('id') id: string,
     @Body('status') status: string,
+    @Body('motivoRechazo') motivoRechazo?: string,
   ) {
-    return this.service.updateStatus(id, status);
+    return this.service.updateStatus(id, status, motivoRechazo);
   }
 }

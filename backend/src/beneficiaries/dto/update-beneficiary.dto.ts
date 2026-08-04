@@ -5,4 +5,7 @@ import { IsOptional, IsString, IsIn } from 'class-validator';
 export class UpdateBeneficiaryDto extends PartialType(CreateBeneficiaryDto) {
   @IsOptional() @IsString() @IsIn(['Activo', 'Inactivo', 'Fallecido'])
   status?: string;
+
+  @IsOptional() @IsString()
+  observacionesPrivadas?: string;
 }

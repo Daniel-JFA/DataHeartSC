@@ -15,7 +15,7 @@
     <!-- Logo / Brand -->
     <div class="px-6 py-5 border-b border-slate-700/60">
       <div class="flex items-center gap-2.5">
-        <img src="assets/SC.png" alt="Santiago Corazón" class="w-8 h-8 rounded-lg object-contain bg-white p-0.5 flex-shrink-0" />
+        <img src="SC.png" alt="Santiago Corazón" class="w-8 h-8 rounded-lg object-contain bg-white p-0.5 flex-shrink-0" />
         <div>
           <h1 class="text-sm font-bold text-white leading-tight">DataHeartSC</h1>
           <p class="text-xs text-slate-400 leading-tight">Santiago Corazón</p>
@@ -86,15 +86,6 @@
         </a>
       }
 
-      <a routerLink="/shopify-test" routerLinkActive="bg-brand-600 text-white"
-         (click)="closeSidebar()"
-         class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 flex-shrink-0">
-          <path d="M3.105 2.288a.75.75 0 00-.826.95l1.414 4.926A1.5 1.5 0 005.135 9.25h6.115a.75.75 0 010 1.5H5.135a1.5 1.5 0 00-1.442 1.086l-1.414 4.926a.75.75 0 00.826.95 28.897 28.897 0 0015.293-7.154.75.75 0 000-1.115A28.897 28.897 0 003.105 2.288z" />
-        </svg>
-        <span>Prueba Webhook Shopify</span>
-      </a>
-
       @if (auth.hasPermission('inventario:read')) {
         <a routerLink="/products" routerLinkActive="bg-brand-600 text-white"
            (click)="closeSidebar()"
@@ -127,71 +118,92 @@
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 flex-shrink-0">
             <path fill-rule="evenodd" d="M9.653 16.915l-.005-.003-.019-.01a20.759 20.759 0 01-1.162-.682 22.045 22.045 0 01-2.582-2.025C4.363 12.476 2.5 10.43 2.5 7.5a4.5 4.5 0 018.29-2.396A4.5 4.5 0 0117.5 7.5c0 2.93-1.863 4.976-3.385 6.195a22.045 22.045 0 01-2.582 2.025 20.759 20.759 0 01-1.162.682l-.019.01-.005.003h-.001l-.003.001-.002.001z" clip-rule="evenodd" />
           </svg>
-          <span>Historial Ayudas Beneficiarios</span>
+          <span>Solicitud Ayudas Beneficiarios</span>
         </a>
       }
 
-      <a routerLink="/sala-ludica" routerLinkActive="bg-brand-600 text-white"
-         (click)="closeSidebar()"
-         class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 flex-shrink-0">
-          <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zm5.99 7.176A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z" />
-        </svg>
-        <span>Sala Lúdica</span>
-      </a>
+      @if (auth.hasPermission('sala_ludica:read')) {
+        <a routerLink="/sala-ludica" routerLinkActive="bg-brand-600 text-white"
+           (click)="closeSidebar()"
+           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 flex-shrink-0">
+            <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zm5.99 7.176A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z" />
+          </svg>
+          <span>Sala Lúdica</span>
+        </a>
+      }
 
-      <a routerLink="/voluntarios" routerLinkActive="bg-brand-600 text-white"
-         (click)="closeSidebar()"
-         class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 flex-shrink-0">
-          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-5.5-2.5a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0zM10 12a5.99 5.99 0 00-4.793 2.39A6.483 6.483 0 0010 16.5a6.483 6.483 0 004.793-2.11A5.99 5.99 0 0010 12z" clip-rule="evenodd" />
-        </svg>
-        <span>Voluntarios</span>
-      </a>
+      @if (auth.hasPermission('voluntarios:read')) {
+        <a routerLink="/voluntarios" routerLinkActive="bg-brand-600 text-white"
+           (click)="closeSidebar()"
+           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 flex-shrink-0">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-5.5-2.5a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0zM10 12a5.99 5.99 0 00-4.793 2.39A6.483 6.483 0 0010 16.5a6.483 6.483 0 004.793-2.11A5.99 5.99 0 0010 12z" clip-rule="evenodd" />
+          </svg>
+          <span>Voluntarios</span>
+        </a>
 
-      <a routerLink="/historial-apoyos-voluntarios" routerLinkActive="bg-brand-600 text-white"
-         (click)="closeSidebar()"
-         class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 flex-shrink-0">
-          <path fill-rule="evenodd" d="M1 2.75A.75.75 0 011.75 2h10.5a.75.75 0 010 1.5H12v13.75a.75.75 0 01-1.5 0V3.5h-1v13.75a.75.75 0 01-1.5 0V3.5H3.5v13.75a.75.75 0 01-1.5 0V3.5h-.25A.75.75 0 011 2.75zM15 3.5a.5.5 0 01.5-.5h2a.5.5 0 01.5.5v15a.5.5 0 01-.5.5h-2a.5.5 0 01-.5-.5v-15z" clip-rule="evenodd" />
-        </svg>
-        <span>Historial Apoyos Voluntarios</span>
-      </a>
+        <a routerLink="/historial-apoyos-voluntarios" routerLinkActive="bg-brand-600 text-white"
+           (click)="closeSidebar()"
+           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 flex-shrink-0">
+            <path fill-rule="evenodd" d="M1 2.75A.75.75 0 011.75 2h10.5a.75.75 0 010 1.5H12v13.75a.75.75 0 01-1.5 0V3.5h-1v13.75a.75.75 0 01-1.5 0V3.5H3.5v13.75a.75.75 0 01-1.5 0V3.5h-.25A.75.75 0 011 2.75zM15 3.5a.5.5 0 01.5-.5h2a.5.5 0 01.5.5v15a.5.5 0 01-.5.5h-2a.5.5 0 01-.5-.5v-15z" clip-rule="evenodd" />
+          </svg>
+          <span>Historial Apoyos Voluntarios</span>
+        </a>
+      }
 
       <!-- ── LÍNEA COMUNICACIONES ────────────────────────── -->
       <div class="pt-5 pb-1.5 px-3">
         <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Línea Comunicaciones</span>
       </div>
 
-      <a routerLink="/segmentacion" routerLinkActive="bg-brand-600 text-white"
-         (click)="closeSidebar()"
-         class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 flex-shrink-0">
-          <path d="M3.5 2A1.5 1.5 0 002 3.5V5c0 1.149.16 2.26.461 3.314A12.056 12.056 0 0011.686 17.54 12.056 12.056 0 0015 18h1.5a1.5 1.5 0 001.5-1.5v-1.396a1.5 1.5 0 00-1.135-1.455l-2.553-.638a1.5 1.5 0 00-1.635.61l-.53.795a10.555 10.555 0 01-3.564-3.564l.796-.529a1.5 1.5 0 00.609-1.635l-.638-2.553A1.5 1.5 0 004.896 4H3.5zM16 4.5a.5.5 0 01.5-.5h1a.5.5 0 010 1H17v.5a.5.5 0 01-1 0v-.5h-.5a.5.5 0 01-.5-.5z" />
-          <path d="M12 2a1 1 0 011-1 7 7 0 017 7 1 1 0 11-2 0 5 5 0 00-5-5 1 1 0 01-1-1z" />
-          <path d="M12 6a1 1 0 011-1 3 3 0 013 3 1 1 0 11-2 0 1 1 0 00-1-1 1 1 0 01-1-1z" />
-        </svg>
-        <span>Segmentación Base de Datos</span>
-      </a>
+      @if (auth.hasPermission('segmentacion:read')) {
+        <a routerLink="/segmentacion" routerLinkActive="bg-brand-600 text-white"
+           (click)="closeSidebar()"
+           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 flex-shrink-0">
+            <path d="M3.5 2A1.5 1.5 0 002 3.5V5c0 1.149.16 2.26.461 3.314A12.056 12.056 0 0011.686 17.54 12.056 12.056 0 0015 18h1.5a1.5 1.5 0 001.5-1.5v-1.396a1.5 1.5 0 00-1.135-1.455l-2.553-.638a1.5 1.5 0 00-1.635.61l-.53.795a10.555 10.555 0 01-3.564-3.564l.796-.529a1.5 1.5 0 00.609-1.635l-.638-2.553A1.5 1.5 0 004.896 4H3.5zM16 4.5a.5.5 0 01.5-.5h1a.5.5 0 010 1H17v.5a.5.5 0 01-1 0v-.5h-.5a.5.5 0 01-.5-.5z" />
+            <path d="M12 2a1 1 0 011-1 7 7 0 017 7 1 1 0 11-2 0 5 5 0 00-5-5 1 1 0 01-1-1z" />
+            <path d="M12 6a1 1 0 011-1 3 3 0 013 3 1 1 0 11-2 0 1 1 0 00-1-1 1 1 0 01-1-1z" />
+          </svg>
+          <span>Segmentación Base de Datos</span>
+        </a>
 
-      <a routerLink="/listas-difusion" routerLinkActive="bg-brand-600 text-white"
-         (click)="closeSidebar()"
-         class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 flex-shrink-0">
-          <path fill-rule="evenodd" d="M3.43 2.524A41.29 41.29 0 0110 2c2.236 0 4.43.18 6.57.524 1.437.231 2.43 1.49 2.43 2.902v5.148c0 1.413-.993 2.67-2.43 2.902a41.202 41.202 0 01-5.183.501.78.78 0 00-.528.224l-3.579 3.58A.75.75 0 016 17.25v-3.443a41.033 41.033 0 01-2.57-.374C1.993 13.174 1 11.916 1 10.504V5.426c0-1.413.993-2.67 2.43-2.902z" clip-rule="evenodd" />
-        </svg>
-        <span>Listas Difusión WhatsApp</span>
-      </a>
+        <a routerLink="/listas-difusion" routerLinkActive="bg-brand-600 text-white"
+           (click)="closeSidebar()"
+           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 flex-shrink-0">
+            <path fill-rule="evenodd" d="M3.43 2.524A41.29 41.29 0 0110 2c2.236 0 4.43.18 6.57.524 1.437.231 2.43 1.49 2.43 2.902v5.148c0 1.413-.993 2.67-2.43 2.902a41.202 41.202 0 01-5.183.501.78.78 0 00-.528.224l-3.579 3.58A.75.75 0 016 17.25v-3.443a41.033 41.033 0 01-2.57-.374C1.993 13.174 1 11.916 1 10.504V5.426c0-1.413.993-2.67 2.43-2.902z" clip-rule="evenodd" />
+          </svg>
+          <span>Listas Difusión WhatsApp</span>
+        </a>
 
-      <a routerLink="/mailing-masivo" routerLinkActive="bg-brand-600 text-white"
-         (click)="closeSidebar()"
-         class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 flex-shrink-0">
-          <path d="M3 4a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L19 7.162V6a2 2 0 00-2-2H3z" />
-          <path d="M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z" />
-        </svg>
-        <span>Mailing Masivo</span>
-      </a>
+        <a routerLink="/mailing-masivo" routerLinkActive="bg-brand-600 text-white"
+           (click)="closeSidebar()"
+           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 flex-shrink-0">
+            <path d="M3 4a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L19 7.162V6a2 2 0 00-2-2H3z" />
+            <path d="M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z" />
+          </svg>
+          <span>Mailing Masivo</span>
+        </a>
+      }
+
+      <!-- ── ADMINISTRACIÓN ─────────────────────────────── -->
+      @if (auth.hasPermission('admin:access')) {
+        <div class="pt-5 pb-1.5 px-3">
+          <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Administración</span>
+        </div>
+        <a routerLink="/admin" routerLinkActive="bg-brand-600 text-white"
+           (click)="closeSidebar()"
+           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 flex-shrink-0">
+            <path fill-rule="evenodd" d="M7.84 1.804A1 1 0 018.82 1h2.36a1 1 0 01.98.804l.331 1.652a6.993 6.993 0 011.929 1.115l1.598-.54a1 1 0 011.186.447l1.18 2.044a1 1 0 01-.205 1.251l-1.267 1.113a7.047 7.047 0 010 2.228l1.267 1.113a1 1 0 01.206 1.25l-1.18 2.045a1 1 0 01-1.187.447l-1.598-.54a6.993 6.993 0 01-1.929 1.115l-.33 1.652a1 1 0 01-.98.804H8.82a1 1 0 01-.98-.804l-.331-1.652a6.993 6.993 0 01-1.929-1.115l-1.598.54a1 1 0 01-1.186-.447l-1.18-2.044a1 1 0 01.205-1.251l1.267-1.114a7.05 7.05 0 010-2.227L1.821 7.773a1 1 0 01-.206-1.25l1.18-2.045a1 1 0 011.187-.447l1.598.54A6.993 6.993 0 017.51 3.456l.33-1.652zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
+          </svg>
+          <span>Panel de Administración</span>
+        </a>
+      }
 
     </nav>
 
@@ -233,7 +245,7 @@
         </svg>
       </button>
       <div class="flex items-center gap-2">
-        <img src="assets/SC.png" alt="Santiago Corazón" class="w-7 h-7 rounded-lg object-contain" />
+        <img src="SC.png" alt="Santiago Corazón" class="w-7 h-7 rounded-lg object-contain" />
         <span class="text-sm font-bold text-slate-900">DataHeartSC</span>
       </div>
     </header>

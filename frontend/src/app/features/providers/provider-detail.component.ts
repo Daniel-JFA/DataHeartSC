@@ -86,6 +86,8 @@ interface Provider {
   // Aceptaciones
   aceptaDeclaracion: boolean | null;
   aceptaTratamientoDatos: boolean | null;
+  // Rechazo
+  motivoRechazo: string | null;
 }
 
 @Component({
@@ -102,7 +104,9 @@ export class ProviderDetailComponent implements OnInit {
   loading  = signal(true);
   error    = signal('');
   updating = signal(false);
-  successMsg = signal('');
+  successMsg  = signal('');
+  showRejectForm = signal(false);
+  motivoInput    = signal('');
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id')!;
@@ -123,19 +127,29 @@ export class ProviderDetailComponent implements OnInit {
     return map[status] ?? 'bg-slate-100 text-slate-700';
   }
 
-  updateStatus(status: 'Aprobado' | 'Rechazado') {
+  updateStatus(status: 'Aprobado' | 'Rechazado', motivoRechazo?: string) {
     const p = this.p;
     if (!p) return;
     this.updating.set(true);
-    this.http.patch(`${environment.apiUrl}/providers/${p.id}/status`, { status }).subscribe({
+    this.showRejectForm.set(false);
+    const body: Record<string, string> = { status };
+    if (motivoRechazo) body['motivoRechazo'] = motivoRechazo;
+    this.http.patch(`${environment.apiUrl}/providers/${p.id}/status`, body).subscribe({
       next: () => {
-        this.provider.update(cur => cur ? { ...cur, status } : cur);
+        this.provider.update(cur =>
+          cur ? { ...cur, status, motivoRechazo: motivoRechazo ?? null } : cur
+        );
         this.updating.set(false);
+        this.motivoInput.set('');
         this.successMsg.set(`Proveedor ${status.toLowerCase()} correctamente`);
         setTimeout(() => this.successMsg.set(''), 3500);
       },
       error: () => this.updating.set(false),
     });
+  }
+
+  confirmRechazo() {
+    this.updateStatus('Rechazado', this.motivoInput() || undefined);
   }
 
   fileUrl(path: string | null): string | null {

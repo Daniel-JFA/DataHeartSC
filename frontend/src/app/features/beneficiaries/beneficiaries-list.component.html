@@ -83,6 +83,7 @@
               <th class="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">EPS</th>
               <th class="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">Diagnóstico</th>
               <th class="text-center px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Ayudas</th>
+              <th class="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden xl:table-cell">Ingreso</th>
               <th class="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Estado</th>
               <th class="px-5 py-3 w-10"></th>
             </tr>
@@ -119,6 +120,12 @@
                   <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-brand-50 text-brand-700 text-xs font-bold">
                     {{ b._count?.ayudas ?? 0 }}
                   </span>
+                </td>
+                <td class="px-5 py-3.5 hidden xl:table-cell text-xs text-slate-500 whitespace-nowrap">
+                  {{ (b.enrollDate || b.createdAt) | date:'dd/MM/yyyy' }}
+                  @if (b.updatedAt) {
+                    <div class="text-slate-400 mt-0.5">Act. {{ b.updatedAt | date:'dd/MM/yy' }}</div>
+                  }
                 </td>
                 <td class="px-5 py-3.5">
                   <span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-semibold {{ statusBadge(b.status) }}">

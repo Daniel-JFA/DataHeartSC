@@ -142,10 +142,10 @@ export class ProvidersService {
     return this.prisma.provider.findUnique({ where: { id } });
   }
 
-  async updateStatus(id: string, status: string) {
-    return this.prisma.provider.update({
-      where: { id },
-      data: { status },
-    });
+  async updateStatus(id: string, status: string, motivoRechazo?: string) {
+    const data: any = { status };
+    if (status === 'Rechazado' && motivoRechazo) data.motivoRechazo = motivoRechazo;
+    if (status !== 'Rechazado') data.motivoRechazo = null; // limpiar al revertir
+    return this.prisma.provider.update({ where: { id }, data });
   }
 }

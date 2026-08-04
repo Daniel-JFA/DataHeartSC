@@ -1,6 +1,6 @@
 import { Component, inject, signal, DestroyRef } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { DecimalPipe, CurrencyPipe } from '@angular/common';
+import { DecimalPipe, DatePipe, CurrencyPipe } from '@angular/common';
 import { Subject, EMPTY } from 'rxjs';
 import { debounceTime, switchMap, catchError } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -10,7 +10,7 @@ import { PaginationComponent } from '../../shared/components/pagination/paginati
 @Component({
   selector: 'app-beneficiaries-list',
   standalone: true,
-  imports: [RouterLink, DecimalPipe, CurrencyPipe, PaginationComponent],
+  imports: [RouterLink, DecimalPipe, DatePipe, CurrencyPipe, PaginationComponent],
   templateUrl: './beneficiaries-list.component.html',
 })
 export class BeneficiariesListComponent {

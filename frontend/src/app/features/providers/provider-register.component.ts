@@ -2,44 +2,10 @@ import { Component, inject, signal, computed } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
+import { COLOMBIA_DEPTOS } from '../../shared/data/colombia-geo';
 
 type Step = 'form' | 'success' | 'error';
 
-const COLOMBIA_DEPTOS: { value: string; label: string; ciudades: string[] }[] = [
-  { value: 'AMAZONAS', label: 'Amazonas', ciudades: ['Leticia', 'Puerto Nariño'] },
-  { value: 'ANTIOQUIA', label: 'Antioquia', ciudades: ['Medellín', 'Abejorral', 'Abriaquí', 'Alejandría', 'Amagá', 'Amalfi', 'Andes', 'Angelópolis', 'Angostura', 'Anorí', 'Anzá', 'Apartadó', 'Arboletes', 'Argelia', 'Armenia', 'Barbosa', 'Bello', 'Betania', 'Betulia', 'Briceño', 'Buriticá', 'Cáceres', 'Caicedo', 'Caldas', 'Campamento', 'Cañasgordas', 'Caracolí', 'Caramanta', 'Carepa', 'Carolina del Príncipe', 'Caucasia', 'Chigorodó', 'Cisneros', 'Ciudad Bolívar', 'Cocorná', 'Concepción', 'Concordia', 'Copacabana', 'Dabeiba', 'Don Matías', 'Ebéjico', 'El Bagre', 'El Carmen de Viboral', 'El Peñol', 'El Retiro', 'El Santuario', 'Entrerríos', 'Envigado', 'Fredonia', 'Frontino', 'Giraldo', 'Girardota', 'Gómez Plata', 'Granada', 'Guadalupe', 'Guarne', 'Guatapé', 'Heliconia', 'Hispania', 'Itagüí', 'Ituango', 'Jardín', 'Jericó', 'La Ceja', 'La Estrella', 'La Pintada', 'La Unión', 'Liborina', 'Maceo', 'Marinilla', 'Montebello', 'Murindó', 'Mutatá', 'Nariño', 'Nechí', 'Necoclí', 'Olaya', 'Peque', 'Puerto Berrío', 'Puerto Nare', 'Puerto Triunfo', 'Remedios', 'Rionegro', 'Sabanalarga', 'Sabaneta', 'Salgar', 'San Andrés de Cuerquia', 'San Carlos', 'San Francisco', 'San Jerónimo', 'San José de la Montaña', 'San Juan de Urabá', 'San Luis', 'San Pedro de los Milagros', 'San Pedro de Urabá', 'San Rafael', 'San Roque', 'San Vicente Ferrer', 'Santa Bárbara', 'Santa Rosa de Osos', 'Santo Domingo', 'Segovia', 'Sonsón', 'Sopetrán', 'Támesis', 'Tarazá', 'Tarso', 'Titiribí', 'Toledo', 'Turbo', 'Uramita', 'Urrao', 'Valdivia', 'Valparaíso', 'Vegachí', 'Venecia', 'Vigía del Fuerte', 'Yalí', 'Yarumal', 'Yolombó', 'Yondó', 'Zaragoza'] },
-  { value: 'ARAUCA', label: 'Arauca', ciudades: ['Arauca', 'Saravena', 'Tame', 'Arauquita'] },
-  { value: 'ATLANTICO', label: 'Atlántico', ciudades: ['Barranquilla', 'Soledad', 'Malambo', 'Sabanalarga', 'Baranoa'] },
-  { value: 'BOGOTA', label: 'Bogotá D.C.', ciudades: ['Bogotá'] },
-  { value: 'BOLIVAR', label: 'Bolívar', ciudades: ['Cartagena', 'Magangué', 'Mompox', 'El Carmen de Bolívar'] },
-  { value: 'BOYACA', label: 'Boyacá', ciudades: ['Tunja', 'Duitama', 'Sogamoso', 'Chiquinquirá', 'Paipa'] },
-  { value: 'CALDAS', label: 'Caldas', ciudades: ['Manizales', 'Villamaría', 'La Dorada', 'Chinchiná', 'Riosucio'] },
-  { value: 'CAQUETA', label: 'Caquetá', ciudades: ['Florencia', 'San Vicente del Caguán', 'Puerto Rico', 'El Paujil'] },
-  { value: 'CASANARE', label: 'Casanare', ciudades: ['Yopal', 'Aguazul', 'Villanueva', 'Tauramena', 'Monterrey'] },
-  { value: 'CAUCA', label: 'Cauca', ciudades: ['Popayán', 'Santander de Quilichao', 'Puerto Tejada', 'Corinto', 'Miranda'] },
-  { value: 'CESAR', label: 'Cesar', ciudades: ['Valledupar', 'Aguachica', 'Agustín Codazzi', 'La Paz'] },
-  { value: 'CHOCO', label: 'Chocó', ciudades: ['Quibdó', 'Istmina', 'Condoto', 'Riosucio'] },
-  { value: 'CORDOBA', label: 'Córdoba', ciudades: ['Montería', 'Lorica', 'Sahagún', 'Cereté', 'Planeta Rica'] },
-  { value: 'CUNDINAMARCA', label: 'Cundinamarca', ciudades: ['Soacha', 'Facatativá', 'Zipaquirá', 'Chía', 'Fusagasugá', 'Girardot', 'Madrid', 'Mosquera', 'Cajicá', 'Tocancipá'] },
-  { value: 'GUAINIA', label: 'Guainía', ciudades: ['Inírida'] },
-  { value: 'GUAVIARE', label: 'Guaviare', ciudades: ['San José del Guaviare', 'El Retorno', 'Calamar'] },
-  { value: 'HUILA', label: 'Huila', ciudades: ['Neiva', 'Pitalito', 'Garzón', 'La Plata', 'Campoalegre'] },
-  { value: 'LA_GUAJIRA', label: 'La Guajira', ciudades: ['Riohacha', 'Maicao', 'Uribia', 'Manaure'] },
-  { value: 'MAGDALENA', label: 'Magdalena', ciudades: ['Santa Marta', 'Ciénaga', 'Fundación', 'Plato', 'El Banco'] },
-  { value: 'META', label: 'Meta', ciudades: ['Villavicencio', 'Acacías', 'Granada', 'La Macarena', 'Puerto López'] },
-  { value: 'NARINO', label: 'Nariño', ciudades: ['Pasto', 'Tumaco', 'Ipiales', 'La Unión', 'Samaniego'] },
-  { value: 'NORTE_SANTANDER', label: 'Norte de Santander', ciudades: ['Cúcuta', 'Ocaña', 'Pamplona', 'Tibú', 'Villa del Rosario'] },
-  { value: 'PUTUMAYO', label: 'Putumayo', ciudades: ['Mocoa', 'Puerto Asís', 'Orito', 'Valle del Guamuez'] },
-  { value: 'QUINDIO', label: 'Quindío', ciudades: ['Armenia', 'Calarcá', 'Montenegro', 'Quimbaya', 'La Tebaida'] },
-  { value: 'RISARALDA', label: 'Risaralda', ciudades: ['Pereira', 'Dosquebradas', 'Santa Rosa de Cabal', 'La Virginia'] },
-  { value: 'SAN_ANDRES', label: 'San Andrés y Providencia', ciudades: ['San Andrés', 'Providencia'] },
-  { value: 'SANTANDER', label: 'Santander', ciudades: ['Bucaramanga', 'Floridablanca', 'Girón', 'Piedecuesta', 'Barrancabermeja', 'Socorro'] },
-  { value: 'SUCRE', label: 'Sucre', ciudades: ['Sincelejo', 'Corozal', 'Sampués', 'Toluviejo'] },
-  { value: 'TOLIMA', label: 'Tolima', ciudades: ['Ibagué', 'Espinal', 'Melgar', 'Honda', 'Chaparral'] },
-  { value: 'VALLE_CAUCA', label: 'Valle del Cauca', ciudades: ['Cali', 'Buenaventura', 'Palmira', 'Tuluá', 'Buga', 'Cartago', 'Yumbo', 'Jamundí', 'Florida', 'Candelaria'] },
-  { value: 'VAUPES', label: 'Vaupés', ciudades: ['Mitú'] },
-  { value: 'VICHADA', label: 'Vichada', ciudades: ['Puerto Carreño', 'La Primavera'] },
-];
 
 const BANCOS_COLOMBIA = [
   'Bancolombia', 'Banco de Bogotá', 'Davivienda', 'BBVA Colombia', 'Banco Popular',
@@ -61,11 +27,9 @@ const ACTIVIDADES = [
   { value: 'OTRO',          label: 'Otro' },
 ];
 
+// Forma de pago: únicamente Transferencia Bancaria (decisión 2026-08-03)
 const FORMAS_PAGO = [
-  { value: 'EFECTIVO',      label: 'Efectivo' },
-  { value: 'TRANSFERENCIA', label: 'Transferencia' },
-  { value: 'CHEQUE',        label: 'Cheque' },
-  { value: 'CONSIGNACION',  label: 'Consignación' },
+  { value: 'TRANSFERENCIA', label: 'Transferencia Bancaria' },
 ];
 
 @Component({
@@ -91,7 +55,7 @@ export class ProviderRegisterComponent {
 
   // Checkbox state for multi-select fields
   actividadTipoSelected = signal<string[]>([]);
-  formaPagoSelected     = signal<string[]>([]);
+  formaPagoSelected     = signal<string[]>(['TRANSFERENCIA']); // auto-seleccionado, es la única opción
 
   readonly ACTIVIDADES      = ACTIVIDADES;
   readonly FORMAS_PAGO      = FORMAS_PAGO;
@@ -131,8 +95,6 @@ export class ProviderRegisterComponent {
     tipoSolicitudOtro:          [''],
     // Sección 2
     naturaleza:                 ['NATURAL'],
-    formaPagoTipo:              ['CONTADO'],
-    diasCredito:                [''],
     // Sección 3 - Persona Natural
     docTypeNatural:             ['CC'],
     lugarExpedicion:            [''],
@@ -142,7 +104,7 @@ export class ProviderRegisterComponent {
     departamentoResidencia:     [''],
     ciudadResidencia:           [''],
     nombreCompleto:             ['', [Validators.required]],
-    phone:                      ['', [Validators.pattern(/^\d{7,15}$/)]],
+    phone:                      ['', [Validators.pattern(/^\d{10}$/)]],
     telefonoDomicilio:          [''],
     address:                    [''],
     email:                      ['', [Validators.email]],
@@ -179,20 +141,20 @@ export class ProviderRegisterComponent {
     numeroCuenta:               [''],
     diasPago:                   [''],
     // Sección 7
-    factNombre:                 [''],
-    factCargo:                  [''],
+    factNombre:                 ['', [Validators.required, Validators.minLength(2)]],
+    factCargo:                  ['', [Validators.required]],
     factTelefono:               [''],
     factExt:                    [''],
-    factCelular:                [''],
-    factEmail:                  ['', [Validators.email]],
+    factCelular:                ['', [Validators.required]],
+    factEmail:                  ['', [Validators.required, Validators.email]],
     // Sección 8 - Referencias
-    ref1Nombre:                 [''],
-    ref1Identificacion:         [''],
-    ref1Telefono:               [''],
+    ref1Nombre:                 ['', [Validators.required, Validators.minLength(2)]],
+    ref1Identificacion:         ['', [Validators.required]],
+    ref1Telefono:               ['', [Validators.required]],
     ref1Email:                  ['', [Validators.email]],
-    ref2Nombre:                 [''],
-    ref2Identificacion:         [''],
-    ref2Telefono:               [''],
+    ref2Nombre:                 ['', [Validators.required, Validators.minLength(2)]],
+    ref2Identificacion:         ['', [Validators.required]],
+    ref2Telefono:               ['', [Validators.required]],
     ref2Email:                  ['', [Validators.email]],
     // Sección 9 - Accionistas (textarea)
     accionistasTexto:           [''],
@@ -337,9 +299,36 @@ export class ProviderRegisterComponent {
     if (step === 3) {
       this.form.get('descripcionActividad')?.markAsTouched();
       if (!v.descripcionActividad?.trim()) return 'La descripción de la actividad económica es requerida.';
+
+      // Contacto de facturación (6) — obligatorio
+      const factFields = ['factNombre', 'factCargo', 'factCelular', 'factEmail'];
+      for (const field of factFields) this.form.get(field)?.markAsTouched();
+      if (!v.factNombre?.trim()) return 'El nombre del contacto de facturación es obligatorio.';
+      if (!v.factCargo?.trim()) return 'El cargo del contacto de facturación es obligatorio.';
+      if (!v.factCelular?.trim()) return 'El celular del contacto de facturación es obligatorio.';
+      if (!v.factEmail?.trim()) return 'El correo electrónico del contacto de facturación es obligatorio.';
+      if (this.form.get('factEmail')?.errors?.['email']) return 'El correo del contacto de facturación no es válido.';
     }
 
     if (step === 4) {
+      // Referencias comerciales (7) — obligatorias
+      const refFields = ['ref1Nombre', 'ref1Identificacion', 'ref1Telefono', 'ref2Nombre', 'ref2Identificacion', 'ref2Telefono'];
+      for (const field of refFields) {
+        this.form.get(field)?.markAsTouched();
+      }
+      if (!v.ref1Nombre?.trim() || !v.ref1Identificacion?.trim() || !v.ref1Telefono?.trim())
+        return 'Complete los campos obligatorios de la Referencia 1 (nombre, identificación y teléfono).';
+      if (!v.ref2Nombre?.trim() || !v.ref2Identificacion?.trim() || !v.ref2Telefono?.trim())
+        return 'Complete los campos obligatorios de la Referencia 2 (nombre, identificación y teléfono).';
+
+      // Accionistas/Socios (8) — obligatorio solo para Jurídica
+      if (this.naturaleza() === 'JURIDICA') {
+        this.form.get('accionistasTexto')?.markAsTouched();
+        if (!v.accionistasTexto?.trim())
+          return 'La información de accionistas o socios con participación > 5% es obligatoria para personas jurídicas.';
+      }
+
+      // Información financiera
       const financieros = ['totalActivos', 'totalPasivos', 'totalPatrimonio', 'ingresosMensuales', 'egresosMensuales'];
       for (const field of financieros) {
         this.form.get(field)?.markAsTouched();
@@ -429,8 +418,6 @@ export class ProviderRegisterComponent {
     fd.append('tipoSolicitudOtro', v.tipoSolicitudOtro ?? '');
     // Sección 2
     fd.append('naturaleza',    v.naturaleza    ?? '');
-    fd.append('formaPagoTipo', v.formaPagoTipo ?? '');
-    fd.append('diasCredito',   v.diasCredito   ?? '');
     // Sección 3
     fd.append('lugarExpedicion',         v.lugarExpedicion         ?? '');
     fd.append('fechaExpedicion',         v.fechaExpedicion         ?? '');

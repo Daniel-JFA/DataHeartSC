@@ -29,15 +29,6 @@
           </p>
         </div>
 
-        @if (stepError()) {
-          <div class="flex items-center gap-2 bg-red-50 border border-red-200 rounded-lg px-4 py-2.5 mb-6">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-red-500 flex-shrink-0">
-              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
-            </svg>
-            <p class="text-sm text-red-700">{{ stepError() }}</p>
-          </div>
-        }
-
         <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-6" novalidate>
 
           <!-- Datos del solicitante -->
@@ -76,34 +67,39 @@
             </div>
           </section>
 
-          <!-- Tipo de ayuda -->
+          <!-- Tipo de ayuda — CHECKBOXES -->
           <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
             <div class="px-5 py-3.5 border-b border-slate-100 bg-slate-50">
-              <h3 class="text-xs font-semibold text-slate-700 uppercase tracking-wider">2. Tipo de ayuda solicitada <span class="text-red-500">*</span></h3>
+              <h3 class="text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                2. Tipo de ayuda solicitada <span class="text-red-500">*</span>
+              </h3>
+              <p class="text-xs text-slate-500 mt-0.5">Puede seleccionar uno o varios tipos de ayuda</p>
             </div>
             <div class="px-5 py-5">
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 @for (tipo of TIPOS_AYUDA; track tipo.value) {
                   <label class="flex items-start gap-3 cursor-pointer p-3 rounded-lg border transition-colors"
-                         [class.border-rose-400]="tipoAyuda() === tipo.value"
-                         [class.bg-rose-50]="tipoAyuda() === tipo.value"
-                         [class.border-slate-200]="tipoAyuda() !== tipo.value">
-                    <input type="radio" formControlName="tipoAyuda" [value]="tipo.value"
-                           class="mt-0.5 text-rose-600 focus:ring-rose-500 flex-shrink-0" />
+                         [class.border-rose-400]="hasTipo(tipo.value)"
+                         [class.bg-rose-50]="hasTipo(tipo.value)"
+                         [class.border-slate-200]="!hasTipo(tipo.value)">
+                    <input type="checkbox"
+                           [checked]="hasTipo(tipo.value)"
+                           (change)="toggleTipo(tipo.value)"
+                           class="mt-0.5 text-rose-600 focus:ring-rose-500 rounded flex-shrink-0" />
                     <span class="text-sm text-slate-700">{{ tipo.label }}</span>
                   </label>
                 }
               </div>
-              @if (form.get('tipoAyuda')?.invalid && form.get('tipoAyuda')?.touched) {
-                <p class="mt-2 text-xs text-red-600">Debe seleccionar el tipo de ayuda.</p>
+              @if (stepError() && !tiposSeleccionados().length) {
+                <p class="mt-2 text-xs text-red-600">Debe seleccionar al menos un tipo de ayuda.</p>
               }
             </div>
           </section>
 
-          <!-- Sección dinámica según el tipo seleccionado -->
+          <!-- Sección dinámica según los tipos seleccionados -->
 
           <!-- ALOJAMIENTO -->
-          @if (tipoAyuda() === 'ALOJAMIENTO') {
+          @if (hasTipo('ALOJAMIENTO')) {
             <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
               <div class="px-5 py-3.5 border-b border-slate-100 bg-amber-50">
                 <h3 class="text-xs font-semibold text-amber-800 uppercase tracking-wider">Ayuda en Alojamiento</h3>
@@ -112,7 +108,7 @@
               <div class="px-5 py-5 space-y-4">
                 <div>
                   <label class="block text-xs font-medium text-slate-700 mb-1">Motivo de la solicitud de alojamiento <span class="text-red-500">*</span></label>
-                  <textarea formControlName="motivoSolicitud" rows="3" placeholder="Explique el motivo..."
+                  <textarea formControlName="motivoAlojamiento" rows="3" placeholder="Explique el motivo..."
                             class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
                                    focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors resize-none"></textarea>
                 </div>
@@ -120,20 +116,20 @@
                   <label class="block text-xs font-medium text-slate-700 mb-2">¿Ya solicitó el alojamiento a su EPS?</label>
                   <div class="flex gap-4">
                     <label class="flex items-center gap-2 cursor-pointer">
-                      <input type="radio" [checked]="form.get('solicitudEps')?.value === 'SI'" (click)="setSolicitudEps('SI')"
+                      <input type="radio" [checked]="getEps('ALOJAMIENTO') === 'SI'" (click)="setEps('ALOJAMIENTO', 'SI')"
                              class="text-rose-600 focus:ring-rose-500" />
                       <span class="text-sm text-slate-700">Sí</span>
                     </label>
                     <label class="flex items-center gap-2 cursor-pointer">
-                      <input type="radio" [checked]="form.get('solicitudEps')?.value === 'NO'" (click)="setSolicitudEps('NO')"
+                      <input type="radio" [checked]="getEps('ALOJAMIENTO') === 'NO'" (click)="setEps('ALOJAMIENTO', 'NO')"
                              class="text-rose-600 focus:ring-rose-500" />
                       <span class="text-sm text-slate-700">No</span>
                     </label>
                   </div>
-                  @if (form.get('solicitudEps')?.value === 'SI') {
+                  @if (getEps('ALOJAMIENTO') === 'SI') {
                     <div class="mt-2">
                       <label class="block text-xs font-medium text-slate-700 mb-1">¿Cuál fue la respuesta de la EPS?</label>
-                      <input formControlName="respuestaEps" type="text" placeholder="Respuesta de la EPS"
+                      <input formControlName="respEpsAlojamiento" type="text" placeholder="Respuesta de la EPS"
                              class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
                                     focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors" />
                     </div>
@@ -188,7 +184,7 @@
           }
 
           <!-- TRANSPORTE -->
-          @if (tipoAyuda() === 'TRANSPORTE') {
+          @if (hasTipo('TRANSPORTE')) {
             <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
               <div class="px-5 py-3.5 border-b border-slate-100 bg-amber-50">
                 <h3 class="text-xs font-semibold text-amber-800 uppercase tracking-wider">Ayuda en Transporte</h3>
@@ -197,7 +193,7 @@
               <div class="px-5 py-5 space-y-4">
                 <div>
                   <label class="block text-xs font-medium text-slate-700 mb-1">Motivo de la solicitud de transporte <span class="text-red-500">*</span></label>
-                  <textarea formControlName="motivoSolicitud" rows="3" placeholder="Explique el motivo..."
+                  <textarea formControlName="motivoTransporte" rows="3" placeholder="Explique el motivo..."
                             class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
                                    focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors resize-none"></textarea>
                 </div>
@@ -205,20 +201,20 @@
                   <label class="block text-xs font-medium text-slate-700 mb-2">¿Ya solicitó el transporte a su EPS?</label>
                   <div class="flex gap-4">
                     <label class="flex items-center gap-2 cursor-pointer">
-                      <input type="radio" [checked]="form.get('solicitudEps')?.value === 'SI'" (click)="setSolicitudEps('SI')"
+                      <input type="radio" [checked]="getEps('TRANSPORTE') === 'SI'" (click)="setEps('TRANSPORTE', 'SI')"
                              class="text-rose-600 focus:ring-rose-500" />
                       <span class="text-sm text-slate-700">Sí</span>
                     </label>
                     <label class="flex items-center gap-2 cursor-pointer">
-                      <input type="radio" [checked]="form.get('solicitudEps')?.value === 'NO'" (click)="setSolicitudEps('NO')"
+                      <input type="radio" [checked]="getEps('TRANSPORTE') === 'NO'" (click)="setEps('TRANSPORTE', 'NO')"
                              class="text-rose-600 focus:ring-rose-500" />
                       <span class="text-sm text-slate-700">No</span>
                     </label>
                   </div>
-                  @if (form.get('solicitudEps')?.value === 'SI') {
+                  @if (getEps('TRANSPORTE') === 'SI') {
                     <div class="mt-2">
                       <label class="block text-xs font-medium text-slate-700 mb-1">¿Cuál fue la respuesta de la EPS?</label>
-                      <input formControlName="respuestaEps" type="text" placeholder="Respuesta de la EPS"
+                      <input formControlName="respEpsTransporte" type="text" placeholder="Respuesta de la EPS"
                              class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
                                     focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors" />
                     </div>
@@ -325,7 +321,7 @@
           }
 
           <!-- CITAS MÉDICAS -->
-          @if (tipoAyuda() === 'CITAS_MEDICAS') {
+          @if (hasTipo('CITAS_MEDICAS')) {
             <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
               <div class="px-5 py-3.5 border-b border-slate-100 bg-amber-50">
                 <h3 class="text-xs font-semibold text-amber-800 uppercase tracking-wider">Citas Médicas y/o Ayudas Diagnósticas</h3>
@@ -334,7 +330,7 @@
               <div class="px-5 py-5 space-y-4">
                 <div>
                   <label class="block text-xs font-medium text-slate-700 mb-1">Motivo de la solicitud <span class="text-red-500">*</span></label>
-                  <textarea formControlName="motivoSolicitud" rows="3" placeholder="Explique el motivo..."
+                  <textarea formControlName="motivoCitasMedicas" rows="3" placeholder="Explique el motivo..."
                             class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
                                    focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors resize-none"></textarea>
                 </div>
@@ -342,20 +338,20 @@
                   <label class="block text-xs font-medium text-slate-700 mb-2">¿Ya solicitó la cita/ayuda diagnóstica a su EPS?</label>
                   <div class="flex gap-4">
                     <label class="flex items-center gap-2 cursor-pointer">
-                      <input type="radio" [checked]="form.get('solicitudEps')?.value === 'SI'" (click)="setSolicitudEps('SI')"
+                      <input type="radio" [checked]="getEps('CITAS_MEDICAS') === 'SI'" (click)="setEps('CITAS_MEDICAS', 'SI')"
                              class="text-rose-600 focus:ring-rose-500" />
                       <span class="text-sm text-slate-700">Sí</span>
                     </label>
                     <label class="flex items-center gap-2 cursor-pointer">
-                      <input type="radio" [checked]="form.get('solicitudEps')?.value === 'NO'" (click)="setSolicitudEps('NO')"
+                      <input type="radio" [checked]="getEps('CITAS_MEDICAS') === 'NO'" (click)="setEps('CITAS_MEDICAS', 'NO')"
                              class="text-rose-600 focus:ring-rose-500" />
                       <span class="text-sm text-slate-700">No</span>
                     </label>
                   </div>
-                  @if (form.get('solicitudEps')?.value === 'SI') {
+                  @if (getEps('CITAS_MEDICAS') === 'SI') {
                     <div class="mt-2">
                       <label class="block text-xs font-medium text-slate-700 mb-1">¿Cuál fue la respuesta de la EPS?</label>
-                      <input formControlName="respuestaEps" type="text" placeholder="Respuesta de la EPS"
+                      <input formControlName="respEpsCitasMedicas" type="text" placeholder="Respuesta de la EPS"
                              class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
                                     focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors" />
                     </div>
@@ -378,7 +374,7 @@
           }
 
           <!-- MEDICAMENTOS Y/O ARTÍCULOS DE ASEO -->
-          @if (tipoAyuda() === 'MEDICAMENTOS_ASEO') {
+          @if (hasTipo('MEDICAMENTOS_ASEO')) {
             <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
               <div class="px-5 py-3.5 border-b border-slate-100 bg-amber-50">
                 <h3 class="text-xs font-semibold text-amber-800 uppercase tracking-wider">Medicamentos y/o Artículos de Aseo</h3>
@@ -387,7 +383,7 @@
               <div class="px-5 py-5 space-y-4">
                 <div>
                   <label class="block text-xs font-medium text-slate-700 mb-1">Motivo de la solicitud <span class="text-red-500">*</span></label>
-                  <textarea formControlName="motivoSolicitud" rows="3" placeholder="Explique el motivo..."
+                  <textarea formControlName="motivoMedicamentos" rows="3" placeholder="Explique el motivo..."
                             class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
                                    focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors resize-none"></textarea>
                 </div>
@@ -395,20 +391,20 @@
                   <label class="block text-xs font-medium text-slate-700 mb-2">¿Ya solicitó los medicamentos/artículos a su EPS?</label>
                   <div class="flex gap-4">
                     <label class="flex items-center gap-2 cursor-pointer">
-                      <input type="radio" [checked]="form.get('solicitudEps')?.value === 'SI'" (click)="setSolicitudEps('SI')"
+                      <input type="radio" [checked]="getEps('MEDICAMENTOS_ASEO') === 'SI'" (click)="setEps('MEDICAMENTOS_ASEO', 'SI')"
                              class="text-rose-600 focus:ring-rose-500" />
                       <span class="text-sm text-slate-700">Sí</span>
                     </label>
                     <label class="flex items-center gap-2 cursor-pointer">
-                      <input type="radio" [checked]="form.get('solicitudEps')?.value === 'NO'" (click)="setSolicitudEps('NO')"
+                      <input type="radio" [checked]="getEps('MEDICAMENTOS_ASEO') === 'NO'" (click)="setEps('MEDICAMENTOS_ASEO', 'NO')"
                              class="text-rose-600 focus:ring-rose-500" />
                       <span class="text-sm text-slate-700">No</span>
                     </label>
                   </div>
-                  @if (form.get('solicitudEps')?.value === 'SI') {
+                  @if (getEps('MEDICAMENTOS_ASEO') === 'SI') {
                     <div class="mt-2">
                       <label class="block text-xs font-medium text-slate-700 mb-1">¿Cuál fue la respuesta de la EPS?</label>
-                      <input formControlName="respuestaEps" type="text" placeholder="Respuesta de la EPS"
+                      <input formControlName="respEpsMedicamentos" type="text" placeholder="Respuesta de la EPS"
                              class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
                                     focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors" />
                     </div>
@@ -437,7 +433,7 @@
           }
 
           <!-- OTRAS -->
-          @if (tipoAyuda() === 'OTRAS') {
+          @if (hasTipo('OTRAS')) {
             <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
               <div class="px-5 py-3.5 border-b border-slate-100 bg-amber-50">
                 <h3 class="text-xs font-semibold text-amber-800 uppercase tracking-wider">Otros tipos de ayuda</h3>
@@ -446,7 +442,7 @@
               <div class="px-5 py-5">
                 <div>
                   <label class="block text-xs font-medium text-slate-700 mb-1">Motivo de la solicitud <span class="text-red-500">*</span></label>
-                  <textarea formControlName="motivoSolicitud" rows="4" placeholder="Explique detalladamente el motivo y el tipo de ayuda que necesita..."
+                  <textarea formControlName="motivoOtras" rows="4" placeholder="Explique detalladamente el motivo y el tipo de ayuda que necesita..."
                             class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
                                    focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors resize-none"></textarea>
                 </div>
@@ -455,7 +451,7 @@
           }
 
           <!-- RECREACIÓN, ROPA Y JUGUETES -->
-          @if (tipoAyuda() === 'RECREACION') {
+          @if (hasTipo('RECREACION')) {
             <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
               <div class="px-5 py-3.5 border-b border-slate-100 bg-amber-50">
                 <h3 class="text-xs font-semibold text-amber-800 uppercase tracking-wider">Recreación, Ropa y Juguetes</h3>
@@ -464,7 +460,7 @@
               <div class="px-5 py-5 space-y-4">
                 <div>
                   <label class="block text-xs font-medium text-slate-700 mb-1">Motivo de la solicitud <span class="text-red-500">*</span></label>
-                  <textarea formControlName="motivoSolicitud" rows="3" placeholder="Explique el motivo..."
+                  <textarea formControlName="motivoRecreacion" rows="3" placeholder="Explique el motivo..."
                             class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
                                    focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors resize-none"></textarea>
                 </div>
@@ -518,6 +514,19 @@
               </label>
             </div>
           </section>
+
+          <!-- Resumen de errores de validación -->
+          @if (stepError()) {
+            <div class="flex items-start gap-3 bg-red-50 border border-red-200 rounded-xl px-4 py-3.5">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
+              </svg>
+              <div>
+                <p class="text-sm font-semibold text-red-700">Por favor corrija los siguientes errores antes de enviar:</p>
+                <p class="text-sm text-red-600 mt-0.5">{{ stepError() }}</p>
+              </div>
+            </div>
+          }
 
           <!-- Botón de envío -->
           <div class="flex justify-end pt-2">

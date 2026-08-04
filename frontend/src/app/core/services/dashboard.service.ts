@@ -46,7 +46,7 @@ export interface DashboardStats {
 export class DashboardService {
   private http = inject(HttpClient);
 
-  getStats(): Observable<DashboardStats> {
-    return this.http.get<DashboardStats>(`${environment.apiUrl}/dashboard/stats`);
+  getStats(days = 90): Observable<DashboardStats> {
+    return this.http.get<DashboardStats>(`${environment.apiUrl}/dashboard/stats?days=${days}`);
   }
 }

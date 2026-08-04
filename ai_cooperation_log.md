@@ -1229,3 +1229,121 @@ Before starting any work, read the last 15-20 lines to understand the latest cha
 - Pendiente: resolver 404 en producción para rutas SPA directas (`/familias/caracterizacion`, etc.) — el container nginx principal no sirve los archivos del frontend (necesita proxy_pass a `frontend:80` o volumen compartido, y el frontend necesita nginx.conf con `try_files`).
 - Pendiente: migración Prisma para `fechaActualizacion` y `aceptaPublicidad` en modelos `Beneficiary` y `Provider`.
 - Cambiar credenciales del servidor (fueron compartidas en chat).
+
+---
+**Timestamp:** 2026-08-03
+**Agent:** Claude (Sonnet 4.6)
+**Task:** Reorganización RBAC + Panel de Administración para Ana Maria Betancourt
+**Files Changed:**
+- `backend/prisma/seed.ts` — nuevos permisos (sala_ludica:read/write, admin:access), nuevo rol SALA_LUDICA, usuario Haylen (salaludicacardio@vid.org.co), permisos Contadora+inventario recuperados, permisos Admin+LIDER_DATA_HEART con admin:access. Matriz v3 (17 permisos, 11 roles, 81 mappings).
+- `backend/src/admin/admin.module.ts` — nuevo módulo admin (importa PrismaModule)
+- `backend/src/admin/admin.service.ts` — getUsers(), updateUser(id, dto), getRoles()
+- `backend/src/admin/admin.controller.ts` — GET /admin/users, GET /admin/roles, PATCH /admin/users/:id (todos con JwtAuthGuard + PermissionsGuard + admin:access)
+- `backend/src/app.module.ts` — registrado AdminModule
+- `frontend/src/app/core/services/admin.service.ts` — servicio HTTP: getUsers(), getRoles(), updateUser()
+- `frontend/src/app/features/admin/admin-panel.component.ts` — panel standalone con tabla de usuarios, select de rol, toggle isActive, guardado por usuario, señales Angular
+- `frontend/src/app/app.routes.ts` — permissionGuard en sala-ludica, voluntarios, historial-apoyos-voluntarios, segmentacion, listas-difusion, mailing-masivo; nueva ruta /admin con admin:access
+- `frontend/src/app/shared/layout/shell/shell.component.html` — @if guards en sala-ludica, voluntarios, historial-apoyos-voluntarios, segmentacion, listas-difusion, mailing-masivo; eliminado link shopify-test; añadida sección Administración con link /admin visible solo con admin:access
+**Status:** ✅ Completado
+**Next Steps:**
+- Correr `cd backend && npx ts-node prisma/seed.ts` en producción para aplicar nuevos roles/permisos (seed ya verificado localmente: 17 permisos, 11 roles, 81 mappings)
+- Verificar que Haylen (salaludicacardio@vid.org.co) puede acceder sólo a Sala Lúdica
+- Verificar que /admin solo es accesible para Ana Maria Betancourt (LIDER_DATA_HEART) y Admin
+- Pendiente: resolver 404 en producción para rutas SPA directas (nginx sin try_files)
+- Pendiente: migración Prisma para fechaActualizacion y aceptaPublicidad en modelos Beneficiary y Provider
+
+---
+**Timestamp:** 2026-08-03
+**Agent:** Claude (Sonnet 4.6)
+**Task:** Contraseñas seguras por usuario + fix logo en producción
+**Files Changed:**
+- `backend/prisma/seed.ts` — contraseñas individuales seguras (14 chars) por cada usuario; eliminado log que imprimía contraseña en consola
+- `frontend/nginx.conf` — nuevo archivo nginx para el container frontend con try_files para SPA
+- `frontend/Dockerfile` — copia nginx.conf al container frontend
+- `nginx/nginx.conf` — location / cambiado de servir archivos locales (que no existían en el container nginx) a proxy_pass http://frontend:80; assets estáticos también via proxy con cache headers
+**Root cause del logo:** el container `nginx` intentaba servir archivos desde su propio `/usr/share/nginx/html` (vacío), pero los archivos compilados del frontend viven en el container `frontend`. Ahora nginx hace proxy a frontend:80.
+**Status:** ✅ Completado
+**Next Steps:**
+- En producción: `docker-compose -f docker-compose.prod.yml build frontend nginx && docker-compose -f docker-compose.prod.yml up -d frontend nginx`
+- Correr seed en producción para aplicar nuevas contraseñas y roles
+- Distribuir contraseñas a cada usuaria de forma segura (no por chat grupal)
+
+---
+**Timestamp:** 2026-08-03
+**Agent:** Claude (Sonnet 4.6)
+**Task:** Solicitud de ayudas — checkboxes múltiples + endpoint backend
+**Files Changed:**
+- `backend/src/beneficiaries/beneficiaries.controller.ts` — agregado POST solicitud-ayuda (público, sin auth); imports UseInterceptors, UploadedFiles, AnyFilesInterceptor
+- `backend/src/beneficiaries/beneficiaries.service.ts` — método solicitudAyuda: busca beneficiario por docNumber, crea Ayuda por cada tipo seleccionado; import BadRequestException
+- `frontend/src/app/features/beneficiaries/solicitud-ayuda.component.ts` — radio buttons → checkboxes múltiples; eliminado tipoAyuda/motivoSolicitud/solicitudEps/respuestaEps; controles por tipo (motivoAlojamiento, epsTransporte, etc.); métodos toggleTipo, hasTipo, setEps, getEps
+- `frontend/src/app/features/beneficiaries/solicitud-ayuda.component.html` — radio buttons reemplazados por checkboxes; @if guards actualizados a hasTipo(); formControlNames actualizados a nombres por tipo; subtítulo "Puede seleccionar uno o varios tipos de ayuda"
+**Status:** ✅ Completado
+**Next Steps:**
+- La familia debe ingresar el documento del beneficiario registrado (no el del acudiente) para que el sistema encuentre el registro
+- Pendiente: manejo de formularios cuando el beneficiario no está registrado (crear registro preliminar o enviar email)
+
+---
+**Timestamp:** 2026-08-03
+**Agent:** Claude (Sonnet 4.6)
+**Task:** Fix #1 teléfono 10 dígitos + #2 fechas ingreso/actualización en portal beneficiarios
+**Files Changed:**
+- `frontend/src/app/features/providers/provider-register.component.ts` — patrón teléfono corregido de `/^\d{7,15}$/` a `/^\d{10}$/`
+- `frontend/src/app/features/providers/provider-register.component.html` — mensaje de error actualizado a "exactamente 10 dígitos"
+- `backend/src/beneficiaries/beneficiaries.service.ts` — agregados `enrollDate` y `updatedAt` al select del findAll
+- `frontend/src/app/core/services/beneficiaries.service.ts` — agregados `enrollDate?: string` y `updatedAt?: string` a la interfaz Beneficiary
+- `frontend/src/app/features/beneficiaries/beneficiary-detail.component.html` — fechas de ingreso y actualización visibles en el header junto al nombre
+- `frontend/src/app/features/beneficiaries/beneficiaries-list.component.html` — columna "Ingreso" con fecha de ingreso y última actualización (visible en pantallas xl)
+- `frontend/src/app/features/beneficiaries/beneficiaries-list.component.ts` — agregado DatePipe a imports
+**Status:** ✅ Completado
+**Next Steps:**
+- Pendiente #3: observaciones privadas por beneficiario
+- Pendiente #4: mensajes de validación al final de la página
+- Pendiente #5-6: proveedores (solo transferencia + estado rechazado)
+
+---
+**Timestamp:** 2026-08-03
+**Agent:** Claude (Sonnet 4.6)
+**Task:** Fix #4 mensajes validación al final + Fix #5 forma de pago solo transferencia + Fix #6 estado Rechazado + motivo rechazo proveedores
+**Files Changed:**
+- `frontend/src/app/features/beneficiaries/solicitud-ayuda.component.html` — eliminado stepError del top; agregado resumen de errores antes del botón "Enviar"
+- `frontend/src/app/features/providers/provider-register.component.html` — eliminados campos "Forma de pago" (Contado/Crédito) y "Días de crédito" del paso 1; agregado stepErrors() junto a botones navegación
+- `frontend/src/app/features/providers/provider-register.component.ts` — removidos formaPagoTipo y diasCredito del form group y del FormData en submit
+- `frontend/src/app/features/providers/provider-detail.component.ts` — agregado motivoRechazo a interfaz Provider; signals showRejectForm y motivoInput; updateStatus acepta motivoRechazo; nuevo método confirmRechazo()
+- `frontend/src/app/features/providers/provider-detail.component.html` — botón Rechazar abre formulario inline con textarea de motivo; muestra motivo guardado cuando status=Rechazado
+- `backend/src/admin/admin.module.ts` — agregado AuthModule a imports (fix UnknownDependenciesException JwtAuthGuard)
+- `frontend/src/app/features/labor-social/sala-ludica.component.html` — fix NG8107: diagnostico?.length → diagnostico.length
+**Status:** ✅ Completado
+**Next Steps:**
+- Pendientes acordados reunión 2026-08-03: flujo de pedidos/bonos, inventario (entradas/salidas, activar/desactivar, renombrar a Bonos), municipios incompletos
+
+---
+**Timestamp:** 2026-08-03
+**Agent:** Claude (Sonnet 4.6)
+**Task:** Fix municipios incompletos — crear archivo compartido con todos los municipios de Colombia (DIVIPOLA)
+**Files Changed:**
+- `frontend/src/app/shared/data/colombia-geo.ts` — NUEVO: constante COLOMBIA_DEPTOS con los 33 departamentos y ~1.122 municipios oficiales (DIVIPOLA/DANE). Antes sólo existía como constante local duplicada con 3–5 ciudades por departamento.
+- `frontend/src/app/features/providers/provider-register.component.ts` — removida declaración local COLOMBIA_DEPTOS (líneas 8-42); agregado import de shared/data/colombia-geo
+- `frontend/src/app/features/beneficiaries/family-characterization.component.ts` — removida declaración local COLOMBIA_DEPTOS (líneas 8-42); agregado import de shared/data/colombia-geo
+**Status:** ✅ Completado
+**Next Steps:**
+- Inventario: filtrar sólo productos activos por defecto; formulario ingreso/resta de inventario
+- Renombrar "Productos" → "Bonos" en UI/menú
+- Menú: "Historial de ayudas" → "Solicitud de ayudas"
+- Párrafos explicativos por tipo de ayuda (esperar textos de Ana)
+
+---
+**Timestamp:** 2026-08-03
+**Agent:** Claude (Sonnet 4.6)
+**Task:** Inventario — filtrar activos, activar/desactivar, formulario movimiento de stock
+**Files Changed:**
+- `backend/src/products/dto/create-stock-movement.dto.ts` — NUEVO: DTO para movimiento de stock (Entrada/Salida/Ajuste + quantity + description opcional)
+- `backend/src/products/products.service.ts` — getCategoryStats acepta onlyActive param; nuevos métodos toggleActive() y stockMovement() (transacción atómica stock + InventoryMovement)
+- `backend/src/products/products.controller.ts` — GET /categories acepta onlyActive param; nuevos endpoints PATCH /:id/toggle-active y POST /:id/stock-movement
+- `frontend/src/app/core/services/products.service.ts` — getCategoryStats(onlyActive=true); nuevos métodos toggleActive() y stockMovement()
+- `frontend/src/app/features/products/products-list.component.ts` — showInactive signal; filteredProducts filtra inactivos por defecto; toggleActive(); openMovement/closeMovement/submitMovement()
+- `frontend/src/app/features/products/products-list.component.html` — toggle "Mostrar inactivos"; columna Acciones con botones Movimiento y Activar/Desactivar; modal de movimiento de stock
+**Status:** ✅ Completado (backend + frontend compilan sin errores)
+**Next Steps:**
+- Renombrar "Productos" → "Bonos" en UI (pendiente aclaración con Ana)
+- Párrafos explicativos por tipo de ayuda (esperar textos)
+- Historial de ayudas → Solicitud de ayudas en menú

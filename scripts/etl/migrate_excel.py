@@ -21,8 +21,11 @@ import psycopg2
 from psycopg2.extras import execute_values
 
 # ── Conexión ────────────────────────────────────────────────────────────────
-DB_URL = "postgresql://dataheart:dataheart_dev_2026@localhost:5432/dataheart_sc"
-EXCEL  = os.path.join(os.path.dirname(__file__), "../../BD Ventas y Donaciones.xlsx")
+DB_URL       = os.environ.get("DB_URL", "postgresql://dataheart:dataheart_dev_2026@localhost:5432/dataheart_sc")
+ROOT         = os.path.join(os.path.dirname(__file__), "../..")
+EXCEL_VENTAS = os.path.join(ROOT, "BD Ventas y Donaciones.xlsx")
+EXCEL_PROD   = os.path.join(ROOT, "BD Productos por Categoria.xlsx")
+EXCEL_CLI    = os.path.join(ROOT, "BD Clientes Benefactores.xlsx")
 
 # ── Helpers ─────────────────────────────────────────────────────────────────
 def new_id():   return str(uuid.uuid4())
@@ -65,19 +68,18 @@ def invoice_to_order_type(invoice):
 # Productos de la categoría "Donaciones" → van a tabla donations
 DONATION_CATEGORY = "Donaciones"
 
-# ── Cargar Excel ─────────────────────────────────────────────────────────────
-print("📂 Cargando Excel…")
-xl = pd.ExcelFile(EXCEL)
+# ── Cargar Excel (3 archivos separados) ──────────────────────────────────────
+print("📂 Cargando archivos Excel…")
+df_cli   = pd.read_excel(EXCEL_CLI,    sheet_name="clientes")
+df_prod  = pd.read_excel(EXCEL_PROD,   sheet_name="productos_conceptos")
+df_trans = pd.read_excel(EXCEL_VENTAS, sheet_name="ventas_donaciones")
 
-df_cli   = xl.parse("clientes_benefactores (3)")
-df_prod  = xl.parse("productos_conceptos")
-df_trans = xl.parse("ventas_donaciones")
-df_canal = xl.parse("canal_atencion")
+# canal_atencion ya no existe en los nuevos archivos — se omite
+df_canal = pd.DataFrame()
 
 print(f"   Clientes  : {len(df_cli):,}")
 print(f"   Productos : {len(df_prod):,}")
 print(f"   Transacc. : {len(df_trans):,}")
-print(f"   Canal     : {len(df_canal):,}")
 
 conn = psycopg2.connect(DB_URL)
 cur  = conn.cursor()
@@ -105,8 +107,11 @@ for _, row in df_cli.iterrows():
     raw_id   = safe_str(row.get("id_cliente"))
     doc_type = clean_doc_type(row.get("tipo_identificacion"))
     name     = safe_str(row.get("nombre_razon_social")) or "Sin nombre"
-    phone    = safe_str(row.get("celular_contacto"))
-    email    = safe_str(row.get("correo_electronico"))
+    # Nuevas columnas BD Clientes Benefactores (Aug 2026)
+    phone    = safe_str(row.get("Teléfono celular_1")) or safe_str(row.get("celular_contacto"))
+    email    = safe_str(row.get("E-mail_1")) or safe_str(row.get("correo_electronico"))
+    address  = safe_str(row.get("Dirección"))
+    city     = safe_str(row.get("Ciudad"))
 
     # Limpiar email básico
     if email and "@" not in email:
@@ -138,21 +143,21 @@ for _, row in df_cli.iterrows():
     client_map[doc_number] = cid
     if raw_id: client_map[str(raw_id).strip()] = cid
 
-    # Estado: limpiar campo corrupto — si es un nombre/frase larga → "Activo"
-    raw_status = safe_str(row.get("estado_cliente")) or "Activo"
-    status = "Activo" if len(raw_status) > 20 else raw_status.title()
-
     rows_cli.append((
         cid, name, doc_type, doc_number,
-        phone, email, status, str(raw_id) if raw_id else None, now()
+        phone, email, address, city, "Activo", str(raw_id) if raw_id else None, now()
     ))
 
 if rows_cli:
     execute_values(cur, """
         INSERT INTO clients_donors
-          (id, name, doc_type, doc_number, phone, email, status, historical_id, created_at)
+          (id, name, doc_type, doc_number, phone, email, address, city, status, historical_id, created_at)
         VALUES %s
-        ON CONFLICT (doc_number) DO NOTHING
+        ON CONFLICT (doc_number) DO UPDATE SET
+          phone   = COALESCE(EXCLUDED.phone,   clients_donors.phone),
+          email   = COALESCE(EXCLUDED.email,   clients_donors.email),
+          address = COALESCE(EXCLUDED.address, clients_donors.address),
+          city    = COALESCE(EXCLUDED.city,    clients_donors.city)
     """, rows_cli)
     report["clientes"] = len(rows_cli)
 
@@ -462,6 +467,9 @@ print(f"   ✅ Donaciones: {report['donations']:,}")
 # 4. CANAL DE ATENCIÓN → UPDATE orders
 # ═══════════════════════════════════════════════════════════════════════════════
 print("\n📡 Actualizando canal de atención en órdenes…")
+
+if df_canal.empty:
+    print("   ⚠ Sin datos de canal (archivo no incluye esta hoja). Omitido.")
 
 for _, row in df_canal.iterrows():
     invoice = safe_str(row.get("numero_factura_recibo"))

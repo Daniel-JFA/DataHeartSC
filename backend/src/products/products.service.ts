@@ -1,7 +1,8 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { CreateStockMovementDto } from './dto/create-stock-movement.dto';
 
 @Injectable()
 export class ProductsService {
@@ -31,9 +32,10 @@ export class ProductsService {
     return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
-  async getCategoryStats() {
+  async getCategoryStats(onlyActive = true) {
     const rows = await this.prisma.product.groupBy({
       by: ['categoryName'],
+      where: onlyActive ? { isActive: true } : undefined,
       _count: { id: true },
       orderBy: { categoryName: 'asc' },
     });
@@ -70,5 +72,47 @@ export class ProductsService {
   async remove(id: string) {
     await this.findOne(id);
     return this.prisma.product.update({ where: { id }, data: { isActive: false } });
+  }
+
+  async toggleActive(id: string) {
+    const product = await this.findOne(id);
+    return this.prisma.product.update({
+      where: { id },
+      data: { isActive: !product.isActive },
+      select: { id: true, isActive: true },
+    });
+  }
+
+  async stockMovement(id: string, dto: CreateStockMovementDto, userId: string) {
+    const product = await this.findOne(id);
+
+    const delta = dto.movementType === 'Entrada' ? dto.quantity : -dto.quantity;
+    const newStock = product.stock + delta;
+
+    if (dto.movementType === 'Salida' && newStock < 0) {
+      throw new BadRequestException(
+        `Stock insuficiente. Stock actual: ${product.stock}, solicitado: ${dto.quantity}`,
+      );
+    }
+
+    const [updated] = await this.prisma.$transaction([
+      this.prisma.product.update({
+        where: { id },
+        data: { stock: newStock },
+        select: { id: true, name: true, sku: true, stock: true, minStock: true, price: true, isActive: true, categoryName: true, subcategoryName: true },
+      }),
+      this.prisma.inventoryMovement.create({
+        data: {
+          itemType: 'Producto',
+          productId: id,
+          movementType: dto.movementType,
+          quantity: dto.quantity,
+          userId,
+          description: dto.description ?? null,
+        },
+      }),
+    ]);
+
+    return updated;
   }
 }

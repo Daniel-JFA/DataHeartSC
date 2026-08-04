@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateBeneficiaryDto } from './dto/create-beneficiary.dto';
 import { UpdateBeneficiaryDto } from './dto/update-beneficiary.dto';
@@ -35,6 +35,7 @@ export class BeneficiariesService {
           birthDate: true, city: true, department: true,
           eps: true, diagnostico: true, status: true,
           deceasedDate: true, createdAt: true,
+          enrollDate: true, updatedAt: true,
           _count: { select: { ayudas: true } },
         },
       }),
@@ -126,6 +127,41 @@ export class BeneficiariesService {
       where: { id },
       data: { status: 'Inactivo' },
     });
+  }
+
+  async solicitudAyuda(body: any) {
+    const docNumber: string = body.docNumber ?? '';
+    const tiposAyuda: string[] = JSON.parse(body.tiposAyuda ?? '[]');
+    const motivaciones: Record<string, string> = JSON.parse(body.motivaciones ?? '{}');
+
+    if (!tiposAyuda.length) {
+      throw new BadRequestException('Debe seleccionar al menos un tipo de ayuda');
+    }
+
+    // Buscar beneficiario por docNumber
+    const beneficiary = await this.prisma.beneficiary.findFirst({
+      where: { docNumber },
+    });
+    if (!beneficiary) {
+      throw new NotFoundException(
+        `No se encontró un beneficiario registrado con el documento ${docNumber}. Contacte al equipo de Trabajo Social.`
+      );
+    }
+
+    // Crear una Ayuda por cada tipo seleccionado
+    for (const tipo of tiposAyuda) {
+      await this.prisma.ayuda.create({
+        data: {
+          beneficiaryId: beneficiary.id,
+          fecha: new Date(),
+          tipoSolicitud: tipo,
+          justificacion: motivaciones[tipo] ?? '',
+          estado: 'Pendiente',
+        },
+      });
+    }
+
+    return { ok: true, message: 'Solicitud registrada correctamente', count: tiposAyuda.length };
   }
 
   async getStats() {

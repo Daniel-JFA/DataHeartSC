@@ -2,7 +2,9 @@ import {
   Controller, Get, Post, Put, Delete,
   Body, Param, Query, UseGuards,
   ParseIntPipe, DefaultValuePipe,
+  UseInterceptors, UploadedFiles,
 } from '@nestjs/common';
+import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { BeneficiariesService } from './beneficiaries.service';
 import { CreateBeneficiaryDto } from './dto/create-beneficiary.dto';
 import { UpdateBeneficiaryDto } from './dto/update-beneficiary.dto';
@@ -30,6 +32,16 @@ export class BeneficiariesController {
   @Put('public-update/:id')
   publicUpdate(@Param('id') id: string, @Body() dto: UpdateBeneficiaryDto) {
     return this.beneficiariesService.update(id, dto);
+  }
+
+  /** Solicitud de ayuda pública — sin autenticación */
+  @Post('solicitud-ayuda')
+  @UseInterceptors(AnyFilesInterceptor())
+  solicitudAyuda(
+    @Body() body: any,
+    @UploadedFiles() files?: Express.Multer.File[],
+  ) {
+    return this.beneficiariesService.solicitudAyuda(body);
   }
 
   @Get('stats')

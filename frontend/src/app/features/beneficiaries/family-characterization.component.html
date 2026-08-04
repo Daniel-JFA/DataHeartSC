@@ -75,15 +75,6 @@
             ['', 'Datos del Niño(a)', 'Información de Salud', 'Información Familiar', 'Vivienda y Cuidador', 'Economía y Tratamiento de Datos'][currentStep()]
           }}</p>
 
-          <!-- Error de paso -->
-          @if (stepErrors()) {
-            <div class="flex items-center gap-2 bg-red-50 border border-red-200 rounded-lg px-4 py-2.5 max-w-md w-full">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-red-500 flex-shrink-0">
-                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
-              </svg>
-              <p class="text-sm text-red-700">{{ stepErrors() }}</p>
-            </div>
-          }
         </div>
 
         <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-6" novalidate>
@@ -735,6 +726,14 @@
           }
 
           <!-- ── Botones navegación del wizard ───────────────────────── -->
+          @if (stepErrors()) {
+            <div class="flex items-start gap-3 bg-red-50 border border-red-200 rounded-xl px-4 py-3.5">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
+              </svg>
+              <p class="text-sm text-red-700">{{ stepErrors() }}</p>
+            </div>
+          }
           <div class="flex items-center justify-between gap-4 pt-4 border-t border-slate-200">
             @if (currentStep() > 1) {
               <button type="button" (click)="prev()"

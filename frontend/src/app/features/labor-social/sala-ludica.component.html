@@ -89,7 +89,7 @@
                 <td class="px-4 py-3 text-slate-500 max-w-xs">
                   @if (b.diagnostico) {
                     <span class="block truncate" title="{{ b.diagnostico }}">
-                      {{ b.diagnostico | slice:0:60 }}{{ (b.diagnostico?.length ?? 0) > 60 ? '…' : '' }}
+                      {{ b.diagnostico | slice:0:60 }}{{ b.diagnostico.length > 60 ? '…' : '' }}
                     </span>
                   } @else {
                     <span class="text-slate-300">—</span>

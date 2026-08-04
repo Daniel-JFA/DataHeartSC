@@ -6,7 +6,7 @@ import * as bcrypt from 'bcrypt';
 const adapter = new PrismaPg(process.env['DATABASE_URL']!);
 const prisma = new PrismaClient({ adapter });
 
-// ─── Permisos por módulo (14 total) ──────────────────────────────────────────
+// ─── Permisos por módulo (17 total) ──────────────────────────────────────────
 const PERMISSIONS = [
   { keyName: 'ventas_donaciones:read',  name: 'Ver ventas y donaciones' },
   { keyName: 'ventas_donaciones:write', name: 'Gestionar ventas y donaciones' },
@@ -22,6 +22,9 @@ const PERMISSIONS = [
   { keyName: 'inventario:write',        name: 'Gestionar inventario y proveedores' },
   { keyName: 'dashboards:read',         name: 'Ver dashboards y reportes' },
   { keyName: 'dashboards:write',        name: 'Gestionar dashboards y reportes' },
+  { keyName: 'sala_ludica:read',        name: 'Ver módulo Sala Lúdica' },
+  { keyName: 'sala_ludica:write',       name: 'Gestionar módulo Sala Lúdica' },
+  { keyName: 'admin:access',            name: 'Acceso al panel de administración' },
 ];
 
 // ─── Roles reales de la Fundación (Matriz de Accesos v2 — Jul 2026) ──────────
@@ -33,23 +36,26 @@ const ROLES = [
   { name: 'LIDER_CLIENTES_BENEFACTORES',description: 'Paula Gómez — ventas, facturación y beneficiarios (total) + dashboards (lectura)' },
   { name: 'LIDER_ATENCION_FAMILIAS',    description: 'Marcela Gallego — ventas, inventario y beneficiarios (total) + dashboards (lectura)' },
   { name: 'LIDER_COMUNICACIONES',       description: 'Megan David — segmentación CRM (total) + ventas, beneficiarios, voluntarios y dashboards (lectura)' },
+  { name: 'SALA_LUDICA',                description: 'Haylen — acceso exclusivo al módulo Sala Lúdica' },
   // Roles técnicos heredados (se conservan para compatibilidad con el admin inicial)
   { name: 'Admin',    description: 'Administrador del sistema' },
   { name: 'Operador', description: 'Personal operativo' },
   { name: 'Contador', description: 'Acceso contable y exportaciones' },
 ];
 
-// ─── Mapeo rol → permisos (Matriz de Accesos v2 — Jul 2026) ─────────────────
+// ─── Mapeo rol → permisos (Matriz de Accesos v3 — Ago 2026) ─────────────────
 //
-// Módulo                    DIRECTORA  DATA_HEART  ASIST_CONT  CONTADORA  CLIENTES  FAMILIAS  COMUNICACIONES
-// Ventas y Donaciones       R          R+W         R+W         R+W        R+W       R+W       R
-// Facturación y Recibos     R          R+W         R+W         R+W        R+W       —         —
-// Proveedores e Inventario  R          R+W         R+W         —          —         R+W       —
-// Módulo Beneficiarios      R          R+W         R           —          R+W       R+W       R
-// Módulo Voluntarios        R          R+W         —           —          —         —         R
-// Dashboards y Reportes     R          R+W         R           —          R         R         R
-// Segmentación CRM          R          R+W         —           —          —         —         R+W
-// (Matriz v3 — 23-jul-2026: CONTADORA pierde inventario)
+// Módulo                    DIRECTORA  DATA_HEART  ASIST_CONT  CONTADORA  CLIENTES  FAMILIAS  COMUNICACIONES  SALA_LUDICA
+// Ventas y Donaciones       R          R+W         R+W         R+W        R+W       R+W       R               —
+// Facturación y Recibos     R          R+W         R+W         R+W        R+W       —         —               —
+// Proveedores e Inventario  R          R+W         R+W         R+W        —         R+W       —               —
+// Módulo Beneficiarios      R          R+W         R           —          R+W       R+W       R               —
+// Módulo Voluntarios        R          R+W         —           —          —         —         R               —
+// Dashboards y Reportes     R          R+W         R           —          R         R         R               —
+// Segmentación CRM          R          R+W         —           —          —         —         R+W             —
+// Sala Lúdica               R          R+W         —           —          —         R+W       R               R+W
+// Admin:access              —          ✓           —           —          —         —         —               —
+// (Matriz v3 — 03-ago-2026: CONTADORA recupera inventario, nuevo rol SALA_LUDICA, permisos admin:access)
 //
 const ROLE_PERMISSIONS: Record<string, string[]> = {
   DIRECTORA: [
@@ -60,6 +66,7 @@ const ROLE_PERMISSIONS: Record<string, string[]> = {
     'voluntarios:read',
     'dashboards:read',
     'segmentacion:read',
+    'sala_ludica:read',
   ],
   LIDER_DATA_HEART: [
     'ventas_donaciones:read', 'ventas_donaciones:write',
@@ -69,6 +76,8 @@ const ROLE_PERMISSIONS: Record<string, string[]> = {
     'voluntarios:read',       'voluntarios:write',
     'dashboards:read',        'dashboards:write',
     'segmentacion:read',      'segmentacion:write',
+    'sala_ludica:read',       'sala_ludica:write',
+    'admin:access',
   ],
   ASISTENTE_CONTABLE: [
     'ventas_donaciones:read', 'ventas_donaciones:write',
@@ -77,11 +86,12 @@ const ROLE_PERMISSIONS: Record<string, string[]> = {
     'beneficiarios:read',
     'dashboards:read',
   ],
+  // CAMBIO v3: CONTADORA recupera inventario:read + inventario:write
   CONTADORA: [
     'ventas_donaciones:read', 'ventas_donaciones:write',
     'facturacion:read',       'facturacion:write',
+    'inventario:read',        'inventario:write',
   ],
-  // CAMBIO v2: Paula pierde Voluntarios, gana Beneficiarios (total)
   LIDER_CLIENTES_BENEFACTORES: [
     'ventas_donaciones:read', 'ventas_donaciones:write',
     'facturacion:read',       'facturacion:write',
@@ -93,6 +103,7 @@ const ROLE_PERMISSIONS: Record<string, string[]> = {
     'inventario:read',        'inventario:write',
     'beneficiarios:read',     'beneficiarios:write',
     'dashboards:read',
+    'sala_ludica:read',       'sala_ludica:write',
   ],
   LIDER_COMUNICACIONES: [
     'ventas_donaciones:read',
@@ -100,6 +111,11 @@ const ROLE_PERMISSIONS: Record<string, string[]> = {
     'beneficiarios:read',
     'voluntarios:read',
     'dashboards:read',
+    'sala_ludica:read',
+  ],
+  SALA_LUDICA: [
+    'sala_ludica:read',
+    'sala_ludica:write',
   ],
   // Admin heredado: acceso total
   Admin: [
@@ -110,18 +126,21 @@ const ROLE_PERMISSIONS: Record<string, string[]> = {
     'voluntarios:read',       'voluntarios:write',
     'dashboards:read',        'dashboards:write',
     'segmentacion:read',      'segmentacion:write',
+    'sala_ludica:read',       'sala_ludica:write',
+    'admin:access',
   ],
 };
 
 // ─── Usuarios reales de la Fundación ─────────────────────────────────────────
 const USERS = [
-  { email: 'santiagocorazon@santiagocorazon.org',   firstName: 'Luisa',     lastName: 'Muriel',      roleName: 'DIRECTORA',                   password: 'dataheart2026' },
-  { email: 'eventos@santiagocorazon.org',           firstName: 'Ana',       lastName: 'Betancourt',  roleName: 'LIDER_DATA_HEART',             password: 'dataheart2026' },
-  { email: 'secretaria@santiagocorazon.org',        firstName: 'Alejandra', lastName: 'Betancur',    roleName: 'ASISTENTE_CONTABLE',           password: 'dataheart2026' },
-  { email: 'dorisgiraldo8@yahoo.es',                firstName: 'Doris',     lastName: 'Giraldo',     roleName: 'CONTADORA',                   password: 'dataheart2026' },
-  { email: 'productos@santiagocorazon.org',         firstName: 'Paula',     lastName: 'Gomez',       roleName: 'LIDER_CLIENTES_BENEFACTORES', password: 'dataheart2026' },
-  { email: 'atencionfamilias@santiagocorazon.org',  firstName: 'Marcela',   lastName: 'Gallego',     roleName: 'LIDER_ATENCION_FAMILIAS',     password: 'dataheart2026' },
-  { email: 'comunicaciones.sc@santiagocorazon.org', firstName: 'Megan',     lastName: 'David',       roleName: 'LIDER_COMUNICACIONES',        password: 'dataheart2026' },
+  { email: 'santiagocorazon@santiagocorazon.org',   firstName: 'Luisa',     lastName: 'Muriel',      roleName: 'DIRECTORA',                   password: 'j9qeJWm108C2Z2' },
+  { email: 'eventos@santiagocorazon.org',           firstName: 'Ana',       lastName: 'Betancourt',  roleName: 'LIDER_DATA_HEART',             password: 'DmQFNaliM0Fe88' },
+  { email: 'secretaria@santiagocorazon.org',        firstName: 'Alejandra', lastName: 'Betancur',    roleName: 'ASISTENTE_CONTABLE',           password: 'YcEBOgEnZJa7rV' },
+  { email: 'dorisgiraldo8@yahoo.es',                firstName: 'Doris',     lastName: 'Giraldo',     roleName: 'CONTADORA',                   password: 'SYMGMAY84gXP9u' },
+  { email: 'productos@santiagocorazon.org',         firstName: 'Paula',     lastName: 'Gomez',       roleName: 'LIDER_CLIENTES_BENEFACTORES', password: 'yI9Cvp88K4xEFx' },
+  { email: 'atencionfamilias@santiagocorazon.org',  firstName: 'Marcela',   lastName: 'Gallego',     roleName: 'LIDER_ATENCION_FAMILIAS',     password: '91UaldKqEiQsDh' },
+  { email: 'comunicaciones.sc@santiagocorazon.org', firstName: 'Megan',     lastName: 'David',       roleName: 'LIDER_COMUNICACIONES',        password: '0IbHjaNJGaypdx' },
+  { email: 'salaludicacardio@vid.org.co',           firstName: 'Haylen',    lastName: 'Sala Lúdica', roleName: 'SALA_LUDICA',                 password: 'ZEDlcVAy37kzol' },
 ];
 
 async function main() {
@@ -165,7 +184,7 @@ async function main() {
       mappingCount++;
     }
   }
-  console.log(`✅ ${mappingCount} mappings rol→permiso re-creados (matriz v2)`);
+  console.log(`✅ ${mappingCount} mappings rol→permiso re-creados (matriz v3)`);
 
   // 4. Upsert usuarios reales (contraseña temporal: dataheart2026)
   for (const u of USERS) {
@@ -187,7 +206,7 @@ async function main() {
 
   // 5. Mantener usuario admin técnico con rol Admin
   const adminRoleId = roleMap['Admin'];
-  const adminHash = await bcrypt.hash('admin2026', 12);
+  const adminHash = await bcrypt.hash('3cje8w6S4iOZ5f', 12);
   await prisma.user.upsert({
     where: { email: 'admin@santiagocorazon.org' },
     update: { roleId: adminRoleId },
@@ -199,10 +218,10 @@ async function main() {
       roleId: adminRoleId,
     },
   });
-  console.log('✅ Usuario admin técnico mantenido (admin@santiagocorazon.org / admin2026)\n');
+  console.log('✅ Usuario admin técnico mantenido (admin@santiagocorazon.org)\n');
 
   console.log('─────────────────────────────────────────────');
-  console.log('Usuarios disponibles (contraseña: dataheart2026):');
+  console.log('Usuarios disponibles:');
   USERS.forEach((u) => console.log(`  ${u.email}  →  ${u.roleName}`));
   console.log('─────────────────────────────────────────────');
 }

@@ -23,6 +23,8 @@ export interface Beneficiary {
   motherName?: string;
   fatherName?: string;
   createdAt: string;
+  enrollDate?: string;
+  updatedAt?: string;
   _count?: { ayudas: number };
 }
 
@@ -66,6 +68,7 @@ export interface BeneficiaryDetail extends Beneficiary {
   comoSeEntero?: string;
   lastUpdatedAt?: string;
   isDisplaced?: boolean;
+  observacionesPrivadas?: string;
   ayudas: AyudaSummary[];
 }
 

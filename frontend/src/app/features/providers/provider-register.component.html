@@ -127,39 +127,20 @@
               <div class="px-5 py-3.5 border-b border-slate-100 bg-slate-50">
                 <h3 class="text-xs font-semibold text-slate-700 uppercase tracking-wider">2. Naturaleza del proveedor</h3>
               </div>
-              <div class="px-5 py-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <label class="block text-xs font-medium text-slate-700 mb-2">Naturaleza <span class="text-brand-600">*</span></label>
-                  <div class="flex gap-4">
-                    <label class="flex items-center gap-1.5 cursor-pointer">
-                      <input type="radio" formControlName="naturaleza" value="NATURAL"
-                             class="text-brand-600 focus:ring-brand-500" />
-                      <span class="text-sm text-slate-700">Persona Natural</span>
-                    </label>
-                    <label class="flex items-center gap-1.5 cursor-pointer">
-                      <input type="radio" formControlName="naturaleza" value="JURIDICA"
-                             class="text-brand-600 focus:ring-brand-500" />
-                      <span class="text-sm text-slate-700">Persona Jurídica</span>
-                    </label>
-                  </div>
+              <div class="px-5 py-5">
+                <label class="block text-xs font-medium text-slate-700 mb-2">Naturaleza <span class="text-brand-600">*</span></label>
+                <div class="flex gap-4">
+                  <label class="flex items-center gap-1.5 cursor-pointer">
+                    <input type="radio" formControlName="naturaleza" value="NATURAL"
+                           class="text-brand-600 focus:ring-brand-500" />
+                    <span class="text-sm text-slate-700">Persona Natural</span>
+                  </label>
+                  <label class="flex items-center gap-1.5 cursor-pointer">
+                    <input type="radio" formControlName="naturaleza" value="JURIDICA"
+                           class="text-brand-600 focus:ring-brand-500" />
+                    <span class="text-sm text-slate-700">Persona Jurídica</span>
+                  </label>
                 </div>
-                <div>
-                  <label class="block text-xs font-medium text-slate-700 mb-1">Forma de pago</label>
-                  <select formControlName="formaPagoTipo"
-                          class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 bg-white
-                                 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors">
-                    <option value="CONTADO">Contado</option>
-                    <option value="CREDITO">Crédito</option>
-                  </select>
-                </div>
-                @if (form.get('formaPagoTipo')?.value === 'CREDITO') {
-                  <div>
-                    <label class="block text-xs font-medium text-slate-700 mb-1">Días de crédito</label>
-                    <input formControlName="diasCredito" type="number" min="0" placeholder="Ej: 30"
-                           class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
-                                  focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
-                  </div>
-                }
               </div>
             </section>
 
@@ -268,7 +249,7 @@
                            [class.border-red-400]="isInvalid('phone')"
                            [class.border-slate-300]="!isInvalid('phone')" />
                     @if (isInvalid('phone')) {
-                      <p class="mt-1 text-xs text-red-600">Ingresa un número válido (solo dígitos).</p>
+                      <p class="mt-1 text-xs text-red-600">El celular debe tener exactamente 10 dígitos.</p>
                     }
                   </div>
 
@@ -587,23 +568,16 @@
               </div>
               <div class="px-5 py-5 space-y-4">
 
-                <!-- Forma de pago (checkboxes) -->
+                <!-- Forma de pago — únicamente Transferencia Bancaria -->
                 <div>
                   <label class="block text-xs font-medium text-slate-700 mb-2">Forma de pago aceptada</label>
-                  <div class="flex flex-wrap gap-3">
-                    @for (fp of FORMAS_PAGO; track fp.value) {
-                      <label class="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg border transition-colors"
-                             [class.border-brand-400]="isFormaPagoSelected(fp.value)"
-                             [class.bg-brand-50]="isFormaPagoSelected(fp.value)"
-                             [class.border-slate-200]="!isFormaPagoSelected(fp.value)">
-                        <input type="checkbox"
-                               [checked]="isFormaPagoSelected(fp.value)"
-                               (change)="toggleFormaPago(fp.value)"
-                               class="text-brand-600 focus:ring-brand-500 rounded" />
-                        <span class="text-xs text-slate-700">{{ fp.label }}</span>
-                      </label>
-                    }
+                  <div class="flex items-center gap-2 px-3 py-2 rounded-lg border border-brand-400 bg-brand-50 w-fit">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-brand-600 flex-shrink-0">
+                      <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
+                    </svg>
+                    <span class="text-xs font-medium text-brand-700">Transferencia Bancaria</span>
                   </div>
+                  <p class="text-xs text-slate-400 mt-1.5">La Fundación únicamente acepta pagos por transferencia bancaria.</p>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -660,16 +634,24 @@
               </div>
               <div class="px-5 py-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
-                  <label class="block text-xs font-medium text-slate-700 mb-1">Nombre completo</label>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Nombre completo <span class="text-red-500">*</span></label>
                   <input formControlName="factNombre" type="text" placeholder="Ej: Ana María Pérez García"
-                         class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
-                                focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                         class="w-full border rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors
+                                {{ form.get('factNombre')?.invalid && form.get('factNombre')?.touched ? 'border-red-400 bg-red-50' : 'border-slate-300' }}" />
+                  @if (form.get('factNombre')?.invalid && form.get('factNombre')?.touched) {
+                    <p class="mt-1 text-xs text-red-600">Campo obligatorio.</p>
+                  }
                 </div>
                 <div>
-                  <label class="block text-xs font-medium text-slate-700 mb-1">Cargo</label>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Cargo <span class="text-red-500">*</span></label>
                   <input formControlName="factCargo" type="text" placeholder="Ej: Contadora"
-                         class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
-                                focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                         class="w-full border rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors
+                                {{ form.get('factCargo')?.invalid && form.get('factCargo')?.touched ? 'border-red-400 bg-red-50' : 'border-slate-300' }}" />
+                  @if (form.get('factCargo')?.invalid && form.get('factCargo')?.touched) {
+                    <p class="mt-1 text-xs text-red-600">Campo obligatorio.</p>
+                  }
                 </div>
                 <div>
                   <label class="block text-xs font-medium text-slate-700 mb-1">Teléfono</label>
@@ -684,16 +666,26 @@
                                 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
                 </div>
                 <div>
-                  <label class="block text-xs font-medium text-slate-700 mb-1">Celular</label>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Celular <span class="text-red-500">*</span></label>
                   <input formControlName="factCelular" type="tel" placeholder="Ej: 3001234567"
-                         class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
-                                focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                         class="w-full border rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors
+                                {{ form.get('factCelular')?.invalid && form.get('factCelular')?.touched ? 'border-red-400 bg-red-50' : 'border-slate-300' }}" />
+                  @if (form.get('factCelular')?.invalid && form.get('factCelular')?.touched) {
+                    <p class="mt-1 text-xs text-red-600">Campo obligatorio.</p>
+                  }
                 </div>
                 <div>
-                  <label class="block text-xs font-medium text-slate-700 mb-1">Correo electrónico</label>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Correo electrónico <span class="text-red-500">*</span></label>
                   <input formControlName="factEmail" type="email" placeholder="facturacion@empresa.com"
-                         class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
-                                focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                         class="w-full border rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                                focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors
+                                {{ form.get('factEmail')?.invalid && form.get('factEmail')?.touched ? 'border-red-400 bg-red-50' : 'border-slate-300' }}" />
+                  @if (form.get('factEmail')?.invalid && form.get('factEmail')?.touched) {
+                    <p class="mt-1 text-xs text-red-600">
+                      {{ form.get('factEmail')?.errors?.['required'] ? 'Campo obligatorio.' : 'Correo no válido.' }}
+                    </p>
+                  }
                 </div>
               </div>
             </section>
@@ -717,22 +709,34 @@
                   <p class="text-xs font-semibold text-slate-500 mb-2 uppercase tracking-wide">Referencia 1</p>
                   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                     <div>
-                      <label class="block text-xs font-medium text-slate-700 mb-1">Nombre / Empresa</label>
+                      <label class="block text-xs font-medium text-slate-700 mb-1">Nombre / Empresa <span class="text-red-500">*</span></label>
                       <input formControlName="ref1Nombre" type="text" placeholder="Ej: Empresa ABC"
-                             class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 placeholder-slate-400
-                                    focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                             class="w-full border rounded-lg px-3 py-2 text-sm text-slate-900 placeholder-slate-400
+                                    focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors
+                                    {{ form.get('ref1Nombre')?.invalid && form.get('ref1Nombre')?.touched ? 'border-red-400 bg-red-50' : 'border-slate-300' }}" />
+                      @if (form.get('ref1Nombre')?.invalid && form.get('ref1Nombre')?.touched) {
+                        <p class="mt-1 text-xs text-red-600">Campo obligatorio.</p>
+                      }
                     </div>
                     <div>
-                      <label class="block text-xs font-medium text-slate-700 mb-1">Identificación</label>
+                      <label class="block text-xs font-medium text-slate-700 mb-1">Identificación <span class="text-red-500">*</span></label>
                       <input formControlName="ref1Identificacion" type="text" placeholder="NIT / CC"
-                             class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 placeholder-slate-400
-                                    focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                             class="w-full border rounded-lg px-3 py-2 text-sm text-slate-900 placeholder-slate-400
+                                    focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors
+                                    {{ form.get('ref1Identificacion')?.invalid && form.get('ref1Identificacion')?.touched ? 'border-red-400 bg-red-50' : 'border-slate-300' }}" />
+                      @if (form.get('ref1Identificacion')?.invalid && form.get('ref1Identificacion')?.touched) {
+                        <p class="mt-1 text-xs text-red-600">Campo obligatorio.</p>
+                      }
                     </div>
                     <div>
-                      <label class="block text-xs font-medium text-slate-700 mb-1">Teléfono</label>
+                      <label class="block text-xs font-medium text-slate-700 mb-1">Teléfono <span class="text-red-500">*</span></label>
                       <input formControlName="ref1Telefono" type="tel" placeholder="Ej: 3001234567"
-                             class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 placeholder-slate-400
-                                    focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                             class="w-full border rounded-lg px-3 py-2 text-sm text-slate-900 placeholder-slate-400
+                                    focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors
+                                    {{ form.get('ref1Telefono')?.invalid && form.get('ref1Telefono')?.touched ? 'border-red-400 bg-red-50' : 'border-slate-300' }}" />
+                      @if (form.get('ref1Telefono')?.invalid && form.get('ref1Telefono')?.touched) {
+                        <p class="mt-1 text-xs text-red-600">Campo obligatorio.</p>
+                      }
                     </div>
                     <div>
                       <label class="block text-xs font-medium text-slate-700 mb-1">Correo electrónico</label>
@@ -748,22 +752,34 @@
                   <p class="text-xs font-semibold text-slate-500 mb-2 uppercase tracking-wide">Referencia 2</p>
                   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                     <div>
-                      <label class="block text-xs font-medium text-slate-700 mb-1">Nombre / Empresa</label>
+                      <label class="block text-xs font-medium text-slate-700 mb-1">Nombre / Empresa <span class="text-red-500">*</span></label>
                       <input formControlName="ref2Nombre" type="text" placeholder="Ej: Empresa XYZ"
-                             class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 placeholder-slate-400
-                                    focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                             class="w-full border rounded-lg px-3 py-2 text-sm text-slate-900 placeholder-slate-400
+                                    focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors
+                                    {{ form.get('ref2Nombre')?.invalid && form.get('ref2Nombre')?.touched ? 'border-red-400 bg-red-50' : 'border-slate-300' }}" />
+                      @if (form.get('ref2Nombre')?.invalid && form.get('ref2Nombre')?.touched) {
+                        <p class="mt-1 text-xs text-red-600">Campo obligatorio.</p>
+                      }
                     </div>
                     <div>
-                      <label class="block text-xs font-medium text-slate-700 mb-1">Identificación</label>
+                      <label class="block text-xs font-medium text-slate-700 mb-1">Identificación <span class="text-red-500">*</span></label>
                       <input formControlName="ref2Identificacion" type="text" placeholder="NIT / CC"
-                             class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 placeholder-slate-400
-                                    focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                             class="w-full border rounded-lg px-3 py-2 text-sm text-slate-900 placeholder-slate-400
+                                    focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors
+                                    {{ form.get('ref2Identificacion')?.invalid && form.get('ref2Identificacion')?.touched ? 'border-red-400 bg-red-50' : 'border-slate-300' }}" />
+                      @if (form.get('ref2Identificacion')?.invalid && form.get('ref2Identificacion')?.touched) {
+                        <p class="mt-1 text-xs text-red-600">Campo obligatorio.</p>
+                      }
                     </div>
                     <div>
-                      <label class="block text-xs font-medium text-slate-700 mb-1">Teléfono</label>
+                      <label class="block text-xs font-medium text-slate-700 mb-1">Teléfono <span class="text-red-500">*</span></label>
                       <input formControlName="ref2Telefono" type="tel" placeholder="Ej: 3009876543"
-                             class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 placeholder-slate-400
-                                    focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors" />
+                             class="w-full border rounded-lg px-3 py-2 text-sm text-slate-900 placeholder-slate-400
+                                    focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors
+                                    {{ form.get('ref2Telefono')?.invalid && form.get('ref2Telefono')?.touched ? 'border-red-400 bg-red-50' : 'border-slate-300' }}" />
+                      @if (form.get('ref2Telefono')?.invalid && form.get('ref2Telefono')?.touched) {
+                        <p class="mt-1 text-xs text-red-600">Campo obligatorio.</p>
+                      }
                     </div>
                     <div>
                       <label class="block text-xs font-medium text-slate-700 mb-1">Correo electrónico</label>
@@ -785,14 +801,17 @@
                 </div>
                 <div class="px-5 py-5">
                   <p class="text-xs text-slate-500 mb-2">
-                    Ingresa uno por línea con el formato: <code class="bg-slate-100 px-1 rounded">NIT/CC | Nombre o Razón Social | % Participación</code>.
-                    Puede dejarse en blanco si no aplica.
+                    Ingresa uno por línea con el formato: <code class="bg-slate-100 px-1 rounded">NIT/CC | Nombre o Razón Social | % Participación</code>. <span class="text-red-500 font-medium">Obligatorio.</span>
                   </p>
                   <textarea formControlName="accionistasTexto" rows="4"
                             placeholder="Ej:&#10;900123456 | Inversiones El Roble S.A.S | 60%&#10;71234567 | Juan García | 40%"
-                            class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
+                            class="w-full border rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400
                                    focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors
-                                   resize-none font-mono"></textarea>
+                                   resize-none font-mono
+                                   {{ form.get('accionistasTexto')?.invalid && form.get('accionistasTexto')?.touched ? 'border-red-400 bg-red-50' : 'border-slate-300' }}"></textarea>
+                  @if (form.get('accionistasTexto')?.invalid && form.get('accionistasTexto')?.touched) {
+                    <p class="mt-1 text-xs text-red-600">Campo obligatorio.</p>
+                  }
                 </div>
               </section>
             }
@@ -1204,6 +1223,19 @@
           <div class="flex items-center justify-between pt-2">
 
             <!-- Botón Anterior -->
+            <!-- Resumen de errores de validación (visible junto a los botones) -->
+            @if (stepErrors()) {
+              <div class="flex items-start gap-3 bg-red-50 border border-red-200 rounded-xl px-4 py-3 sm:col-span-2 order-first mb-2 w-full">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5">
+                  <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
+                </svg>
+                <div>
+                  <p class="text-sm font-semibold text-red-700">Campos incompletos en este paso:</p>
+                  <p class="text-sm text-red-600 mt-0.5">{{ stepErrors() }}</p>
+                </div>
+              </div>
+            }
+
             <div>
               @if (currentStep() > 1) {
                 <button type="button" (click)="prevStep()" [disabled]="loading()"
