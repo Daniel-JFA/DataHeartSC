@@ -60,6 +60,7 @@ Thumbs.db
 
 # Archivos de datos sensibles (ETL sources, documentos internos, respaldos)
 data/
+!frontend/src/app/shared/data/
 *.xlsx
 *.xls
 *.csv
