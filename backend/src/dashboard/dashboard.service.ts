@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -60,11 +61,14 @@ export class DashboardService {
     }));
 
     // 3. Revenue by period — day ≤30d, week ≤90d, month >90d
-    const granularity = days <= 30 ? 'day' : days <= 90 ? 'week' : 'month';
+    // Prisma parameterizes template interpolations, so DATE_TRUNC granularity
+    // must be injected as Prisma.raw() (a trusted internal value, not user input).
+    const gran = days <= 30 ? 'day' : days <= 90 ? 'week' : 'month';
+    const granRaw = Prisma.raw(`'${gran}'`);
 
     const revenueByDayRaw = await this.prisma.$queryRaw<Array<{ date: string; total: number }>>`
       SELECT
-        DATE_TRUNC(${granularity}, gs.period)::date::text AS date,
+        DATE_TRUNC(${granRaw}, gs.period)::date::text AS date,
         COALESCE(SUM(o.total_amount), 0)::float AS total
       FROM generate_series(
         CURRENT_DATE - (${days - 1} || ' days')::interval,
@@ -72,10 +76,10 @@ export class DashboardService {
         '1 day'::interval
       ) gs(period)
       LEFT JOIN orders o ON
-        DATE_TRUNC(${granularity}, o.order_date) = DATE_TRUNC(${granularity}, gs.period)
+        DATE_TRUNC(${granRaw}, o.order_date) = DATE_TRUNC(${granRaw}, gs.period)
         AND o.status != 'Cancelado'
-      GROUP BY DATE_TRUNC(${granularity}, gs.period)
-      ORDER BY DATE_TRUNC(${granularity}, gs.period) ASC
+      GROUP BY DATE_TRUNC(${granRaw}, gs.period)
+      ORDER BY DATE_TRUNC(${granRaw}, gs.period) ASC
     `;
     const revenueByDay = revenueByDayRaw.map((r) => ({
       date: r.date,
@@ -85,7 +89,7 @@ export class DashboardService {
     // 3b. Donations by period
     const donationsByDayRaw = await this.prisma.$queryRaw<Array<{ date: string; total: number }>>`
       SELECT
-        DATE_TRUNC(${granularity}, gs.period)::date::text AS date,
+        DATE_TRUNC(${granRaw}, gs.period)::date::text AS date,
         COALESCE(SUM(d.amount), 0)::float AS total
       FROM generate_series(
         CURRENT_DATE - (${days - 1} || ' days')::interval,
@@ -93,10 +97,10 @@ export class DashboardService {
         '1 day'::interval
       ) gs(period)
       LEFT JOIN donations d ON
-        DATE_TRUNC(${granularity}, d.date) = DATE_TRUNC(${granularity}, gs.period)
+        DATE_TRUNC(${granRaw}, d.date) = DATE_TRUNC(${granRaw}, gs.period)
         AND d.status = 'Approved'
-      GROUP BY DATE_TRUNC(${granularity}, gs.period)
-      ORDER BY DATE_TRUNC(${granularity}, gs.period) ASC
+      GROUP BY DATE_TRUNC(${granRaw}, gs.period)
+      ORDER BY DATE_TRUNC(${granRaw}, gs.period) ASC
     `;
     const donationsByDay = donationsByDayRaw.map((r) => ({
       date: r.date,
