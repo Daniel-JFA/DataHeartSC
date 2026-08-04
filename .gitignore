@@ -72,3 +72,4 @@ memory/
 # Configuraciones locales de herramientas de IA
 .continue/
 graphify-out/
+cuenta_cobro_*.pdf
