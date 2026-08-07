@@ -13,8 +13,8 @@ export class CreateBeneficiaryDto {
   @IsString() @MinLength(2)
   firstName: string;
 
-  @IsString() @MinLength(2)
-  lastName: string;
+  @IsOptional() @IsString()
+  lastName?: string;
 
   @IsString() @IsIn(DOC_TYPES)
   docType: string;

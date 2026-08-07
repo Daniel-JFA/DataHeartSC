@@ -4,6 +4,7 @@ import {
   ParseIntPipe, DefaultValuePipe,
 } from '@nestjs/common';
 import { ClientsService } from './clients.service';
+import { MailBlastDto } from './dto/mail-blast.dto';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -54,6 +55,12 @@ export class ClientsController {
   @RequirePermission('segmentacion:read')
   findOne(@Param('id') id: string) {
     return this.clientsService.findOne(id);
+  }
+
+  @Post('mail-blast')
+  @RequirePermission('segmentacion:write')
+  mailBlast(@Body() dto: MailBlastDto) {
+    return this.clientsService.mailBlast(dto);
   }
 
   @Post()

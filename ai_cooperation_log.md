@@ -1386,3 +1386,83 @@ Before starting any work, read the last 15-20 lines to understand the latest cha
 **Next Steps:**
 - `scripts/etl/run_prod.py` sigue sin trackear (script de uso único, no commitear salvo que se decida conservarlo).
 - Verificar que `docker compose up -d --build` levante correctamente con los cambios de `docker-compose.yml`/Dockerfiles antes de desplegar a producción.
+
+---
+**Timestamp:** 2026-08-07
+**Agent:** Claude (Sonnet 4.6)
+**Task:** Fix error "lastName must be longer than or equal to 2 characters" en encuesta de caracterización familiar
+**Files Changed:**
+- `backend/src/beneficiaries/dto/create-beneficiary.dto.ts` — `lastName` cambió de `@IsString() @MinLength(2)` (requerido) a `@IsOptional() @IsString()` (opcional), ya que el formulario público usa un campo `nombreCompleto` único y siempre envía `lastName: ''`.
+**Status:** ✅ Completado
+**Next Steps:**
+- Reiniciar el backend para que tome el cambio del DTO.
+- Pendiente: el usuario menciona que hay otras cosas por corregir en el documento de beneficiarios — a la espera de que las liste.
+
+---
+**Timestamp:** 2026-08-07
+**Agent:** Claude (Sonnet 4.6)
+**Task:** QA/Testing — Auditoría de DTOs y escritura de tests para prevenir bugs reales en beneficiaries
+**Files Changed:**
+- `backend/src/beneficiaries/beneficiaries.dto.spec.ts` — CREADO. 52 tests de validación de `CreateBeneficiaryDto` y `UpdateBeneficiaryDto` con `class-validator` + `plainToInstance` (sin NestJS, sin BD).
+- `backend/src/beneficiaries/beneficiaries.service.spec.ts` — CREADO. 25 tests unitarios del `BeneficiariesService` con `PrismaService` mockeado.
+**Resultado:** 77 tests totales pasan (`npm test`). 0 fallos. No se modificó código de producción.
+**Hallazgos de auditoría de otros DTOs:**
+- `CreateClientDto`: `docNumber` tiene `@MinLength(4)` — si el frontend envía un doc corto (ej. RUT con 3 chars) fallará. Revisar.
+- `RegisterProviderDto`: `aceptaDeclaracion` y `aceptaTratamientoDatos` son `@IsBoolean() @IsNotEmpty()` — si el frontend envía como string 'true'/'false' (form-data) requieren el `@Transform(toBool)` que ya está presente; pero si llegan sin transformar como `undefined`, fallarán.
+- `CreateAyudaDto`: `tipoSolicitud` usa `@IsIn(TIPOS)` con lista hardcodeada — si se agregan tipos a la BD sin actualizar el DTO, el endpoint rechazará payloads válidos.
+- `CreateDonationDto`: `paymentGateway` y `transactionId` son requeridos sin `@IsOptional()` — si el frontend de donaciones los omite habrá 400.
+**Recomendaciones:**
+1. Agregar `class-transformer` `@Transform` al pipeline global de validación para evitar que strings numéricos fallen en campos `@IsInt()`.
+2. Revisar que todos los formularios Angular apliquen `plainToClass` antes de enviar para alinear tipos.
+3. Documentar en CLAUDE.md la convención: campos opcionales en el DTO SIEMPRE llevan `@IsOptional()` explícito.
+**Status:** ✅ Completado
+**Next Steps:**
+- Considerar tests de integración E2E para `POST /beneficiaries/public-register` con supertest (actualmente no hay E2E para este módulo).
+- Evaluar si `lastName` debería eliminarse del schema y reemplazarse por un campo `fullName` para alinear con el formulario público.
+
+---
+**Timestamp:** 2026-08-07
+**Agent:** Claude (Sonnet 4.6) + QA Subagent
+**Task:** Auditoría QA y cobertura de tests para prevenir regresiones en beneficiarios
+**Files Changed:**
+- `backend/src/beneficiaries/beneficiaries.dto.spec.ts` — 52 tests de validación de DTO (incluyendo regression test exacto del bug lastName)
+- `backend/src/beneficiaries/beneficiaries.service.spec.ts` — 25 tests del service con PrismaService mockeado
+**Status:** ✅ Completado — 77/77 tests pasan
+**Next Steps:**
+- Evaluar unificar `firstName`+`lastName` en un campo `fullName` en el schema para eliminar el desacoplamiento estructural con el formulario público
+- Agregar E2E tests con supertest para `POST /beneficiaries/public-register` y `POST /beneficiaries/solicitud-ayuda`
+- Revisar `CreateDonationDto` y `CreateClientDto` por posibles mismatches similares
+
+---
+**Timestamp:** 2026-08-07
+**Agent:** Claude (Sonnet 4.6)
+**Task:** Implementar endpoint POST /clients/mail-blast para mailing masivo
+**Files Changed:**
+- `backend/src/mailer/mailer.service.ts` — Agregado método `sendMail()` genérico (antes solo existía `sendCertificate`)
+- `backend/src/clients/dto/mail-blast.dto.ts` — Nuevo DTO para el payload del mail-blast
+- `backend/src/clients/clients.service.ts` — Agregado método `mailBlast()`: segmenta clientes con email, reemplaza variables {nombre}/{apellido}/{email}/{ciudad}, envía via MailerService
+- `backend/src/clients/clients.controller.ts` — Agregado endpoint `POST /clients/mail-blast` con permiso `segmentacion:write`
+- `backend/src/clients/clients.module.ts` — Importado MailerModule
+**Status:** ✅ Completado — build limpio, 77/77 tests
+**Next Steps:**
+- Configurar SMTP en .env (SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, EMAIL_FROM)
+- Recomendado: Brevo (300 correos/día gratis, sin tarjeta)
+- Pendiente: mensajería WhatsApp Business API
+
+---
+**Timestamp:** 2026-08-07
+**Agent:** Claude (Sonnet 4.6)
+**Task:** Infraestructura WhatsApp Business API (módulo completo, sin credenciales aún)
+**Files Changed:**
+- `backend/src/whatsapp/whatsapp.service.ts` — Servicio: sendText, sendTemplate, blast, verifyWebhook, processWebhook. Funciona en modo simulado si faltan credenciales.
+- `backend/src/whatsapp/whatsapp.controller.ts` — Endpoints: GET/POST /whatsapp/webhook (Meta), POST /whatsapp/send-text, POST /whatsapp/send-template, POST /whatsapp/blast
+- `backend/src/whatsapp/whatsapp.module.ts` — Módulo con AuthModule
+- `backend/src/whatsapp/dto/send-whatsapp.dto.ts` — DTOs: SendTextDto, SendTemplateDto, BlastTemplateDto
+- `backend/src/app.module.ts` — WhatsappModule registrado
+- `frontend/src/.../listas-difusion.component.ts` — UI completa: formulario de blast con plantilla, parámetros, lista de números, resultado
+**Status:** ✅ Build limpio — pendiente configurar credenciales WABA
+**Next Steps:**
+1. Obtener en Meta Business: WABA_PHONE_NUMBER_ID, WABA_ACCESS_TOKEN, WABA_WEBHOOK_VERIFY_TOKEN
+2. Agregar al .env del backend
+3. URL del webhook a registrar en Meta: https://tu-dominio.com/api/whatsapp/webhook
+4. Crear y aprobar plantillas en Meta Business Suite

@@ -18,6 +18,7 @@ import { CertificatesModule } from './certificates/certificates.module';
 import { MailerModule } from './mailer/mailer.module';
 import { VolunteersModule } from './volunteers/volunteers.module';
 import { AdminModule } from './admin/admin.module';
+import { WhatsappModule } from './whatsapp/whatsapp.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { AdminModule } from './admin/admin.module';
     MailerModule,
     VolunteersModule,
     AdminModule,
+    WhatsappModule,
   ],
   controllers: [AppController],
   providers: [AppService],

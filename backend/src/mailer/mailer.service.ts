@@ -28,6 +28,22 @@ export class MailerService {
     }
   }
 
+  async sendMail(opts: {
+    to: string;
+    subject: string;
+    html: string;
+  }): Promise<boolean> {
+    if (!this.transporter) return false;
+    const from = this.config.get<string>('EMAIL_FROM') || 'noreply@santiagocorazon.org';
+    try {
+      await this.transporter.sendMail({ from, to: opts.to, subject: opts.subject, html: opts.html });
+      return true;
+    } catch (err) {
+      this.logger.error(`Error al enviar correo a ${opts.to}:`, err);
+      return false;
+    }
+  }
+
   async sendCertificate(opts: {
     to: string;
     donorName: string;
