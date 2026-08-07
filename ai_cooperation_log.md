@@ -1466,3 +1466,21 @@ Before starting any work, read the last 15-20 lines to understand the latest cha
 2. Agregar al .env del backend
 3. URL del webhook a registrar en Meta: https://tu-dominio.com/api/whatsapp/webhook
 4. Crear y aprobar plantillas en Meta Business Suite
+
+---
+**Timestamp:** 2026-08-07
+**Agent:** Claude (Sonnet 5)
+**Task:** Traer cambios pendientes de origin, verificar BD y desplegar a producción (mismo host, ver sesión 2026-08-04)
+**Files Changed:** Ninguno de código — solo este log. Se trajeron los 3 commits de Agy ya presentes en origin (`1b1b740`, `b7daef7`, `853b460`: dashboard por semana/mes, fix DATE_TRUNC con Prisma.raw, mailing masivo + WhatsApp API + QA tests).
+**Acciones:**
+- `git fetch` reveló que local estaba 3 commits detrás de `origin/main` (rama local no tenía el trabajo de Agy). `git pull` (fast-forward limpio, `fa85d96..853b460`).
+- Verificado: los 3 commits nuevos no incluyen migraciones de Prisma nuevas (sin cambios en `schema.prisma`), así que no había DDL pendiente más allá de las 5 migraciones ya conocidas.
+- `docker compose build backend frontend` — OK (~190s frontend, ~144s backend build).
+- `docker compose up -d backend frontend` — contenedores recreados; `postgres`/`redis` no se tocaron.
+- `npx prisma migrate deploy` (automático al arrancar el backend, ver `docker-compose.yml` command): "5 migrations found" / "No pending migrations to apply" — BD confirmada al día.
+- Verificado en vivo: `https://sc.danielflorez.dev` → 200; `POST /api/auth/login` (body vacío) → 400 (esperado); `GET /api/whatsapp/webhook` → 403 (ruta nueva activa, no 404 — confirma que el build incluye el módulo WhatsApp de Agy).
+**Status:** ✅ Desplegado y verificado en producción
+**Next Steps:**
+- `scripts/etl/run_prod.py` sigue sin trackear (script de uso único, no commitear salvo que se decida conservarlo).
+- Configurar credenciales WABA y SMTP en `.env` para activar WhatsApp/mailing real (hoy corren en modo simulado sin credenciales — ver sesión anterior).
+- Recomendado: antes de la próxima sesión, correr `git fetch`/`git pull` al inicio de cada tarea — en esta sesión el trabajo de Agy llevaba tiempo en origin sin bajar a este entorno.
